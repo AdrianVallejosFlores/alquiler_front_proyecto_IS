@@ -1,80 +1,16 @@
 'use client';
-
-import React, { useState } from 'react';
-import { sendNegativeBalanceNotification, getFixerNotificationHistory, shouldNotifyNegativeBalance } from '@/lib/notifications/sendNegativeBalanceNotification';
+import React from 'react';
+import { useBalanceLogic } from './useBalanceLogic';
 
 export default function TestNotificationPage() {
-  const [balance, setBalance] = useState(100);
-  const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState<any>(null);
-  const [logs, setLogs] = useState<string[]>([]);
-
-  const addLog = (message: string) => {
-    const timestamp = new Date().toLocaleTimeString('es-BO');
-    setLogs(prev => [`[${timestamp}] ${message}`, ...prev]);
-  };
-
-  const testNegativeBalance = async (testBalance: number) => {
-    setIsLoading(true);
-    setResult(null);
-    addLog(`🚀 Iniciando prueba con balance: Bs. ${testBalance}`);
-
-    try {
-      addLog(`🔍 Backend URL: ${process.env.NEXT_PUBLIC_BACKEND_URL}`);
-      addLog(`🔍 API Key configurada: ${process.env.NEXT_PUBLIC_API_KEY ? 'SÍ' : 'NO'}`);
-      
-      // Verificar si debe notificar
-      if (shouldNotifyNegativeBalance(1012, testBalance)) {
-        addLog('✅ Validación previa: Se debe enviar notificación');
-      } else {
-        addLog('⚠️ Validación previa: Puede ser duplicada');
-      }
-
-      addLog(`📤 Enviando notificación al backend...`);
-
-      // ⭐ USANDO LA NUEVA FUNCIÓN SIMPLIFICADA
-      const response = await sendNegativeBalanceNotification({
-        fixer_id: 1012,
-        name: 'Cynthia Chambi Baltazar',
-        email: 'cynthiachambibaltazar55@gmail.com',
-        balance: testBalance
-      });
-
-      addLog(`📥 Respuesta recibida: ${JSON.stringify(response)}`);
-      
-      setResult(response);
-      setBalance(testBalance);
-
-      if (response.success) {
-        addLog('✅ ¡Notificación enviada exitosamente!');
-        addLog(`📧 Revisa el correo: ${process.env.NEXT_PUBLIC_TEST_EMAIL || 'cynthiachambibaltazar55@gmail.com'}`);
-        addLog(`⏰ Puede tardar 1-2 minutos en llegar`);
-      } else {
-        addLog(`❌ Error: ${response.message}`);
-      }
-
-    } catch (error: any) {
-      addLog(`❌ Error en la prueba: ${error.message}`);
-      addLog(`📋 Stack: ${error.stack}`);
-      setResult({ success: false, error: error.message });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const viewHistory = () => {
-    const history = getFixerNotificationHistory(1012);
-    addLog(`📋 Historial: ${history.length} notificaciones encontradas`);
-    console.log('📋 Historial completo:', history);
-    setResult({ history });
-  };
-
-  const clearHistory = () => {
-    localStorage.removeItem('negative_balance_notifications');
-    addLog('🗑️ Historial de notificaciones limpiado');
-    addLog('✅ Ahora puedes enviar notificaciones sin restricción de duplicados');
-    setResult(null);
-  };
+  const {
+    balance,
+    logs,
+    isLoading,
+    updateBalance,
+    clearLogs,
+    resetBalance
+  } = useBalanceLogic();
 
   return (
     <div style={{
@@ -82,22 +18,38 @@ export default function TestNotificationPage() {
       maxWidth: '1200px',
       margin: '0 auto',
       padding: '40px 24px',
-      backgroundColor: '#ffffff'
+      backgroundColor: '#ffffff',
+      minHeight: '100vh'
     }}>
       
       {/* Header */}
-      <div style={{ marginBottom: '40px' }}>
+      <div style={{ marginBottom: '40px', textAlign: 'center' }}>
         <h1 style={{
-          fontFamily: 'Poppins, sans-serif',
           color: '#0c4fe9',
           fontSize: '32px',
-          marginBottom: '8px'
+          marginBottom: '8px',
+          fontWeight: 'bold'
         }}>
-          🧪 Prueba Real - Notificaciones de Saldo Negativo
+          🚀 Simulador de Notificaciones HU5 & HU6
         </h1>
-        <p style={{ color: '#616E8A', fontSize: '14px' }}>
-          Probando conexión Frontend → Backend → Gmail
+        <p style={{ color: '#616E8A', fontSize: '16px' }}>
+          Sistema automático de detección y envío de notificaciones por correo
         </p>
+        
+        {/* Indicador de Estado */}
+        {isLoading && (
+          <div style={{
+            marginTop: '16px',
+            padding: '12px',
+            backgroundColor: '#FFEB3B',
+            borderRadius: '8px',
+            color: '#F57F17',
+            fontWeight: '600',
+            display: 'inline-block'
+          }}>
+            ⏳ Enviando notificación por correo...
+          </div>
+        )}
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
@@ -105,224 +57,251 @@ export default function TestNotificationPage() {
         {/* Panel Izquierdo - Controles */}
         <div>
           
-          {/* Balance Actual */}
+          {/* Balance Display */}
           <div style={{
-            border: `2px solid ${balance < 0 ? '#E91923' : '#0c4fe9'}`,
-            borderRadius: '12px',
-            padding: '24px',
-            backgroundColor: balance < 0 ? '#FFF5F5' : '#F0F2F5',
-            marginBottom: '24px'
+            border: `3px solid ${balance < 0 ? '#E91923' : balance === 0 ? '#FFA500' : '#0c4fe9'}`,
+            borderRadius: '16px',
+            padding: '32px',
+            backgroundColor: balance < 0 ? '#FFF5F5' : balance === 0 ? '#FFF8E1' : '#F0F2F5',
+            marginBottom: '24px',
+            textAlign: 'center',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
           }}>
             <div style={{
-              fontFamily: 'Poppins, sans-serif',
               fontSize: '14px',
               color: '#616E8A',
-              marginBottom: '8px'
+              marginBottom: '12px',
+              fontWeight: '600'
             }}>
-              Balance Simulado
+              BALANCE ACTUAL
             </div>
             <div style={{
-              fontFamily: 'Poppins, sans-serif',
-              fontSize: '48px',
+              fontSize: '56px',
               fontWeight: 'bold',
-              color: balance < 0 ? '#E91923' : '#0c4fe9'
+              color: balance < 0 ? '#E91923' : balance === 0 ? '#FFA500' : '#0c4fe9',
+              marginBottom: '24px'
             }}>
               Bs. {balance.toFixed(2)}
             </div>
+
+            {/* Controles de Balance */}
+            <div style={{
+              display: 'flex',
+              gap: '16px',
+              justifyContent: 'center',
+              marginBottom: '20px'
+            }}>
+              <button
+                onClick={() => updateBalance(-10)}
+                disabled={isLoading}
+                style={{
+                  width: '70px',
+                  height: '70px',
+                  backgroundColor: isLoading ? '#CCCCCC' : '#E91923',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '50%',
+                  fontSize: '36px',
+                  fontWeight: 'bold',
+                  cursor: isLoading ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s',
+                  boxShadow: '0 4px 8px rgba(233, 25, 35, 0.3)',
+                  opacity: isLoading ? 0.6 : 1
+                }}
+                onMouseOver={(e) => !isLoading && (e.currentTarget.style.transform = 'scale(1.1)')}
+                onMouseOut={(e) => !isLoading && (e.currentTarget.style.transform = 'scale(1)')}
+              >
+                ↓
+              </button>
+              
+              <button
+                onClick={() => updateBalance(10)}
+                disabled={isLoading}
+                style={{
+                  width: '70px',
+                  height: '70px',
+                  backgroundColor: isLoading ? '#CCCCCC' : '#31C950',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '50%',
+                  fontSize: '36px',
+                  fontWeight: 'bold',
+                  cursor: isLoading ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s',
+                  boxShadow: '0 4px 8px rgba(49, 201, 80, 0.3)',
+                  opacity: isLoading ? 0.6 : 1
+                }}
+                onMouseOver={(e) => !isLoading && (e.currentTarget.style.transform = 'scale(1.1)')}
+                onMouseOut={(e) => !isLoading && (e.currentTarget.style.transform = 'scale(1)')}
+              >
+                ↑
+              </button>
+            </div>
+
+            {/* Indicadores de Estado */}
             {balance < 0 && (
               <div style={{
-                marginTop: '12px',
-                padding: '12px',
+                padding: '16px',
                 backgroundColor: '#FFEBEE',
-                borderLeft: '4px solid #E91923',
-                borderRadius: '4px',
+                border: '2px solid #E91923',
+                borderRadius: '8px',
                 color: '#E91923',
-                fontSize: '14px',
-                fontWeight: '600'
+                fontSize: '16px',
+                fontWeight: '700',
+                textAlign: 'center'
               }}>
-                ⚠️ Saldo negativo detectado
+                ⚠️ HU6 ACTIVO - SALDO NEGATIVO
+                <div style={{ fontSize: '12px', marginTop: '4px', fontWeight: 'normal' }}>
+                  Notificación enviada a cristhiancalizaya165@gmail.com
+                </div>
+              </div>
+            )}
+            {balance === 0 && (
+              <div style={{
+                padding: '16px',
+                backgroundColor: '#FFF8E1',
+                border: '2px solid #FFA500',
+                borderRadius: '8px',
+                color: '#FFA500',
+                fontSize: '16px',
+                fontWeight: '700',
+                textAlign: 'center'
+              }}>
+                🎯 HU5 ACTIVO - SALDO EN CERO
+                <div style={{ fontSize: '12px', marginTop: '4px', fontWeight: 'normal' }}>
+                  Notificación enviada a cristhiancalizaya165@gmail.com
+                </div>
               </div>
             )}
           </div>
 
-          {/* Botones de Prueba - Gmail */}
+          {/* Panel de Control */}
           <div style={{
-            border: '1px solid #DBDEE5',
+            border: '2px solid #DBDEE5',
             borderRadius: '12px',
-            padding: '20px',
-            marginBottom: '24px',
-            backgroundColor: '#FAFBFC'
+            padding: '24px',
+            backgroundColor: '#FAFBFC',
+            marginBottom: '24px'
           }}>
             <h3 style={{
-              fontFamily: 'Poppins, sans-serif',
               color: '#11255a',
-              fontSize: '16px',
-              marginBottom: '16px'
+              fontSize: '18px',
+              marginBottom: '16px',
+              textAlign: 'center'
             }}>
-              📧 Pruebas Gmail
+              🛠️ Panel de Control
             </h3>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <button
-                onClick={() => testNegativeBalance(-25.50)}
+                onClick={resetBalance}
                 disabled={isLoading}
                 style={{
-                  padding: '14px 20px',
-                  backgroundColor: '#E91923',
+                  padding: '16px 24px',
+                  backgroundColor: isLoading ? '#CCCCCC' : '#2196F3',
                   color: 'white',
                   border: 'none',
                   borderRadius: '8px',
-                  fontSize: '14px',
+                  fontSize: '16px',
                   fontWeight: '600',
                   cursor: isLoading ? 'not-allowed' : 'pointer',
+                  transition: 'background-color 0.2s',
                   opacity: isLoading ? 0.6 : 1
                 }}
+                onMouseOver={(e) => !isLoading && (e.currentTarget.style.backgroundColor = '#1976D2')}
+                onMouseOut={(e) => !isLoading && (e.currentTarget.style.backgroundColor = '#2196F3')}
               >
-                🔴 Enviar Gmail - Saldo Negativo (-25.50)
+                🔄 Reiniciar Balance a Bs. 100
               </button>
 
               <button
-                onClick={() => testNegativeBalance(-100)}
+                onClick={clearLogs}
                 disabled={isLoading}
                 style={{
-                  padding: '14px 20px',
-                  backgroundColor: '#0c4fe9',
+                  padding: '16px 24px',
+                  backgroundColor: isLoading ? '#CCCCCC' : '#FF5722',
                   color: 'white',
                   border: 'none',
                   borderRadius: '8px',
-                  fontSize: '14px',
+                  fontSize: '16px',
                   fontWeight: '600',
                   cursor: isLoading ? 'not-allowed' : 'pointer',
+                  transition: 'background-color 0.2s',
                   opacity: isLoading ? 0.6 : 1
                 }}
+                onMouseOver={(e) => !isLoading && (e.currentTarget.style.backgroundColor = '#E64A19')}
+                onMouseOut={(e) => !isLoading && (e.currentTarget.style.backgroundColor = '#FF5722')}
               >
-                📧 Enviar Gmail - Balance Custom (-100)
-              </button>
-
-              <button
-                onClick={() => testNegativeBalance(-50.75)}
-                disabled={isLoading}
-                style={{
-                  padding: '14px 20px',
-                  backgroundColor: '#1366fd',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  cursor: isLoading ? 'not-allowed' : 'pointer',
-                  opacity: isLoading ? 0.6 : 1
-                }}
-              >
-                💳 Enviar Gmail - Otro Monto (-50.75)
+                🗑️ Limpiar Todos los Logs
               </button>
             </div>
           </div>
 
-          {/* Utilidades */}
+          {/* Información del Sistema */}
           <div style={{
-            border: '1px solid #DBDEE5',
+            border: '2px solid #E8F5E9',
             borderRadius: '12px',
             padding: '20px',
-            backgroundColor: '#FAFBFC'
+            backgroundColor: '#F1F8E9'
           }}>
             <h3 style={{
-              fontFamily: 'Poppins, sans-serif',
-              color: '#11255a',
+              color: '#2E7D32',
               fontSize: '16px',
-              marginBottom: '16px'
+              marginBottom: '12px'
             }}>
-              🛠️ Utilidades
+              💡 Configuración Actual:
             </h3>
-            
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <button
-                onClick={viewHistory}
-                disabled={isLoading}
-                style={{
-                  padding: '14px 20px',
-                  backgroundColor: '#F0F2F5',
-                  color: '#11255a',
-                  border: '1px solid #DBDEE5',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  cursor: isLoading ? 'not-allowed' : 'pointer'
-                }}
-              >
-                📋 Ver Historial (Console)
-              </button>
-
-              <button
-                onClick={clearHistory}
-                style={{
-                  padding: '14px 20px',
-                  backgroundColor: '#E91923',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  cursor: 'pointer'
-                }}
-              >
-                🗑️ Limpiar Historial
-              </button>
-            </div>
-          </div>
-
-          {/* Resultado */}
-          {result && (
-            <div style={{
-              marginTop: '24px',
-              border: `2px solid ${result.success ? '#31C950' : '#E91923'}`,
-              borderRadius: '12px',
-              padding: '20px',
-              backgroundColor: result.success ? '#F0FDF4' : '#FFF5F5'
+            <ul style={{ 
+              color: '#388E3C', 
+              fontSize: '14px', 
+              lineHeight: '1.6',
+              margin: 0,
+              paddingLeft: '20px'
             }}>
-              <h3 style={{
-                fontFamily: 'Poppins, sans-serif',
-                color: result.success ? '#31C950' : '#E91923',
-                fontSize: '16px',
-                marginBottom: '12px'
-              }}>
-                {result.success ? '✅ Éxito' : '❌ Error'}
-              </h3>
-              <pre style={{
-                fontSize: '12px',
-                color: '#616E8A',
-                overflow: 'auto',
-                backgroundColor: 'white',
-                padding: '12px',
-                borderRadius: '6px',
-                whiteSpace: 'pre-wrap',
-                wordBreak: 'break-word'
-              }}>
-                {JSON.stringify(result, null, 2)}
-              </pre>
-            </div>
-          )}
+              <li><strong>Email destino:</strong> cristhiancalizaya165@gmail.com</li>
+              <li><strong>Backend:</strong> http://localhost:5000</li>
+              <li><strong>HU5:</strong> Se envía automáticamente cuando balance = 0</li>
+              <li><strong>HU6:</strong> Se envía automáticamente cuando balance &lt; 0</li>
+              <li><strong>Protección:</strong> No envía notificaciones duplicadas</li>
+            </ul>
+          </div>
         </div>
 
         {/* Panel Derecho - Logs */}
         <div>
           <div style={{
-            border: '1px solid #DBDEE5',
+            border: '2px solid #11255a',
             borderRadius: '12px',
-            padding: '20px',
+            padding: '24px',
             backgroundColor: '#11255a',
-            height: '800px',
+            height: '600px',
             display: 'flex',
             flexDirection: 'column'
           }}>
-            <h3 style={{
-              fontFamily: 'Poppins, sans-serif',
-              color: '#ffffff',
-              fontSize: '16px',
-              marginBottom: '16px'
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '20px'
             }}>
-              📋 Console Logs
-            </h3>
+              <h3 style={{
+                color: '#ffffff',
+                fontSize: '18px',
+                fontWeight: 'bold',
+                margin: 0
+              }}>
+                📋 Registro de Eventos
+              </h3>
+              <div style={{
+                color: '#DBDEE5',
+                fontSize: '12px',
+                backgroundColor: '#1a2438',
+                padding: '4px 8px',
+                borderRadius: '4px'
+              }}>
+                {logs.length} eventos
+              </div>
+            </div>
 
             <div style={{
               flex: 1,
@@ -330,23 +309,34 @@ export default function TestNotificationPage() {
               backgroundColor: '#0a1530',
               borderRadius: '8px',
               padding: '16px',
-              fontFamily: 'monospace',
-              fontSize: '12px'
+              fontFamily: 'Monaco, Consolas, monospace',
+              fontSize: '13px'
             }}>
               {logs.length === 0 ? (
-                <div style={{ color: '#DBDEE5' }}>
-                  Esperando pruebas...
+                <div style={{ 
+                  color: '#DBDEE5', 
+                  textAlign: 'center',
+                  padding: '40px 20px',
+                  fontStyle: 'italic'
+                }}>
+                  Los eventos aparecerán aquí cuando interactúes con el balance...
                 </div>
               ) : (
                 logs.map((log, index) => (
-                  <div key={index} style={{
-                    marginBottom: '8px',
-                    padding: '8px',
-                    backgroundColor: '#1a2438',
-                    borderRadius: '4px',
-                    color: '#ffffff',
-                    borderLeft: '3px solid #2A87FF'
-                  }}>
+                  <div 
+                    key={index} 
+                    style={{
+                      marginBottom: '8px',
+                      padding: '12px',
+                      backgroundColor: '#1a2438',
+                      borderRadius: '6px',
+                      color: '#ffffff',
+                      borderLeft: log.includes('✅') ? '4px solid #31C950' : 
+                                 log.includes('❌') ? '4px solid #E91923' : 
+                                 log.includes('📧') ? '4px solid #FFA500' : '4px solid #2A87FF',
+                      wordBreak: 'break-word'
+                    }}
+                  >
                     {log}
                   </div>
                 ))
@@ -357,35 +347,14 @@ export default function TestNotificationPage() {
               marginTop: '16px',
               padding: '12px',
               backgroundColor: '#1a2438',
-              borderRadius: '8px',
+              borderRadius: '6px',
               fontSize: '11px',
-              color: '#DBDEE5'
+              color: '#DBDEE5',
+              textAlign: 'center'
             }}>
-              💡 Tip: Abre DevTools (F12) para ver logs completos del sistema
+              💡 Sistema conectado a backend local:5000 - Envío real de correos activado
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Información */}
-      <div style={{
-        marginTop: '32px',
-        padding: '20px',
-        backgroundColor: '#F0F2F5',
-        borderRadius: '12px',
-        fontSize: '13px',
-        color: '#616E8A'
-      }}>
-        <strong style={{ color: '#11255a' }}>📌 Configuración de Prueba:</strong>
-        <ul style={{ marginTop: '12px', marginBottom: 0, paddingLeft: '20px' }}>
-          <li>Backend URL: {process.env.NEXT_PUBLIC_BACKEND_URL || 'No configurado'}</li>
-          <li>Email de prueba: {process.env.NEXT_PUBLIC_TEST_EMAIL || 'cynthiachambibaltazar55@gmail.com'}</li>
-          <li>Fixer ID: 1012</li>
-          <li>Canal: Gmail únicamente (HU06)</li>
-          <li>⭐ Usando función simplificada: sendNegativeBalanceNotification()</li>
-        </ul>
-        <div style={{ marginTop: '12px', color: '#E91923' }}>
-          ⚠️ Asegúrate de tener el backend corriendo en el puerto 5000
         </div>
       </div>
     </div>
