@@ -60,54 +60,6 @@ export const ProteccionCodigo: React.FC = () => {
   const [codigo, setCodigo] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-const [intentos, setIntentos] = useState(0);
-const [bloqueado, setBloqueado] = useState(false);
-const [tiempoRestante, setTiempoRestante] = useState(0);
-useEffect(() => {
-  const contador=sessionStorage.getItem("intentos")
-  
-  
-  setIntentos(parseInt(contador||"0"))
-  const raw = sessionStorage.getItem(BLOQUEO_KEY);
-  if (!raw) return;
-
-  const hasta = parseInt(raw, 10);
-  if (Number.isNaN(hasta)) {
-    sessionStorage.removeItem(BLOQUEO_KEY);
-    return;
-  }
-
-  const ahora = Date.now();
-  if (ahora >= hasta) {
-    // ya venció
-    sessionStorage.removeItem(BLOQUEO_KEY);
-    return;
-  }
-
-  const diffSec = Math.floor((hasta - ahora) / 1000);
-  setBloqueado(true);
-  setTiempoRestante(diffSec);
-}, []);
-useEffect(() => {
-  if (!bloqueado || tiempoRestante <= 0) return;
-
-  const timer = setInterval(() => {
-    setTiempoRestante((prev) => {
-      if (prev <= 1) {
-        setBloqueado(false);
-        setIntentos(0);
-        
-        sessionStorage.removeItem("intentos")
-        sessionStorage.setItem("intentos", "0")
-        sessionStorage.removeItem(BLOQUEO_KEY);
-        return 0;
-      }
-      return prev - 1;
-    });
-  }, 1000);
-
-  return () => clearInterval(timer);
-}, [bloqueado, tiempoRestante]);
 
   const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
@@ -151,27 +103,7 @@ useEffect(() => {
     router.push('/');
     } catch (err) {
     console.error(err);
-
-    //  Manejo de intentos y bloqueo
-    setIntentos((prev) => {
-  const nuevos = prev + 1;
-
-  if (nuevos >= 3) {
-    setBloqueado(true);
-    setTiempoRestante(300); // 5 minutos
-    
-    const hasta = Date.now() + BLOQUEO_TTL_MS;
-    sessionStorage.setItem(BLOQUEO_KEY, String(hasta));
-
-    setError('Has excedido el número de intentos. Inténtalo nuevamente en 5 minutos.');
-  } else {
-    setError(`Código incorrecto. Te quedan ${3 - nuevos} intento(s).`);
-  }
-  sessionStorage.removeItem("intentos")
-  sessionStorage.setItem("intentos",`${nuevos}` )
-  return nuevos;
-});
-
+    setError(typeof err === 'string' ? err : 'Código incorrecto. Inténtalo de nuevo.');
   } finally {
     setIsLoading(false);
     setCodigo(''); // limpia el input después de cada intento

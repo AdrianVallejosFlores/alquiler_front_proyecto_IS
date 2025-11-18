@@ -17,34 +17,6 @@ const router = useRouter();
   const [bloqueado, setBloqueado] = useState(false);
   const [tiempoRestante, setTiempoRestante] = useState(0);
 
-    useEffect(() => {
-    const desactivar = sessionStorage.getItem('desactivar2FA');
-    if (desactivar !== 'true') return; // solo aplica para desactivar
-    const contador=sessionStorage.getItem("intentos")
-    setIntentos(parseInt(contador||"0"))   
-    
-    const raw = sessionStorage.getItem(BLOQUEO_DESACTIVAR_KEY);
-    if (!raw) return;
-
-    const hasta = parseInt(raw, 10);
-    if (Number.isNaN(hasta)) {
-      sessionStorage.removeItem(BLOQUEO_DESACTIVAR_KEY);
-      return;
-    }
-
-    const ahora = Date.now();
-    if (ahora >= hasta) {
-      // ya venció
-      sessionStorage.removeItem(BLOQUEO_DESACTIVAR_KEY);
-      return;
-    }
-
-    const diffSec = Math.floor((hasta - ahora) / 1000);
-    setBloqueado(true);
-    setTiempoRestante(diffSec);
-  }, []);
-
-
      useEffect(() => {
     let timer: NodeJS.Timeout;
     if (bloqueado && tiempoRestante > 0) {
@@ -52,10 +24,6 @@ const router = useRouter();
         setTiempoRestante((prev) => {
           if (prev <= 1) {
             setBloqueado(false);
-            setIntentos(0); 
-            sessionStorage.removeItem("intentos")
-        sessionStorage.setItem("intentos", "0")
-            sessionStorage.removeItem(BLOQUEO_DESACTIVAR_KEY); 
             clearInterval(timer);
             return 0;
           }
@@ -144,11 +112,10 @@ console.log('verify-login payload ->', { userId, token }); // revisa en consola
             setError('Has excedido el número de intentos. Inténtalo nuevamente en 5 minutos.');
           } else {
             setError(`Código incorrecto. Te quedan ${3 - nuevosIntentos} intento(s).`);
-          }
-          sessionStorage.removeItem("intentos")
-          sessionStorage.setItem("intentos",`${nuevosIntentos}` )
-          return nuevosIntentos;
-        });
+        }
+
+        return nuevosIntentos;
+      });
       }
 
     } catch (err) {
@@ -160,18 +127,10 @@ console.log('verify-login payload ->', { userId, token }); // revisa en consola
     }
   };
 
- const handleCancel = () => {
-    const desc=sessionStorage.getItem('desactivar2FA');
-    if(desc=='true'){
-          sessionStorage.removeItem('desactivar2FA');
-        router.push('/')
-        }
-  else {
-    sessionStorage.removeItem(BLOQUEO_DESACTIVAR_KEY);
-    sessionStorage.clear();
-  router.push('/login')}
-  return;
- // vuelve a la página anterior
+ // 🔹 Manejar el botón Cancelar
+  const handleCancel = () => {
+    sessionStorage.clear()
+    router.back(); // vuelve a la página anterior
     // o podrías usar: router.push('/Seguridad') si tienes una ruta específica
   };
   return (
