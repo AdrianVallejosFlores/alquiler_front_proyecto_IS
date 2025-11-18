@@ -6,8 +6,70 @@ import { GestorMetodosProps, ModosInterfaz, MetodoAutenticacion } from '../inter
 import MetodoActivoPanel from '../components/MetodoActivoPanel';
 import MetodosDisponiblesList from '../components/MetodosDisponiblesList';
 import ModalContrasena from '../components/ModalContrasena';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { eliminarAutenticacion, agregarAutenticacion } from '@/app/teamsys/services/UserService';
+
+// === Toast flotante de éxito / error ===
+type ToastKind = 'success' | 'error';
+
+interface StatusToastProps {
+  kind: ToastKind;
+  text: string;
+  onClose: () => void;
+}
+
+const StatusToast: React.FC<StatusToastProps> = ({ kind, text, onClose }) => {
+  const isSuccess = kind === 'success';
+  const emoji = isSuccess ? '✅' : '❌';
+
+  // Efecto: cerrar automáticamente a los 2s
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onClose();
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/30 backdrop-blur-[2px]"
+      onClick={(e) => e.stopPropagation()} // evita que haga click en padres
+    >
+      <div
+        className={`
+          w-full max-w-md rounded-2xl shadow-xl border px-6 py-5
+          bg-white flex flex-col items-center gap-3 animate-fade-in
+          ${isSuccess ? 'border-blue-300' : 'border-red-300'}
+        `}
+        onClick={(e) => e.stopPropagation()} // evita burbuja
+      >
+        <div
+          className={`
+            w-14 h-14 rounded-full flex items-center justify-center text-3xl
+            ${isSuccess ? 'bg-blue-100 text-blue-600' : 'bg-red-100 text-red-600'}
+          `}
+        >
+          {emoji}
+        </div>
+
+        <h3
+          className={`
+            text-lg font-semibold text-center
+            ${isSuccess ? 'text-blue-800' : 'text-red-800'}
+          `}
+        >
+          {isSuccess ? '¡Operación exitosa!' : 'No se pudo completar la acción'}
+        </h3>
+
+        <p className="text-sm text-center text-slate-600">
+          {text}
+        </p>
+      </div>
+    </div>
+  );
+};
+
 
 export default function GestorMetodos({
   metodos,
@@ -16,7 +78,6 @@ export default function GestorMetodos({
   activarMetodo,
   eliminarMetodo,
   recargarMetodos
-  
 }: GestorMetodosProps & { recargarMetodos?: () => void }) {
   const [modos, setModos] = useState<ModosInterfaz>({
     modoSeleccion: false,
@@ -24,12 +85,15 @@ export default function GestorMetodos({
     metodosSeleccionados: [],
     metodosAEliminar: []
   });
-const router = useRouter();
+  const router = useRouter();
   const [modalContrasenaAbierto, setModalContrasenaAbierto] = useState(false);
   const [metodoSeleccionadoParaContrasena, setMetodoSeleccionadoParaContrasena] = useState<string | null>(null);
-  const [cargandoGoogle, setCargandoGoogle] = useState(false);
+
   const [error, setError] = useState<string | null>(null);
+  const [mensajeOk, setMensajeOk] = useState<string | null>(null);
+
   const limpiarError = () => setError(null);
+  const limpiarMensajeOk = () => setMensajeOk(null);
 
   // ===== Helpers sin any =====
   const isRecord = (v: unknown): v is Record<string, unknown> =>
@@ -41,6 +105,7 @@ const router = useRouter();
   // ====== UI: modos ======
   const activarModoSeleccion = () => {
     limpiarError();
+    limpiarMensajeOk();
     setModos({
       modoSeleccion: true,
       modoEliminar: false,
@@ -51,6 +116,7 @@ const router = useRouter();
 
   const activarModoEliminar = () => {
     limpiarError();
+    limpiarMensajeOk();
     setModos({
       modoEliminar: true,
       modoSeleccion: false,
@@ -75,7 +141,6 @@ const router = useRouter();
 
     const metodo = metodos.find(m => m.id === metodoId);
     if (metodo?.activo) {
-      setError('Este método ya está activo');
       return;
     }
 
@@ -124,10 +189,10 @@ const router = useRouter();
 
     try {
       limpiarError();
+      limpiarMensajeOk();
 
       const metodo = metodos.find(m => m.id === metodoId);
       if (metodo?.activo) {
-        setError('Este método ya está activo');
         return;
       }
 
@@ -140,78 +205,84 @@ const router = useRouter();
         setMetodoSeleccionadoParaContrasena(metodoId);
         setModalContrasenaAbierto(true);
       } else if (metodoId === 'google') {
-        activarMetodoGoogle(); // misma ventana
+        activarMetodoGoogle();
       } else {
         await activarMetodo(metodoId);
+        setMensajeOk('Método activado exitosamente');
+        if (recargarMetodos) await recargarMetodos();
         desactivarModos();
       }
     } catch (err) {
       setError(`Error al activar método: ${err}`);
     }
   };
-
-  // ====== Google en la misma ventana ======
-  // ====== Google en POPUP (no reemplaza toda la ventana) ======
-// ====== Google en POPUP (vincular método; sin guardar tokens) ======
 const activarMetodoGoogle = (): void => {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
 
   const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
   if (!clientId) {
-    setError("Falta NEXT_PUBLIC_GOOGLE_CLIENT_ID");
+    setError('Falta NEXT_PUBLIC_GOOGLE_CLIENT_ID');
     return;
   }
 
-  // Volver a la misma pantalla
-  const returnTo = window.location.pathname + window.location.search + window.location.hash;
+  const returnTo =
+    window.location.pathname +
+    window.location.search +
+    window.location.hash;
 
-  // redirect_uri fijo al callback
   const origin = (() => {
-    const base = process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, "");
+    const base = process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, '');
     return base || window.location.origin;
   })();
+
   const redirectUri = `${origin}/auth/google/callback`;
 
-  // flow=link-google para que el callback sepa que es vinculación
-  const state = btoa(JSON.stringify({ returnTo, flow: "link-google" as const }));
+  const state = btoa(
+    JSON.stringify({ returnTo, flow: 'link-google' as const })
+  );
 
   const params = new URLSearchParams({
     client_id: String(clientId),
     redirect_uri: redirectUri,
-    response_type: "code",
-    scope: "openid email profile",
-    access_type: "offline",
-    prompt: "consent",
+    response_type: 'code',
+    scope: 'openid email profile',
+    access_type: 'offline',
+    prompt: 'consent',
     state,
   });
 
   const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
 
-  // Popup centrado
-  const width = 500, height = 600;
+  const width = 500;
+  const height = 600;
   const left = window.screenX + (window.outerWidth - width) / 2;
   const top = window.screenY + (window.outerHeight - height) / 2;
   const features = `width=${width},height=${height},left=${left},top=${top}`;
 
-  const popup = window.open(googleAuthUrl, "google-oauth", features);
+  // 🔹 Intentar abrir popup
+  const popup = window.open(googleAuthUrl, '_blank', features);
+
   if (!popup) {
-    // Fallback si bloquean el popup
-    window.location.href = googleAuthUrl;
+    setError(
+      'No se pudo abrir la ventana de Google. ' +
+        'Verifica que tu navegador permita ventanas emergentes (pop-ups) para este sitio.'
+    );
     return;
   }
 
-  setCargandoGoogle(true);
+  // Limpiamos mensajes previos
+  limpiarError();
+  limpiarMensajeOk();
 
-  // Tipos seguros para el mensaje
-  type Flow = "link-google" | "signup";
+  type Flow = 'link-google' | 'signup';
   type SuccessMsg = {
-    type: "google-auth-success";
+    type: 'google-auth-success';
     email?: string;
     returnTo?: string;
     flow?: Flow;
   };
   type ErrorMsg = {
-    type: "google-auth-error";
+    type: 'google-auth-error';
     message?: string;
   };
   type Payload = SuccessMsg | ErrorMsg;
@@ -219,21 +290,27 @@ const activarMetodoGoogle = (): void => {
   const onMessage = async (ev: MessageEvent) => {
     if (ev.origin !== origin) return;
     const payload = ev.data as unknown;
+    if (!payload || typeof payload !== 'object') return;
 
-    // Valida estructura básica
-    if (!payload || typeof payload !== "object") return;
     const p = payload as Payload;
 
-    if (p.type === "google-auth-success") {
-      // Viene solo email desde el callback en flujo link-google
-      const email = typeof p.email === "string" ? p.email : undefined;
+    // Siempre intentamos desconectar el listener y cerrar el popup
+    window.removeEventListener('message', onMessage);
+    try {
+      if (popup && !popup.closed) {
+        popup.close();
+      }
+    } catch {
+      // ignoramos errores al cerrar el popup
+    }
+
+    if (p.type === 'google-auth-success') {
+      const email = typeof p.email === 'string' ? p.email : undefined;
 
       try {
-        // 1) Usuario actual desde sessionStorage (YA existente en tu app)
-        const userDataString = sessionStorage.getItem("userData");
-        if (!userDataString) throw new Error("No hay userData en sessionStorage");
+        const userDataString = sessionStorage.getItem('userData');
+        if (!userDataString) throw new Error('No hay userData en sessionStorage');
 
-        // Tipar mínimamente lo que necesitas
         interface StoredUser {
           _id?: string;
           id?: string;
@@ -245,49 +322,54 @@ const activarMetodoGoogle = (): void => {
         const userId = userData._id ?? userData.id;
         const emailActual = userData.email ?? userData.correo;
 
-        if (!userId) throw new Error("No se pudo obtener el id del usuario actual");
-        if (!email) throw new Error("No llegó el email desde Google");
-        if (!emailActual) throw new Error("El usuario actual no tiene email en sessionStorage");
+        if (!userId) throw new Error('No se pudo obtener el id del usuario actual');
+        if (!email) throw new Error('No llegó el email desde Google');
+        if (!emailActual) throw new Error('El usuario actual no tiene email en sessionStorage');
 
-        // 2) Comparar correos (case-insensitive)
         if (email.toLowerCase() !== emailActual.toLowerCase()) {
-          throw new Error("El correo de Google no coincide con el del usuario actual");
+          throw new Error('El correo de Google no coincide con el del usuario actual');
         }
 
-        // 3) Vincular método google en backend (tu función usa email en el campo "password" cuando provider !== local)
-        const resp = await agregarAutenticacion(userId, "google", email);
+        // Por si había algún error viejo
+        limpiarError();
+
+        const resp = await agregarAutenticacion(userId, 'google', email);
         if (!resp || resp.success !== true) {
-          const msg = (resp && typeof resp.message === "string") ? resp.message : "No se pudo vincular el método Google";
+          const msg =
+            resp && typeof resp.message === 'string'
+              ? resp.message
+              : 'No se pudo vincular el método Google';
           throw new Error(msg);
         }
 
-        // 4) Refrescar UI del Gestor
+        setMensajeOk('Método Google activado exitosamente');
+
         if (recargarMetodos) await recargarMetodos();
+
+        // Limpiamos modos / selección (solo interno del gestor)
         desactivarModos();
-        setCargandoGoogle(false);
-        window.removeEventListener("message", onMessage);
       } catch (e) {
-        const msg = e instanceof Error ? e.message : "Error al vincular Google";
-        setCargandoGoogle(false);
+        const msg =
+          e instanceof Error ? e.message : 'Error al vincular Google';
+        limpiarMensajeOk();
         setError(msg);
-        window.removeEventListener("message", onMessage);
       }
     }
 
-    if (p.type === "google-auth-error") {
-      setCargandoGoogle(false);
-      setError(p.message || "Error en la autenticación con Google");
-      window.removeEventListener("message", onMessage);
+    if (p.type === 'google-auth-error') {
+      limpiarMensajeOk();
+      setError(p.message || 'Error en la autenticación con Google');
     }
   };
 
-  window.addEventListener("message", onMessage);
+  window.addEventListener('message', onMessage);
 };
 
-  // ====== Correo/Contraseña ======
+
   const manejarConfirmacionContrasena = async (contrasena: string) => {
     try {
       limpiarError();
+      limpiarMensajeOk();
 
       const userDataString = sessionStorage.getItem('userData');
       if (!userDataString) {
@@ -302,6 +384,7 @@ const activarMetodoGoogle = (): void => {
 
       const resp = await agregarAutenticacion(userId, 'local', contrasena);
       if (!resp.success) throw new Error(resp.message);
+      setMensajeOk('Método de correo y contraseña activado exitosamente');
 
       if (recargarMetodos) await recargarMetodos();
       setModalContrasenaAbierto(false);
@@ -309,14 +392,18 @@ const activarMetodoGoogle = (): void => {
       desactivarModos();
     } catch (err) {
       console.error('Error en manejarConfirmacionContrasena:', err);
-      setError(`Error al configurar contraseña: ${err instanceof Error ? err.message : 'Error desconocido'}`);
+      setError(
+        `Error al configurar contraseña: ${
+          err instanceof Error ? err.message : 'Error desconocido'
+        }`
+      );
     }
   };
 
-  // ====== Eliminar métodos ======
   const eliminarMetodosSeleccionados = async () => {
     try {
       limpiarError();
+      limpiarMensajeOk();
 
       const metodosAEliminarConInfo = modos.metodosAEliminar
         .map(id => metodos.find(m => m.id === id))
@@ -351,6 +438,7 @@ const activarMetodoGoogle = (): void => {
         await eliminarAutenticacion(userId, provider);
       }
 
+      setMensajeOk('Método de autenticación eliminado exitosamente');
       if (recargarMetodos) await recargarMetodos();
       desactivarModos();
     } catch (err) {
@@ -358,7 +446,6 @@ const activarMetodoGoogle = (): void => {
     }
   };
 
-  // ====== Catálogo de métodos disponibles ======
   const metodosDisponibles: MetodoAutenticacion[] = [
     {
       id: 'correo',
@@ -377,12 +464,12 @@ const activarMetodoGoogle = (): void => {
       color: 'red',
       activo: metodos.some(m => m.id === 'google' && m.activo),
       esMetodoRegistro: metodos.find(m => m.id === 'google')?.esMetodoRegistro || false
-    },
+    }
   ];
 
   const metodosDisponiblesFiltrados = metodosDisponibles;
 
-  if (cargando) {
+  /*if (cargando) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -391,53 +478,58 @@ const activarMetodoGoogle = (): void => {
         </div>
       </div>
     );
-  }
+  }*/
 
   return (
-    <>
-      {error && (
-        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-red-800 font-medium">{error}</p>
-          <button
-            onClick={limpiarError}
-            className="mt-2 text-red-600 hover:text-red-800 text-sm"
-          >
-            Cerrar
-          </button>
-        </div>
-      )}
+  <>
+    {(mensajeOk || error) && (
+      <StatusToast
+        kind={mensajeOk ? 'success' : 'error'}
+        text={mensajeOk ?? error ?? ''}
+        onClose={() => {
+          limpiarMensajeOk();
+          limpiarError();
+        }}
+      />
+    )}
+
+    <div className="relative">
+      {/* Overlay de carga sólo sobre esta sección */}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <MetodoActivoPanel
           metodosActivos={metodosActivos}
           modos={modos}
           metodos={metodos}
-          onToggleEliminar={eliminarMetodosSeleccionados.length ? toggleSeleccionEliminar : toggleSeleccionEliminar}
+          onToggleEliminar={toggleSeleccionEliminar}
           onActivarModoSeleccion={activarModoSeleccion}
           onActivarModoEliminar={activarModoEliminar}
           onDesactivarModos={desactivarModos}
           onEliminarMetodos={eliminarMetodosSeleccionados}
         />
         <MetodosDisponiblesList
-          metodosDisponibles={metodosDisponiblesFiltrados}
-          metodosActivos={metodosActivos}
-          modos={modos}
-          cargandoGoogle={cargandoGoogle}
-          onToggleSeleccion={toggleSeleccionMetodo}
-          onDesactivarModos={desactivarModos}
-          onActivarMetodos={activarMetodosSeleccionados}
-        />
-      </div>
+  metodosDisponibles={metodosDisponiblesFiltrados}
+  metodosActivos={metodosActivos}
+  modos={modos}
+  cargandoGoogle={false}  
+  onToggleSeleccion={toggleSeleccionMetodo}
+  onDesactivarModos={desactivarModos}
+  onActivarMetodos={activarMetodosSeleccionados}
+/>
 
-      <ModalContrasena
-        isOpen={modalContrasenaAbierto}
-        onClose={() => {
-          setModalContrasenaAbierto(false);
-          setMetodoSeleccionadoParaContrasena(null);
-          desactivarModos();
-        }}
-        onConfirm={manejarConfirmacionContrasena}
-      />
-    </>
-  );
+      </div>
+    </div>
+
+    <ModalContrasena
+      isOpen={modalContrasenaAbierto}
+      onClose={() => {
+        setModalContrasenaAbierto(false);
+        setMetodoSeleccionadoParaContrasena(null);
+        //desactivarModos();
+      }}
+      onConfirm={manejarConfirmacionContrasena}
+    />
+  </>
+);
+
 }
