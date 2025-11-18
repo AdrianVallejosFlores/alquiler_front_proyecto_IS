@@ -53,6 +53,51 @@ export const ProteccionQr: React.FC = () => {
 
     cargarQR();
   }, []);
+  useEffect(() => {
+  const contador=sessionStorage.getItem("intentos")
+  
+  setIntentos(parseInt(contador||"0"))
+  const raw = sessionStorage.getItem(BLOQUEO_KEY);
+  if (!raw) return;
+
+  const hasta = parseInt(raw, 10);
+  if (Number.isNaN(hasta)) {
+    sessionStorage.removeItem(BLOQUEO_KEY);
+    return;
+  }
+
+  const ahora = Date.now();
+  if (ahora >= hasta) {
+    // ya venció
+    sessionStorage.removeItem(BLOQUEO_KEY);
+    return;
+  }
+
+  const diffSec = Math.floor((hasta - ahora) / 1000);
+  setBloqueado(true);
+  setTiempoRestante(diffSec);
+}, []);
+
+  // ⏱️ Contador regresivo cuando está bloqueado
+  useEffect(() => {
+    if (!bloqueado || tiempoRestante <= 0) return;
+
+    const timer = setInterval(() => {
+      setTiempoRestante((prev) => {
+        if (prev <= 1) {
+          setBloqueado(false);
+          setIntentos(0); 
+          sessionStorage.removeItem("intentos")
+        sessionStorage.setItem("intentos", "0")
+          sessionStorage.removeItem(BLOQUEO_KEY);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [bloqueado, tiempoRestante]);
 
   // 🔹 Manejo del Submit (solo validación del código)
   const handleSubmit = async (e: React.FormEvent) => {
@@ -88,13 +133,34 @@ export const ProteccionQr: React.FC = () => {
        sessionStorage.removeItem("userData")
       sessionStorage.setItem("userData",JSON.stringify(usuario))
       // Si la verificación es correcta, redirige
+      sessionStorage.removeItem('twofactor_secret');
+      sessionStorage.removeItem("intentos")
+  sessionStorage.setItem("intentos",`0` )
       router.push('/');
     } catch (err) {
-      if(typeof err ==='string'){
-        setError("error en el servidor")
-      }else{
-        setError('error en el servidor');
-      }
+      console.error(err);
+
+      //  Manejo de intentos y bloqueo
+      setIntentos((prev) => {
+  const nuevos = prev + 1;
+
+  if (nuevos >= 3) {
+    setBloqueado(true);
+    setTiempoRestante(300); // 5 minutos
+
+    const hasta = Date.now() + BLOQUEO_TTL_MS;
+    sessionStorage.setItem(BLOQUEO_KEY, String(hasta));
+
+    setError('Has excedido el número de intentos. Inténtalo nuevamente en 5 minutos.');
+  } else {
+    setError(`Código incorrecto. Te quedan ${3 - nuevos} intento(s).`);
+  }
+  sessionStorage.removeItem("intentos")
+  sessionStorage.setItem("intentos",`${nuevos}` )
+  return nuevos;
+});
+
+
       
     } finally {
       setIsLoading(false);
