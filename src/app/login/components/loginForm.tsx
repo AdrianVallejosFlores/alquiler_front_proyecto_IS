@@ -1,5 +1,6 @@
 'use client';
 
+import React, { useState,useEffect } from 'react';
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { useLoginForm } from '../hooks/useLoginForm';
@@ -15,6 +16,7 @@ import { persistSession, SESSION_EVENTS } from '@/lib/auth/session';
 
 export const LoginForm: React.FC = () => {
   const router = useRouter();
+  //const datos=sessionStorage.clear()
   const searchParams = useSearchParams();
   const nextRoute = searchParams.get('next');
   const {
@@ -27,13 +29,15 @@ export const LoginForm: React.FC = () => {
   } = useLoginForm();
   const [errorBackend, setErrorBackend] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-
   const { isLoading: googleLoading, error: googleError, handleGoogleAuth } = useGoogleAuth();
 
   const handleGoogleClick = async () => {
     await handleGoogleAuth();
   };
-
+useEffect(()=>{
+      
+sessionStorage.clear()
+    },[]);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorBackend(null);
@@ -53,6 +57,26 @@ export const LoginForm: React.FC = () => {
       );
 
       console.log('Login exitoso:', res);
+    
+      if (res.data) {
+      const token = res.data.accessToken ?? res.data.token; 
+
+      if (token) sessionStorage.setItem('authToken', token);
+
+      sessionStorage.setItem('userData', JSON.stringify(res.data.user));
+    }
+      // Disparar evento de login exitoso para que el Header se actualice
+      const eventLogin = new CustomEvent("login-exitoso");
+      window.dispatchEvent(eventLogin);
+      if(res.data.user.twoFactorEnabled){
+        sessionStorage.setItem("checkSeguridad", "true");
+      router.push('/loginSeguridad')
+      return
+      }
+      sessionStorage.setItem("intentos","0" )
+      sessionStorage.setItem("login",'true')
+      // Redirigir a home
+      router.push('/');
 
       let fixerId: string | null = null;
       if (res?.user?.id) {
@@ -204,6 +228,16 @@ export const LoginForm: React.FC = () => {
               {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
             </button>
           </div>
+           <p className="text-sm text-center mt-3">
+    <a
+      href="/auth/ini-link"
+      className="text-blue-600 hover:underline"
+    >
+    ¿Olvidaste tu contraseña?
+    </a>
+  </p>
+
+
 
           {/* Separador visual con "o" */}
           <div className="flex items-center justify-center my-4 sm:my-6">

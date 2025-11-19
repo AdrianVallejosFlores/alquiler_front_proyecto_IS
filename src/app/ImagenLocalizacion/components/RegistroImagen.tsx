@@ -322,6 +322,13 @@ export default function RegistroImagen() {
         return;
       }
 
+    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:5000";
+    const resp = await fetch(`${baseUrl}/api/teamsys/usuario`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    
       const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:5000";
       const resp = await fetch(`${baseUrl}/api/teamsys/usuario`, {
         method: "POST",
@@ -337,6 +344,34 @@ export default function RegistroImagen() {
         body = null;
       }
 
+    if (!resp.ok) {
+      throw new Error( "Error al registrar.");
+    }
+    const data=await resp.json();
+    // ÉXITO
+    setSuccessOpen(true);
+    sessionStorage.removeItem("datosUsuarioParcial");
+    setTimeout(() => {
+      setSuccessOpen(false);
+      if (data) {
+      const token = data.data.accessToken ?? data.data.token; 
+
+      if (token) sessionStorage.setItem('authToken', token);
+
+      sessionStorage.setItem('userData', JSON.stringify(data.data.user));
+    }
+      sessionStorage.setItem("login",'true')
+      const eventLogin = new CustomEvent("login-exitoso");
+      window.dispatchEvent(eventLogin);
+      router.push("/");
+    }, 3000);
+  } catch (err: unknown) {
+    console.error("Error al crear usuario:", err);
+    setError(err instanceof Error ? err.message : "Hubo un error al registrar el usuario.");
+  } finally {
+    setLoading(false);
+  }
+};
       if (!resp.ok) {
         const detalle =
           (body && ("error" in body || "message" in body)) ? (body.error || body.message) : text || `HTTP ${resp.status}`;

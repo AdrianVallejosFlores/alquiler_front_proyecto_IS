@@ -9,6 +9,19 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "leaflet": "^1.9.4",
+    "leaflet.markercluster": "^1.5.3",
+    "lucide-react": "^0.545.0",
+    "next": "^16.0.0",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-icons": "^5.5.0",
+    "react-leaflet": "^5.0.0",
+    "react-leaflet-markercluster": "^5.0.0-rc.0",
+    "react-modal": "^3.16.3",
+    "socket.io-client": "^4.8.1"
+  },
+  "devDependencies": {
     "@tailwindcss/postcss": "^4.1.16",
     "@types/leaflet": "^1.9.6",
     "@types/leaflet.markercluster": "^1.5.3",
@@ -16,6 +29,10 @@
     "@types/react": "19.2.2",
     "@types/react-dom": "^19.2.2",
     "@types/react-modal": "^3.16.3",
+    "@types/socket.io-client": "^1.4.36",
+    "autoprefixer": "^10.4.21",
+    "eslint": "^9",
+    "eslint-config-next": "15.5.4",
     "leaflet": "^1.9.4",
     "leaflet.markercluster": "^1.5.3",
     "lightningcss": "^1.30.2",
