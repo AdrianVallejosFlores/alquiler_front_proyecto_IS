@@ -1,11 +1,8 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-//import { useFiltros } from "app/alquiler/Feature/Hooks/useFiltro";
-import { useFiltros } from "../../Feature/Hooks/useFiltro";
-//import type { UsuarioResumen } from "app/alquiler/Feature/Types/filtroType";
-import type { UsuarioResumen } from "../Types/filtroType";
+import { useFiltros } from "../Hooks/useFiltro";
 
 interface FiltrosFormProps {
   onResults?: (usuarios: any[]) => void;
@@ -17,8 +14,6 @@ interface FiltrosFormProps {
   totalItems: number;
   onFilterNoResults?: (noResults: boolean) => void;
   onClearFilters?: () => void;
-  // NUEVA PROP: Comunicar cambios en los filtros de trabajos
-  onFiltersChange?: (filtros: { ciudad?: string; disponibilidad?: string; tipoEspecialidad?: string }) => void;
   disabled?: boolean;
 }
 
@@ -66,7 +61,7 @@ export default function FiltrosForm({
     } catch {}
   }, []);
 
-  // BLOQUEA flechas globales salvo cuando selectAbierto === true
+  // Bloquea flechas globales salvo cuando selectAbierto === true
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (!selectAbierto && (e.key === "ArrowUp" || e.key === "ArrowDown")) {
@@ -85,7 +80,7 @@ export default function FiltrosForm({
     }, 300);
   };
 
-  // Maneja resultados
+  // Manejar resultados
   useEffect(() => {
     if (onResults) onResults(usuarios);
     if (onFilterNoResults) onFilterNoResults(Boolean(sinResultados));
@@ -101,21 +96,30 @@ export default function FiltrosForm({
   };
 
   // -----------------------------
-  // Función para limpiar filtros y aplicar solo el seleccionado
+  // 🔥 FUNCIÓN CORREGIDA: YA NO BORRA LA CIUDAD CUANDO SELECCIONAS ESPECIALIDAD
   const handleFiltroUnico = async (campo: string, valor: string) => {
-    // Limpiar todos los filtros
-    handleChange("departamento", "");
-    handleChange("ciudad", "");
-    handleChange("disponibilidad", "");
-    handleChange("tipoEspecialidad", "");
-
-    // Aplicar solo el filtro actual
-    handleChange(campo, valor);
-
-    // Si es departamento, cargar ciudades
+    // Si el filtro es departamento → reinicia todo
     if (campo === "departamento") {
+      handleChange("departamento", valor);
+      handleChange("ciudad", "");
+      handleChange("disponibilidad", "");
+      handleChange("tipoEspecialidad", "");
+
       setDepartamentoSeleccionado(valor);
       await loadCiudadesByDepartamento(valor);
+      return;
+    }
+
+    // Si el filtro es ciudad → NO reiniciar departamento
+    if (campo === "ciudad") {
+      handleChange("ciudad", valor);
+      return;
+    }
+
+    // Si el filtro es disponibilidad o tipoEspecialidad → NO borrar ciudad/departamento
+    if (campo === "disponibilidad" || campo === "tipoEspecialidad") {
+      handleChange(campo, valor);
+      return;
     }
   };
 
@@ -225,7 +229,7 @@ export default function FiltrosForm({
         </div>
 
         <div className="flex items-center gap-3">
-          {/**<div className="text-sm text-gray-600 font-medium">Total de Ofertas: {totalItems}</div>*/}
+            {/*<div className="text-sm text-gray-600 font-medium">Total de Ofertas: {totalItems}</div>*/}
           <button
             type="button"
             onClick={() => {
@@ -246,5 +250,3 @@ export default function FiltrosForm({
     </div>
   );
 }
-
-
