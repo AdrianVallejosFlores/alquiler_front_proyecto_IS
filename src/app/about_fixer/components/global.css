@@ -1,4 +1,6 @@
-@import "tailwindcss";
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
 
 /* Opcional: afinar tipografía */
 /* La propiedad `color-scheme` en :root era inválida y ha sido eliminada. */

@@ -1,4 +1,7 @@
-@import "tailwindcss";
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
 /* ✅ CORRECCIÓN: Eliminar import de Leaflet CSS aquí, se maneja en layout.tsx */
 
 /*:root {
@@ -32,6 +35,7 @@ body {
 html {
   scroll-behavior: smooth;
 }
+
 .user-location-marker {
   animation: pulse 2s infinite;
 }

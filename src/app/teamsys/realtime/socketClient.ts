@@ -1,14 +1,30 @@
 // src/app/teamsys/realtime/socketClient.ts
 "use client";
 
-import io from "socket.io-client";
+// Fallback seguro para socket.io-client
+let io: any = null;
 
-type Socket = ReturnType<typeof io>;
+try {
+  io = require("socket.io-client");
+} catch (error) {
+  console.warn("socket.io-client no está disponible:", error);
+  // Mock para desarrollo
+  io = () => ({
+    on: () => {},
+    off: () => {},
+    emit: () => {},
+    disconnect: () => {},
+    connected: false,
+    id: null
+  });
+}
+
+type Socket = any;
 
 let socket: Socket | null = null;
 
 export function getSocket(): Socket {
-    console.log("🔥 getSocket fue llamado");
+  console.log("🔥 getSocket fue llamado");
 
   if (!socket) {
     const url = process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:5000";
@@ -23,7 +39,6 @@ export function getSocket(): Socket {
       console.log("✅ [socketClient] conectado. id =", socket?.id);
     });
 
-    // 👇 SOLO CAMBIA ESTO: tipa el parámetro
     socket.on("connect_error", (err: any) => {
       console.log("❌ [socketClient] connect_error:", err?.message ?? err);
     });
@@ -34,4 +49,11 @@ export function getSocket(): Socket {
   }
 
   return socket;
+}
+
+export function disconnectSocket(): void {
+  if (socket) {
+    socket.disconnect();
+    socket = null;
+  }
 }

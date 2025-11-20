@@ -6,7 +6,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
 import Header from "./components/Header/Header";
-import { useUsuarioNuevo } from "./hooks/useUsuarioNuevo";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,7 +23,6 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const [isOnline, setIsOnline] = useState(true);
-  const { modalAbierto, cerrarModal } = useUsuarioNuevo();
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -47,7 +45,21 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         {/* ✅ CORRECCIÓN: Importar CSS de Leaflet aquí */}
-        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+        <link 
+          rel="stylesheet" 
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossOrigin=""
+        />
+        {/* ✅ CORRECCIÓN: Agregar CSS de MarkerCluster */}
+        <link
+          rel="stylesheet"
+          href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"
+        />
+        <link
+          rel="stylesheet"
+          href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"
+        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

@@ -12,7 +12,6 @@ const MapContainer = dynamic(() => import("react-leaflet").then(m => m.MapContai
 const TileLayer     = dynamic(() => import("react-leaflet").then(m => m.TileLayer),     { ssr: false });
 const Marker        = dynamic(() => import("react-leaflet").then(m => m.Marker),        { ssr: false });
 const Circle        = dynamic(() => import("react-leaflet").then(m => m.Circle),        { ssr: false });
-const useMapEvents = (await import("react-leaflet")).useMapEvents; 
 
 interface Location {
   lat: number;
@@ -71,10 +70,12 @@ interface SelectableMapProps {
 
 // Mapa clickeable (carga useMapEvents en cliente)
 const SelectableMap: React.FC<SelectableMapProps> = ({ ubicacion, setUbicacion, zoom = 15, height = "200px", width = "200px" }) => {
-  const ClickHandler = ({ onPick }: { onPick: (lat: number, lng: number) => void }) => {
+  const ClickHandler = () => {
+    const { useMapEvents } = require("react-leaflet");
+    
     useMapEvents({
       click(e: LeafletMouseEvent) {
-        onPick(e.latlng.lat, e.latlng.lng);
+        setUbicacion({ lat: e.latlng.lat, lng: e.latlng.lng });
       },
     });
     return null;
@@ -87,7 +88,7 @@ const SelectableMap: React.FC<SelectableMapProps> = ({ ubicacion, setUbicacion, 
       style={{ width, height, borderRadius: "0.5rem" }}
     >
       <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-      <ClickHandler onPick={(lat, lng) => setUbicacion({ lat, lng })} />
+      <ClickHandler />
       {ubicacion && (
         <>
           <Marker position={ubicacion} />
@@ -322,13 +323,6 @@ export default function RegistroImagen() {
         return;
       }
 
-    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:5000";
-    const resp = await fetch(`${baseUrl}/api/teamsys/usuario`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    
       const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:5000";
       const resp = await fetch(`${baseUrl}/api/teamsys/usuario`, {
         method: "POST",
@@ -336,58 +330,28 @@ export default function RegistroImagen() {
         body: JSON.stringify(payload),
       });
 
-      const text = await resp.text();
-      let body: ApiResp | null = null;
-      try {
-        body = text ? (JSON.parse(text) as ApiResp) : null;
-      } catch {
-        body = null;
-      }
-
-    if (!resp.ok) {
-      throw new Error( "Error al registrar.");
-    }
-    const data=await resp.json();
-    // ÉXITO
-    setSuccessOpen(true);
-    sessionStorage.removeItem("datosUsuarioParcial");
-    setTimeout(() => {
-      setSuccessOpen(false);
-      if (data) {
-      const token = data.data.accessToken ?? data.data.token; 
-
-      if (token) sessionStorage.setItem('authToken', token);
-
-      sessionStorage.setItem('userData', JSON.stringify(data.data.user));
-    }
-      sessionStorage.setItem("login",'true')
-      const eventLogin = new CustomEvent("login-exitoso");
-      window.dispatchEvent(eventLogin);
-      router.push("/");
-    }, 3000);
-  } catch (err: unknown) {
-    console.error("Error al crear usuario:", err);
-    setError(err instanceof Error ? err.message : "Hubo un error al registrar el usuario.");
-  } finally {
-    setLoading(false);
-  }
-};
       if (!resp.ok) {
-        const detalle =
-          (body && ("error" in body || "message" in body)) ? (body.error || body.message) : text || `HTTP ${resp.status}`;
-        console.error("Respuesta del servidor:", body ?? text);
-        throw new Error(detalle || "Error al registrar.");
+        throw new Error("Error al registrar.");
       }
-
+      
+      const data = await resp.json();
+      
       // ÉXITO
       setSuccessOpen(true);
       sessionStorage.removeItem("datosUsuarioParcial");
       setTimeout(() => {
         setSuccessOpen(false);
-        // ✅ CORRECCIÓN: Redirigir a /login en lugar de /home
-        router.push("/login");
+        if (data) {
+          const token = data.data.accessToken ?? data.data.token; 
+          if (token) sessionStorage.setItem('authToken', token);
+          sessionStorage.setItem('userData', JSON.stringify(data.data.user));
+        }
+        sessionStorage.setItem("login", 'true');
+        const eventLogin = new CustomEvent("login-exitoso");
+        window.dispatchEvent(eventLogin);
+        router.push("/");
       }, 3000);
-    } catch (err: unknown) {
+    } catch (err) {
       console.error("Error al crear usuario:", err);
       setError(err instanceof Error ? err.message : "Hubo un error al registrar el usuario.");
     } finally {

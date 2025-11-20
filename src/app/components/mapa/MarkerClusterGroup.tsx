@@ -8,6 +8,27 @@ import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import "leaflet.markercluster/dist/MarkerCluster.css";
 import { useMap } from "react-leaflet";
 
+// ✅ CORRECCIÓN: Tipo para el cluster
+interface Cluster {
+  getChildCount: () => number;
+  getAllChildMarkers: () => L.Marker[];
+}
+
+// ✅ CORRECCIÓN: Tipo para el grupo de clusters
+interface MarkerClusterGroupInstance extends L.LayerGroup {
+  addLayers(layers: L.Layer[]): this;
+  refreshClusters(): this;
+}
+
+// ✅ CORRECCIÓN: Extender la interfaz Window para incluir markerClusterGroup
+declare global {
+  interface Window {
+    MarkerClusterGroup: new (options?: {
+      iconCreateFunction?: (cluster: Cluster) => L.DivIcon;
+    }) => MarkerClusterGroupInstance;
+  }
+}
+
 interface MarkerClusterGroupProps {
   markers: {
     id: string | number;
@@ -15,7 +36,7 @@ interface MarkerClusterGroupProps {
     popup?: string;
     icon?: L.DivIcon | L.Icon;
   }[];
-  color?: string; // Nuevo parámetro opcional
+  color?: string;
 }
 
 const MarkerClusterGroup = ({ markers, color = "#2563eb" }: MarkerClusterGroupProps) => {
@@ -24,13 +45,11 @@ const MarkerClusterGroup = ({ markers, color = "#2563eb" }: MarkerClusterGroupPr
   useEffect(() => {
     if (!map) return;
 
-    const clusterGroup: L.MarkerClusterGroup = L.markerClusterGroup({
-      iconCreateFunction: (cluster) => {
+    // ✅ CORRECCIÓN: Usar el constructor directamente sin any
+    const clusterGroup = new (L as typeof L & { MarkerClusterGroup: typeof window.MarkerClusterGroup }).MarkerClusterGroup({
+      iconCreateFunction: (cluster: Cluster) => {
         const count = cluster.getChildCount();
-
-        // Color del círculo y texto dinámico
-        const size =
-          count < 10 ? "small" : count < 50 ? "medium" : "large";
+        const size = count < 10 ? "small" : count < 50 ? "medium" : "large";
 
         const html = `
           <div style="

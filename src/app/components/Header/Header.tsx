@@ -3,10 +3,9 @@
 import Link from 'next/link';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Icono from './Icono';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import SimpleProfileMenu from '@/app/Menu/components/Menu';
 import { useForceLogout } from "../../teamsys/hooks/useForceLogout";
-import { useRouter, usePathname } from 'next/navigation';
 import { clearSession, getStoredUser, getToken, SESSION_EVENTS, type StoredUser } from '@/lib/auth/session';
 import { STORAGE_KEYS, removeFromStorage } from '@/app/convertirse-fixer/storage';
 
@@ -23,7 +22,7 @@ export default function Header() {
   const [canInitSocket, setCanInitSocket] = useState(false);
   const [currentUser, setCurrentUser] = useState<StoredUser | null>(null);
   const lastScrollY = useRef(0);
-  let isSocketReady = useForceLogout(
+  const isSocketReady = useForceLogout(
     isLoggedIn && canInitSocket ? userId : null
   );
   const handleHomeClick = () => {
@@ -109,6 +108,8 @@ useEffect(() => {
       setIsLoggedIn(false);
       setCanInitSocket(false);
       setUserId(null);
+    };
+
     const handleSessionChange = () => {
       syncSession();
     };
@@ -117,12 +118,16 @@ useEffect(() => {
     window.addEventListener(SESSION_EVENTS.login, handleSessionChange);
     window.addEventListener(SESSION_EVENTS.logout, handleSessionChange);
     window.addEventListener(SESSION_EVENTS.updated, handleSessionChange);
+    window.addEventListener('loginExitoso', handleLoginExitoso);
+    window.addEventListener('logout', handleLogoutEvent);
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener(SESSION_EVENTS.login, handleSessionChange);
       window.removeEventListener(SESSION_EVENTS.logout, handleSessionChange);
       window.removeEventListener(SESSION_EVENTS.updated, handleSessionChange);
+      window.removeEventListener('loginExitoso', handleLoginExitoso);
+      window.removeEventListener('logout', handleLogoutEvent);
     };
   }, [syncSession]);
 
@@ -154,6 +159,7 @@ useEffect(() => {
     Object.values(STORAGE_KEYS).forEach((key) => removeFromStorage(key));
     setIsLoggedIn(false);
     setCurrentUser(null);
+    setMenuVisible(false);
 
     window.dispatchEvent(new CustomEvent(SESSION_EVENTS.logout));
     window.dispatchEvent(new CustomEvent(SESSION_EVENTS.updated));
@@ -264,6 +270,7 @@ useEffect(() => {
                 </div>
               </div>
             </>
+          )}
           {hideAuthButtons ? null : (
             !isLoggedIn ? (
               <>
@@ -365,12 +372,9 @@ useEffect(() => {
 
       {/* FOOTER MOVIL INFERIOR */}
       <footer
-  className={`sm:hidden fixed left-0 w-full px-3 py-2 bg-[#EEF7FF] shadow-md z-50
-    transition-all duration-300 ease-in-out
-    ${areButtonsVisible ? 'bottom-0' : '-bottom-24'}`}
->
-
-        className={`sm:hidden fixed bottom-0 left-0 w-full px-3 py-2 bg-[#EEF7FF] shadow-md z-50 transform transition-transform duration-300 ease-in-out ${areButtonsVisible ? 'translate-y-0' : 'translate-y-full'}`}
+        className={`sm:hidden fixed left-0 w-full px-3 py-2 bg-[#EEF7FF] shadow-md z-50
+          transition-all duration-300 ease-in-out
+          ${areButtonsVisible ? 'bottom-0' : '-bottom-24'}`}
       >
         <div className="flex flex-col items-center space-y-1">
           <span className="text-[#11255A] font-bold text-sm">Servineo</span>
@@ -420,6 +424,9 @@ useEffect(() => {
     <SimpleProfileMenu />
   </div>
 )}
+              </div>
+            </div>
+          )}
           {hideAuthButtons ? null : (
             !isLoggedIn ? (
               <div className="flex w-full space-x-1">
@@ -476,7 +483,6 @@ useEffect(() => {
           )}
         </div>
       </footer>
-
 
       <div className="h-16 sm:h-0" />
     </>
