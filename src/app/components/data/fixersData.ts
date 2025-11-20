@@ -39,7 +39,7 @@ export const ubicacionesRespaldo: Ubicacion[] = [
   }
 ];
 
-// 🔧 DATOS DE RESPUESTA PARA FIXERS
+// 🔧 DATOS DE RESPUESTA PARA FIXERS - CORREGIDOS
 export const fixersRespaldo: Fixer[] = [
   {
     _id: "1",
@@ -49,7 +49,8 @@ export const fixersRespaldo: Fixer[] = [
     descripcion: "Especialista en reparaciones domésticas",
     rating: 4.8,
     verified: true,
-    whatsapp: "+59112345678"
+    whatsapp: "+59112345678",
+    imagenPerfil: "/default-avatar.png" // ✅ AGREGADO
   },
   {
     _id: "2",
@@ -59,7 +60,8 @@ export const fixersRespaldo: Fixer[] = [
     descripcion: "Profesional en renovaciones de hogar",
     rating: 4.9,
     verified: true,
-    whatsapp: "+59187654321"
+    whatsapp: "+59187654321",
+    imagenPerfil: "/default-avatar.png" // ✅ AGREGADO
   },
   {
     _id: "3",
@@ -69,11 +71,12 @@ export const fixersRespaldo: Fixer[] = [
     descripcion: "Técnico certificado en instalaciones",
     rating: 4.7,
     verified: false,
-    whatsapp: "+59155556666"
+    whatsapp: "+59155556666",
+    imagenPerfil: "/default-avatar.png" // ✅ AGREGADO
   }
 ];
 
-// 🧰 DATOS ADICIONALES DE FIXERS PREDEFINIDOS (con _id agregado)
+// 🧰 DATOS ADICIONALES DE FIXERS PREDEFINIDOS (con _id agregado) - CORREGIDOS
 export const fixersDefinidos: Fixer[] = [
   {
     _id: "1",
@@ -83,7 +86,8 @@ export const fixersDefinidos: Fixer[] = [
     descripcion: "Instalaciones y reparaciones eléctricas residenciales.",
     rating: 4.6,
     verified: true,
-    whatsapp: ""
+    whatsapp: "",
+    imagenPerfil: "/default-avatar.png" // ✅ AGREGADO
   },
   {
     _id: "2",
@@ -93,7 +97,8 @@ export const fixersDefinidos: Fixer[] = [
     descripcion: "Reparación de cañerías y sistemas de agua potable.",
     rating: 4.3,
     verified: true,
-    whatsapp: "+59171000002"
+    whatsapp: "+59171000002",
+    imagenPerfil: "/default-avatar.png" // ✅ AGREGADO
   },
   {
     _id: "3",
@@ -103,7 +108,8 @@ export const fixersDefinidos: Fixer[] = [
     descripcion: "Fabricación y reparación de muebles personalizados.",
     rating: 4.7,
     verified: true,
-    whatsapp: "+59171000003"
+    whatsapp: "+59171000003",
+    imagenPerfil: "/default-avatar.png" // ✅ AGREGADO
   },
   {
     _id: "4",
@@ -113,7 +119,8 @@ export const fixersDefinidos: Fixer[] = [
     descripcion: "Decoración y pintura de interiores y exteriores.",
     rating: 4.5,
     verified: true,
-    whatsapp: "+59171000004"
+    whatsapp: "+59171000004",
+    imagenPerfil: "/default-avatar.png" // ✅ AGREGADO
   },
   {
     _id: "5",
@@ -123,7 +130,8 @@ export const fixersDefinidos: Fixer[] = [
     descripcion: "Instalación y mantenimiento de sistemas de gas domiciliario.",
     rating: 4.2,
     verified: false,
-    whatsapp: "+59171000005"
+    whatsapp: "+59171000005",
+    imagenPerfil: "/default-avatar.png" // ✅ AGREGADO
   },
   {
     _id: "6",
@@ -133,7 +141,8 @@ export const fixersDefinidos: Fixer[] = [
     descripcion: "Cambio de cerraduras y duplicado de llaves.",
     rating: 4.4,
     verified: true,
-    whatsapp: "+59171000006"
+    whatsapp: "+59171000006",
+    imagenPerfil: "/default-avatar.png" // ✅ AGREGADO
   },
   {
     _id: "7",
@@ -143,7 +152,8 @@ export const fixersDefinidos: Fixer[] = [
     descripcion: "Mantenimiento automotriz general y eléctricos.",
     rating: 4.8,
     verified: true,
-    whatsapp: "+59171000007"
+    whatsapp: "+59171000007",
+    imagenPerfil: "/default-avatar.png" // ✅ AGREGADO
   },
   {
     _id: "8",
@@ -153,7 +163,8 @@ export const fixersDefinidos: Fixer[] = [
     descripcion: "Confección y reparación de prendas de vestir.",
     rating: 4.3,
     verified: false,
-    whatsapp: "+59171000008"
+    whatsapp: "+59171000008",
+    imagenPerfil: "/default-avatar.png" // ✅ AGREGADO
   },
   {
     _id: "9",
@@ -163,7 +174,8 @@ export const fixersDefinidos: Fixer[] = [
     descripcion: "Construcción de muros, pisos y reparaciones generales.",
     rating: 4.5,
     verified: true,
-    whatsapp: "+59171000009"
+    whatsapp: "+59171000009",
+    imagenPerfil: "/default-avatar.png" // ✅ AGREGADO
   },
   {
     _id: "10",
@@ -173,7 +185,8 @@ export const fixersDefinidos: Fixer[] = [
     descripcion: "Diseño y mantenimiento de jardines.",
     rating: 4.7,
     verified: true,
-    whatsapp: "+59171000010"
+    whatsapp: "+59171000010",
+    imagenPerfil: "/default-avatar.png" // ✅ AGREGADO
   },
   // ... (todos los demás fixers, manteniendo la misma estructura)
   {
@@ -184,76 +197,84 @@ export const fixersDefinidos: Fixer[] = [
     descripcion: "Tortas y postres personalizados.",
     rating: 4.8,
     verified: true,
-    whatsapp: "+59171000046"
+    whatsapp: "+59171000046",
+    imagenPerfil: "/default-avatar.png" // ✅ AGREGADO
   },
   {
-    _id: "4",
+    _id: "47", // ✅ CORREGIDO: Cambiado de "4" a "47" para evitar duplicados
     nombre: "Juan Pérez - Electricista",
     posicion: { lat: -17.39224, lng: -66.14805 },
     especialidad: "Electricidad",
     descripcion: "Especialista en instalaciones eléctricas residenciales e industriales",
     rating: 4.8,
     whatsapp: "+59164893768",
-    verified: true
+    verified: true,
+    imagenPerfil: "/default-avatar.png" // ✅ AGREGADO
   },
   {
-    _id: "5",
+    _id: "48", // ✅ CORREGIDO: Cambiado de "5" a "48" para evitar duplicados
     nombre: "María López - Plomera",
     posicion: { lat: -17.394211, lng: -66.156376 },
     especialidad: "Plomería",
     descripcion: "Reparación de tuberías, instalaciones sanitarias y gasfitería",
     rating: 4.6,
     whatsapp: "+59179876543",
-    verified: true
+    verified: true,
+    imagenPerfil: "/default-avatar.png" // ✅ AGREGADO
   },
   {
-    _id: "6",
+    _id: "49", // ✅ CORREGIDO: Cambiado de "6" a "49" para evitar duplicados
     nombre: "Carlos García - Pintor",
     posicion: { lat: -17.3933727, lng: -66.1449641 },
     especialidad: "Pintura",
     descripcion: "Pintura interior y exterior, preparación de superficies, texturizados",
     rating: 4.7,
     whatsapp: "+59177966624",
-    verified: true
+    verified: true,
+    imagenPerfil: "/default-avatar.png" // ✅ AGREGADO
   },
   {
-    _id: "7",
+    _id: "50", // ✅ CORREGIDO: Cambiado de "7" a "50" para evitar duplicados
     nombre: "Ana Torres - Gasista",
     posicion: { lat: -17.3910, lng: -66.1500 },
     especialidad: "Gas",
     descripcion: "Instalación y reparación de sistemas de gas natural y envasado",
     rating: 4.9,
     whatsapp: "+59170234567",
-    verified: false
+    verified: false,
+    imagenPerfil: "/default-avatar.png" // ✅ AGREGADO
   },
   {
-    _id: "8",
+    _id: "51", // ✅ CORREGIDO: Cambiado de "8" a "51" para evitar duplicados
     nombre: "Luis Fernández - Carpintero",
     posicion: { lat: -17.3950, lng: -66.1520 },
     especialidad: "Carpintería",
     descripcion: "Muebles a medida, reparaciones en madera, instalación de closets",
     rating: 4.5,
     whatsapp: "+59170345678",
-    verified: true
+    verified: true,
+    imagenPerfil: "/default-avatar.png" // ✅ AGREGADO
   },
   {
-    _id: "9",
+    _id: "52", // ✅ CORREGIDO: Cambiado de "9" a "52" para evitar duplicados
     nombre: "Roberto Silva - Cerrajero",
     posicion: { lat: -17.3895, lng: -66.1490 },
     especialidad: "Cerrajería",
     descripcion: "Apertura de puertas, cambio de cerraduras, sistemas de seguridad",
     rating: 4.8,
     whatsapp: "+59170456789",
-    verified: true
+    verified: true,
+    imagenPerfil: "/default-avatar.png" // ✅ AGREGADO
   },
   {
-    _id: "10",
+    _id: "53", // ✅ CORREGIDO: Cambiado de "10" a "53" para evitar duplicados
     nombre: "Sofía Mendoza - Jardinería",
     posicion: { lat: -17.3960, lng: -66.1470 },
     especialidad: "Jardinería",
     descripcion: "Diseño de jardines, poda de árboles, mantenimiento de áreas verdes",
     rating: 4.4,
     whatsapp: "+59170567890",
-    verified: false
+    verified: false,
+    imagenPerfil: "/default-avatar.png" // ✅ AGREGADO
   }
 ];

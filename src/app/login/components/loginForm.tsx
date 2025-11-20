@@ -1,17 +1,24 @@
 'use client';
 
+import React, { useState,useEffect } from 'react';
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { useLoginForm } from '../hooks/useLoginForm';
 import AppleIcon from '../assets/icons8-apple-50.png';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { loginUsuario } from '@/app/teamsys/services/UserService';
 import { useGoogleAuth } from '../../google/hooks/useGoogleAuth';
 import { GoogleButton } from '../../google/components/GoogleButton';
-import Image from 'next/image';
+import { getFixerByUser } from '@/lib/api/fixer';
+import { STORAGE_KEYS, saveToStorage } from '@/app/convertirse-fixer/storage';
+import { persistSession, SESSION_EVENTS } from '@/lib/auth/session';
 
 export const LoginForm: React.FC = () => {
   const router = useRouter();
+  //const datos=sessionStorage.clear()
+  const searchParams = useSearchParams();
+  const nextRoute = searchParams.get('next');
   const {
     datosFormulario,
     errores,
@@ -22,14 +29,15 @@ export const LoginForm: React.FC = () => {
   } = useLoginForm();
   const [errorBackend, setErrorBackend] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-
   const { isLoading: googleLoading, error: googleError, handleGoogleAuth } = useGoogleAuth();
 
   const handleGoogleClick = async () => {
-    // Para login, usar tipo "login" específicamente
-    await handleGoogleAuth('login');
+    await handleGoogleAuth();
   };
-
+useEffect(()=>{
+      
+sessionStorage.clear()
+    },[]);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorBackend(null);
@@ -45,24 +53,59 @@ export const LoginForm: React.FC = () => {
     try {
       const res = await loginUsuario(
         datosFormulario.email,
-        datosFormulario.contraseña
+        datosFormulario.password
       );
 
       console.log('Login exitoso:', res);
-      
-      // Guardar token en localStorage/sessionStorage
-      if (res.token) {
-        localStorage.setItem('authToken', res.token);
-        // También puedes guardar datos del usuario si los necesitas
-        localStorage.setItem('userData', JSON.stringify(res.user));
-      }
-      
+    
+      if (res.data) {
+      const token = res.data.accessToken ?? res.data.token; 
+
+      if (token) sessionStorage.setItem('authToken', token);
+
+      sessionStorage.setItem('userData', JSON.stringify(res.data.user));
+    }
       // Disparar evento de login exitoso para que el Header se actualice
       const eventLogin = new CustomEvent("login-exitoso");
       window.dispatchEvent(eventLogin);
-      
-      // ✅ CAMBIO: Redirigir a Homepage en lugar de home
-      router.push('/Homepage');
+      if(res.data.user.twoFactorEnabled){
+        sessionStorage.setItem("checkSeguridad", "true");
+      router.push('/loginSeguridad')
+      return
+      }
+      sessionStorage.setItem("intentos","0" )
+      sessionStorage.setItem("login",'true')
+      // Redirigir a home
+      router.push('/');
+
+      let fixerId: string | null = null;
+      if (res?.user?.id) {
+        try {
+          const fixer = await getFixerByUser(res.user.id);
+          fixerId = fixer?.id ?? null;
+        } catch {
+          fixerId = null;
+        }
+      }
+
+      if (res?.user?.id) {
+        saveToStorage(STORAGE_KEYS.userId, res.user.id);
+      }
+      saveToStorage(STORAGE_KEYS.fixerId, fixerId);
+
+      const storedUser = {
+        ...(res.user ?? {}),
+        fixerId,
+      };
+      persistSession({ token: res.token ?? null, user: storedUser });
+
+      window.dispatchEvent(new CustomEvent(SESSION_EVENTS.updated));
+      window.dispatchEvent(new CustomEvent(SESSION_EVENTS.login));
+
+      // ✅ MEJORA: Si no hay nextRoute, redirigir a Homepage como en VERSIÓN 2
+      const normalizedNext = nextRoute?.trim();
+      const fallbackRoute = "/Homepage"; // Cambiado de "/" a "/Homepage"
+      router.push(normalizedNext && normalizedNext !== "/login" ? normalizedNext : fallbackRoute);
     } catch (error: unknown) {
       console.error('Error completo al iniciar sesión:', error);
       
@@ -147,25 +190,25 @@ export const LoginForm: React.FC = () => {
                 id="password"
                 name="password"
                 type="password"
-                value={datosFormulario.contraseña}
+                value={datosFormulario.password}
                 onChange={(e) => {
-                  manejarCambio('contraseña', e.target.value);
+                  manejarCambio('password', e.target.value);
                   setErrorBackend(null);
                 }}
-                onBlur={() => manejarBlur('contraseña')}
+                onBlur={() => manejarBlur('password')}
                 className={`w-full px-3 py-2 sm:py-3 text-sm sm:text-base border rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:border-transparent placeholder-gray-600 text-gray-950 ${
-                  (errores.contraseña && tocados.contraseña) || errorBackend
+                  (errores.password && tocados.password) || errorBackend
                     ? 'border-red-300 focus:ring-red-500'
                     : 'border-gray-300 focus:ring-blue-500'
                 }`}
                 placeholder="Contraseña"
               />
               {/* Mostrar errores de validación frontend */}
-              {(errores.contraseña && tocados.contraseña) && (
-                <p className="mt-1 text-xs sm:text-sm text-red-600">{errores.contraseña}</p>
+              {(errores.password && tocados.password) && (
+                <p className="mt-1 text-xs sm:text-sm text-red-600">{errores.password}</p>
               )}
               {/* Mostrar TODOS los errores del backend aquí */}
-              {errorBackend && !errores.contraseña && (
+              {errorBackend && !errores.password && (
                 <p className="mt-1 text-xs sm:text-sm text-red-600">{errorBackend}</p>
               )}
             </div>
@@ -185,6 +228,16 @@ export const LoginForm: React.FC = () => {
               {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
             </button>
           </div>
+           <p className="text-sm text-center mt-3">
+    <a
+      href="/auth/ini-link"
+      className="text-blue-600 hover:underline"
+    >
+    ¿Olvidaste tu contraseña?
+    </a>
+  </p>
+
+
 
           {/* Separador visual con "o" */}
           <div className="flex items-center justify-center my-4 sm:my-6">
@@ -204,9 +257,9 @@ export const LoginForm: React.FC = () => {
               type="button"
               className="w-full max-w-xs sm:max-w-sm bg-white text-black py-2 sm:py-3 px-4 border border-gray-300 rounded-2xl hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200 transition-colors duration-200 flex items-center justify-center gap-3 text-xs sm:text-sm"
             >
-              {/* ✅ CORRECCIÓN: Usar next/image */}
+              {/* ✅ CORRECCIÓN: Usar Image de next/image */}
               <Image
-                src={AppleIcon.src}
+                src={AppleIcon}
                 alt="Registrarse con Apple"
                 width={16}
                 height={16}

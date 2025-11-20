@@ -1,25 +1,25 @@
 // src/app/components/location/LocationField.tsx
 "use client";
+
 import { useState } from "react";
 import type { LocationDTO } from "@/types/fixer";
 import LocationPicker from "./LocationPicker";
 import SelectedMap from "./SelectedMap";
 
-export function LocationField({
-  value,
-  onChange,
-}: {
+type Props = {
   value: LocationDTO | null;
-  onChange: (v: LocationDTO | null) => void;
-}) {
+  onChange: (value: LocationDTO | null) => void;
+};
+
+export function LocationField({ value, onChange }: Props) {
   const [open, setOpen] = useState(false);
 
   return (
     <div className="space-y-4">
       <div className="space-y-1">
-        <label className="font-semibold text-lg">Establece tu ubicación de trabajo</label>
+        <label className="text-lg font-semibold">Establece tu ubicacion de trabajo</label>
         <p className="text-sm text-gray-600">
-          Esta es la zona donde estarás disponible para trabajar, puedes cambiar esto más adelante.
+          Esta es la zona donde estaras disponible para trabajar; puedes actualizarla mas adelante.
         </p>
       </div>
 
@@ -37,7 +37,7 @@ export function LocationField({
               <b>Lat:</b> {value.lat.toFixed(6)} | <b>Lng:</b> {value.lng.toFixed(6)}
               {value.address ? (
                 <span className="block text-gray-600">
-                  <b>Dirección:</b> {value.address}
+                  <b>Direccion:</b> {value.address}
                 </span>
               ) : null}
             </div>
@@ -56,8 +56,6 @@ export function LocationField({
               Quitar
             </button>
           </div>
-
-          {/* 👇 Vista previa del mapa con el punto seleccionado */}
           <SelectedMap lat={value.lat} lng={value.lng} />
         </div>
       )}
