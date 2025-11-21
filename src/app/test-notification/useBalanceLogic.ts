@@ -149,10 +149,10 @@ export const useBalanceLogic = (): BalanceLogic => {
   }, []);
 
   const sendNotification = useCallback(async (type: 'HU5' | 'HU6', currentBalance: number): Promise<void> => {
-    // ✅ CORRECCIÓN: Prevención robusta de duplicados
+    // CORRECCIÓN: Prevención robusta de duplicados
     const notificationKey = `${type}_${currentBalance}`;
     
-    // Si ya estamos enviando una notificación para este tipo y balance, ignorar
+    // Si ya estamos enviando una notificación para este tipo y balance
     if (lastNotifiedRef.current.type === type && lastNotifiedRef.current.balance === currentBalance) {
       console.log(`🛑 Notificación ${notificationKey} ya enviada, ignorando...`);
       return;
