@@ -137,7 +137,7 @@ export const useBalanceLogic = (): BalanceLogic => {
   const [logs, setLogs] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   
-  // Usar useRef para evitar duplicados - más confiable que useState
+  // Usar useRef para evitar redundancias y duplicados - más confiable que useState
   const lastNotifiedRef = useRef<{ type: 'HU5' | 'HU6' | null; balance: number }>({ 
     type: null, 
     balance: 100 
