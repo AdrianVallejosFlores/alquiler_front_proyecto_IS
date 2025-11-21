@@ -48,7 +48,7 @@ export default function NotificationsPage() {
         "Fixer Carlos"
       );
 
-      // Mostrar alerta de éxito
+      // se mostrara la alerta de éxito
       setAlert({
         show: true,
         type: "success",
