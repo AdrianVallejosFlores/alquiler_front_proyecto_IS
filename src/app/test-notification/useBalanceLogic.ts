@@ -205,7 +205,7 @@ export const useBalanceLogic = (): BalanceLogic => {
       const shouldNotifyHU6 = newBalance < 0 && 
         !(lastNotifiedRef.current.type === 'HU6' && lastNotifiedRef.current.balance === newBalance);
       
-      // Detección automática de HU5 y HU6
+      // Detección automática de las HU5 y HU6
       if (shouldNotifyHU5) {
         addLog('🎯 HU5 DETECTADO: Saldo en cero - Enviando notificación...');
         sendNotification('HU5', newBalance);
