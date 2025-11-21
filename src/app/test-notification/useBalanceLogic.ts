@@ -243,3 +243,5 @@ export const useBalanceLogic = (): BalanceLogic => {
     resetBalance
   };
 };
+
+//se termina esta implementacion
