@@ -3,7 +3,7 @@ import { Inter, Roboto_Mono } from "next/font/google";
 import "./globals.css";
 import "maplibre-gl/dist/maplibre-gl.css";
 
-// 🟢 Importamos la campanita global
+// se importara la campanita global
 import NotificationBell from "@/components/NotificationBell";
 
 // Fuentes principales
