@@ -229,7 +229,7 @@ export const useBalanceLogic = (): BalanceLogic => {
 
   const resetBalance = useCallback((): void => {
     setBalance(100);
-    // Resetear la referencia de notificaciones también
+    // Se va a resetear la referencia de notificaciones también
     lastNotifiedRef.current = { type: null, balance: 100 };
     addLog('🔄 Balance reiniciado a Bs. 100.00 - Notificaciones reseteadas');
   }, [addLog]);
