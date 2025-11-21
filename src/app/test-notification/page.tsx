@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import { useBalanceLogic } from './useBalanceLogic';
-
+//se soluciono los bugs reports 
 export default function TestNotificationPage() {
   const {
     balance,
