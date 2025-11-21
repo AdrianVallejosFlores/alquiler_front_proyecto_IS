@@ -16,7 +16,7 @@ export default function SendNotificationForm({ title, onSend, showDetails }: Pro
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 🟠 Validación de máximo 500 caracteres
+    // 🟠 aqui se hara la Validación de máximo 500 caracteres
     if (showDetails && form.details.length > 500) {
       setError("El campo Detalles no puede tener más de 500 caracteres.");
       return;
