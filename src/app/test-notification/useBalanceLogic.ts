@@ -182,7 +182,7 @@ export const useBalanceLogic = (): BalanceLogic => {
       // Si falla, permitir reintento resetando la referencia
       lastNotifiedRef.current = { type: null, balance: 100 };
       
-      // Si es error de red, sugerir verificar backend
+      // Si se da error de red, sugerir verificar backend
       if (errorMessage.includes('fetch') || errorMessage.includes('network')) {
         addLog('🔌 Verifica que el backend esté corriendo en puerto 5000');
       }
