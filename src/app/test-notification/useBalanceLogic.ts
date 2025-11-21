@@ -158,7 +158,7 @@ export const useBalanceLogic = (): BalanceLogic => {
       return;
     }
     
-    // Marcar como enviando inmediatamente
+    // Se marcar como enviando inmediatamente
     lastNotifiedRef.current = { type, balance: currentBalance };
     setIsLoading(true);
 
