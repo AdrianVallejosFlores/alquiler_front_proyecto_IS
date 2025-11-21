@@ -11,7 +11,7 @@ export default function SendNotificationForm({ title, onSend, showDetails }: Pro
   const [form, setForm] = useState({ email: "", name: "", details: "" });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const [error, setError] = useState(""); // ⚙️ Nuevo estado para errores locales (ej: límite de caracteres)
+  const [error, setError] = useState(""); // se hace el nuevo estado para errores locales (ej: límite de caracteres)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
