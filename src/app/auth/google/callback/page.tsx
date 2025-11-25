@@ -71,6 +71,7 @@ function Inner() {
       router.push('/loginSeguridad')
       return
       }
+          sessionStorage.setItem("login",'true')
           const eventLogin = new CustomEvent("login-exitoso");
           window.dispatchEvent(eventLogin);
           router.push('/');
