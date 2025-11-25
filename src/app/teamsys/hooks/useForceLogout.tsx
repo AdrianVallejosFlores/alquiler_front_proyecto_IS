@@ -4,10 +4,14 @@ import { useEffect, useState } from "react";
 import { getSocket } from "../realtime/socketClient";
 import { cerrarSesion } from "../services/UserService";
 
-export function useForceLogout(userId: string | null) {
+export function useForceLogout(userId: string | null,accessToken: String | null) {
     console.log("🔥 useForceLogout EJECUTADO. userId =", userId);
      const [isSocketReady, setIsSocketReady] = useState(false);
-    useEffect(() => {
+     const getSocketStatus = () => {
+        const socket = getSocket();
+        return socket.connected;  // Retorna si el socket está conectado
+    };
+     useEffect(() => {
     console.log("🔍 [useForceLogout] Hook montado. userId =", userId);
     if (!userId) return;
     console.log("🔥 getSocket fue llamado");
@@ -17,7 +21,11 @@ export function useForceLogout(userId: string | null) {
     const onConnect = () => {
         console.log("🔌 [Socket] Conectado con ID:", socket.id);
       console.log("📡 [Socket] Emitting auth for user:", userId);
-      socket.emit("auth", userId);
+      console.log("📡 [Socket] Emitting auth for user:", accessToken);
+      socket.emit("auth", {
+  userId,
+  accessToken
+});
     };
 
     const onForceLogout = () => {
