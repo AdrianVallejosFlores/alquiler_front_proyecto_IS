@@ -21,8 +21,6 @@ export default function SimpleProfileMenu() {
   const [showMessageSeguridad, setShowMessageSeguridad] = useState(false);
   const [showMensajeCerrarSesion, setShowMensajeCerrarSesion] = useState(false);
   const [showSubMenu, setShowSubMenu] = useState(false);
-
-  // --- NUEVO: controlar vista de Sesiones y dispositivos
   const [showSesionesDispositivos, setShowSesionesDispositivos] = useState(false);
 
   const [user, setUser] = useState<{
