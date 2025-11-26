@@ -11,71 +11,71 @@ export interface GuideStep {
 export const guideSteps: GuideStep[] = [
   {
     id: 1,
-    title: "¡Bienvenido a SERVINEO!",
-    description: "Te mostraremos las funciones principales de la plataforma en un recorrido rápido de 2 minutos. Aprenderás a buscar servicios, registrarte como Fixer o cliente, y más.",
+    title: "¡Bienvenido!",
+    description: "Recorrido rápido de 2 minutos por las funciones principales",
     position: "bottom",
     icon: "👋"
   },
   {
     id: 2,
-    title: "Encuentra lo que necesitas",
-    description: "Busca servicios profesionales fácilmente. Conectamos clientes con proveedores de servicios desde reparaciones del hogar hasta servicios especializados.",
+    title: "Buscador",
+    description: "Encuentra servicios profesionales fácilmente",
     targetElement: "#search-section",
     position: "bottom",
     icon: "🔍"
   },
   {
     id: 3,
-    title: "Ventajas de SERVINEO",
-    description: "Descubre por qué miles eligen SERVINEO: profesionales verificados, servicio a domicilio y la mejor experiencia para tus proyectos.",
+    title: "Ventajas",
+    description: "Descubre por qué nos eligen miles de usuarios",
     targetElement: "#advantages-section",
     position: "top",
     icon: "⭐"
   },
   {
     id: 4,
-    title: "Mapa de Fixers Cercanos",
-    description: "Encuentra profesionales cerca de tu ubicación. Visualiza fixers disponibles en tu área de forma rápida y conveniente.",
+    title: "Mapa",
+    description: "Encuentra fixers cerca de tu ubicación",
     targetElement: "#mapa",
     position: "left",
     icon: "🗺️"
   },
   {
     id: 5,
-    title: "Categorías de Servicios",
-    description: "Explora todas nuestras categorías: Limpieza, Cerrajería, Vidriería, Albañilería, Mecánica, Tapicería, Informática y más.",
+    title: "Servicios",
+    description: "Explora todas nuestras categorías disponibles",
     targetElement: "#servicios",
     position: "top",
     icon: "📋"
   },
   {
     id: 6,
-    title: "Trabajos Recientes",
-    description: "Inspírate con trabajos recientes de nuestros fixers. Conoce la calidad y variedad de servicios en nuestra comunidad.",
+    title: "Trabajos",
+    description: "Inspírate con trabajos recientes",
     targetElement: "#trabajos-recientes",
     position: "top",
     icon: "🛠️"
   },
   {
     id: 7,
-    title: "Acciones Rápidas",
-    description: "Accede rápido a funciones importantes: agregar disponibilidad, agendar servicios y gestionar tus trabajos.",
+    title: "Acciones",
+    description: "Acceso rápido a funciones importantes",
     targetElement: "#quick-actions",
     position: "top",
     icon: "⚡"
   },
   {
     id: 8,
-    title: "Conviértete en Fixer",
-    description: "¿Quieres ofrecer tus servicios? Únete a nuestra comunidad y genera ingresos con tus habilidades profesionales.",
+    title: "Ser Fixer",
+    description: "Únete y genera ingresos con tus habilidades",
     targetElement: "#become-fixer",
     position: "top",
     icon: "💼"
   },
   {
     id: 9,
-    title: "¡Tutorial Completado!",
-    description: "Ya conoces SERVINEO. Ahora estás listo para buscar servicios como cliente u ofrecer tus servicios como Fixer.",
+    title: "¡Listo!",
+    description: "Ya conoces SERVINEO. ¡Empieza a usar la plataforma!",
     position: "bottom",
     icon: "🎉"
   }
