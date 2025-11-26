@@ -61,9 +61,7 @@ const ComparisonTable = () => {
                         key={index}
                         className={`border border-gray-300 p-2 sm:p-4 font-bold ${
                           index === 1 ? 'text-blue-700' : 'text-gray-800'
-                        } ${
-                          index >= 4 ? 'bg-blue-50' : ''
-                        }`}
+                        } $${index >= 4 ? 'bg-blue-50' : ''}`}
                       >
                         {header}
                       </th>
@@ -82,12 +80,7 @@ const ComparisonTable = () => {
                       return (
                         <td
                           key={cellIndex}
-                          className={`border border-gray-300 p-2 sm:p-4 text-gray-700 ${
-                            cellIndex >= 4 ? 'bg-blue-50' : ''
-                          } ${
-                            cell === '✔' ? 'text-green-600 font-semibold' : 
-                            cell === '❌' ? 'text-red-600 font-semibold' : ''
-                          }`}
+                          className={`border border-gray-300 p-2 sm:p-4 text-gray-700 $${cellIndex >= 4 ? 'bg-blue-50' : ''} $${cell === '✔' ? 'text-green-600 font-semibold' : cell === '❌' ? 'text-red-600 font-semibold' : ''}`}
                         >
                           {cell}
                         </td>
@@ -128,10 +121,13 @@ const PorQueServineoPage: React.FC = () => {
               onClick={() => router.push("/")}
               title="Volver al inicio"
             >
-              <img
+              {/* reemplazado <img> por <Image> para evitar el warning @next/no-img-element */}
+              <Image
                 src="/logo-header.png"
                 alt="SERVINEO Logo"
-                className="w-16 h-16 md:w-20 md:h-20 object-cover rounded-full border-2 border-white shadow-lg"
+                width={80}
+                height={80}
+                className="object-cover rounded-full border-2 border-white shadow-lg"
               />
             </div>
 
@@ -168,7 +164,7 @@ const PorQueServineoPage: React.FC = () => {
               Beneficio 1: Servicio a Domicilio
             </h2>
             <p className="italic text-gray-600 mb-2 sm:mb-3 text-xs sm:text-sm md:text-base">
-              "Profesionales que van hasta ti"
+              &quot;Profesionales que van hasta ti&quot;
             </p>
             <p className="text-gray-700 text-justify leading-snug sm:leading-relaxed text-xs sm:text-sm md:text-base">
               Con <span className="font-semibold text-blue-700">SERVINEO</span> no
@@ -195,7 +191,7 @@ const PorQueServineoPage: React.FC = () => {
               Beneficio 2: Garantía y Confianza
             </h2>
             <p className="italic text-gray-600 mb-2 sm:mb-3 text-xs sm:text-sm md:text-base">
-              "Tu satisfacción está asegurada"
+              &quot;Tu satisfacción está asegurada&quot;
             </p>
             <p className="text-gray-700 text-justify leading-snug sm:leading-relaxed text-xs sm:text-sm md:text-base">
               Todos los servicios en{" "}
@@ -222,7 +218,7 @@ const PorQueServineoPage: React.FC = () => {
               Beneficio 3: Calificación y Transparencia
             </h2>
             <p className="italic text-gray-600 mb-2 sm:mb-3 text-xs sm:text-sm md:text-base">
-              "Opiniones reales para decisiones seguras"
+              &quot;Opiniones reales para decisiones seguras&quot;
             </p>
             <p className="text-gray-700 text-justify leading-snug sm:leading-relaxed text-xs sm:text-sm md:text-base">
               En <span className="font-semibold text-blue-700">SERVINEO</span> puedes

@@ -322,7 +322,7 @@ export default function RegistroImagen() {
         return;
       }
 
-      const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:5000";
+      const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL ?? "https://alquiler-back-soft-war2.vercel.app/";
       const resp = await fetch(`${baseUrl}/api/teamsys/usuario`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

@@ -331,7 +331,7 @@ export default function Header() {
       </footer>
 
       {/* Espacio para el header fijo */}
-      
+   
     </>
   );
 }

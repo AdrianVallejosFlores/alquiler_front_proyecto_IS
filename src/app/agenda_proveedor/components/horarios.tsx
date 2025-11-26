@@ -152,7 +152,7 @@ const Horario: React.FC<HorarioProps> = ({
                   {error}
                 </p>
                 <p className="text-gray-500 text-xs sm:text-sm text-center px-4">
-                  Asegúrate de que el backend esté corriendo en http://localhost:5000
+                  Asegúrate de que el backend esté corriendo en https://alquiler-back-soft-war2.vercel.app/
                 </p>
               </div>
             ) : mensaje || horarios.length === 0 ? (
