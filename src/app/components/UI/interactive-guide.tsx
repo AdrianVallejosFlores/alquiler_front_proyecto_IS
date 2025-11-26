@@ -1,7 +1,7 @@
 // src/app/components/ui/interactive-guide.tsx
 'use client';
 
-import React, { useEffect, useRef, CSSProperties } from 'react';
+import React, { useEffect, useRef, CSSProperties, useState } from 'react';
 import { guideSteps, GuideStep } from '../data/guide-steps';
 
 interface InteractiveGuideProps {
@@ -22,34 +22,74 @@ const InteractiveGuide: React.FC<InteractiveGuideProps> = ({
   onRestart
 }) => {
   const overlayRef = useRef<HTMLDivElement>(null);
+  const [highlightStyle, setHighlightStyle] = useState<CSSProperties>({});
   
   // Paso actual
   const currentStepData: GuideStep | undefined = guideSteps.find(step => step.id === currentStep);
 
+  // Efecto para el scroll y resaltado
   useEffect(() => {
     if (isActive && currentStepData?.targetElement) {
       console.log('🔍 [DEBUG] Buscando elemento:', currentStepData.targetElement);
       
-      const timer = setTimeout(() => {
+      const updateHighlight = () => {
         const targetElement = document.querySelector(currentStepData.targetElement!);
         if (targetElement) {
-          console.log('🔍 [DEBUG] Elemento encontrado, haciendo scroll');
+          console.log('🔍 [DEBUG] Elemento encontrado, actualizando resaltado');
           
+          const rect = targetElement.getBoundingClientRect();
+          const scrollY = window.scrollY || window.pageYOffset;
+          const scrollX = window.scrollX || window.pageXOffset;
+
           // Calcular posición para scroll suave
-          const elementRect = targetElement.getBoundingClientRect();
-          const absoluteElementTop = elementRect.top + window.pageYOffset;
-          const middle = absoluteElementTop - (window.innerHeight / 2) + (elementRect.height / 2);
+          const absoluteElementTop = rect.top + scrollY;
+          const middle = absoluteElementTop - (window.innerHeight / 2) + (rect.height / 2);
           
+          // Hacer scroll suave
           window.scrollTo({
             top: middle,
             behavior: 'smooth'
           });
+
+          // Actualizar estilo del resaltado
+          setHighlightStyle({
+            position: 'absolute',
+            top: rect.top + scrollY - 6,
+            left: rect.left + scrollX - 6,
+            width: rect.width + 12,
+            height: rect.height + 12,
+            borderRadius: '8px',
+            boxShadow: `
+              0 0 0 9999px rgba(0, 0, 0, 0.8),
+              0 0 0 3px #2a87ff,
+              0 0 0 6px rgba(42, 135, 255, 0.3),
+              0 0 20px 8px rgba(42, 135, 255, 0.5),
+              inset 0 0 0 1px rgba(255, 255, 255, 0.8)
+            `,
+            zIndex: 9998,
+            pointerEvents: 'none',
+            transition: 'all 0.4s ease-out',
+          });
         } else {
           console.log('🔍 [DEBUG] ERROR: No se encontró el elemento:', currentStepData.targetElement);
+          setHighlightStyle({ display: 'none' });
         }
-      }, 600);
+      };
 
-      return () => clearTimeout(timer);
+      // Ejecutar después de un delay para asegurar que el DOM esté listo
+      const timer = setTimeout(updateHighlight, 100);
+
+      // También actualizar en eventos de redimensionamiento y scroll
+      window.addEventListener('resize', updateHighlight);
+      window.addEventListener('scroll', updateHighlight);
+
+      return () => {
+        clearTimeout(timer);
+        window.removeEventListener('resize', updateHighlight);
+        window.removeEventListener('scroll', updateHighlight);
+      };
+    } else {
+      setHighlightStyle({ display: 'none' });
     }
   }, [isActive, currentStep, currentStepData?.targetElement]);
 
@@ -61,35 +101,6 @@ const InteractiveGuide: React.FC<InteractiveGuideProps> = ({
     if (e.target === overlayRef.current && currentStepData.type === 'intro') {
       onClose();
     }
-  };
-
-  const getHighlightPosition = (): CSSProperties => {
-    if (!currentStepData.targetElement) return { display: 'none' };
-
-    const targetElement = document.querySelector(currentStepData.targetElement);
-    if (!targetElement) return { display: 'none' };
-
-    const rect = targetElement.getBoundingClientRect();
-    const scrollY = window.scrollY || window.pageYOffset;
-    const scrollX = window.scrollX || window.pageXOffset;
-
-    return {
-      position: 'absolute',
-      top: rect.top + scrollY - 8,
-      left: rect.left + scrollX - 8,
-      width: rect.width + 16,
-      height: rect.height + 16,
-      borderRadius: '8px',
-      boxShadow: `
-        0 0 0 9999px rgba(0, 0, 0, 0.75),
-        0 0 0 3px #2a87ff, 
-        0 0 20px 5px rgba(42, 135, 255, 0.8),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.5)
-      `,
-      zIndex: 9998,
-      pointerEvents: 'none',
-      transition: 'all 0.3s ease-out',
-    };
   };
 
   const getTooltipPosition = (): CSSProperties => {
@@ -115,14 +126,14 @@ const InteractiveGuide: React.FC<InteractiveGuideProps> = ({
     }
 
     const rect = targetElement.getBoundingClientRect();
-    const gap = 15;
+    const gap = 20;
 
     switch (currentStepData.position) {
       case 'top':
         return {
           position: 'fixed',
           bottom: `calc(100vh - ${rect.top}px + ${gap}px)`,
-          left: '50%',
+          left: Math.max(20, Math.min(rect.left, window.innerWidth - 320)) + 'px',
           transform: 'translateX(-50%)',
           zIndex: 9999
         };
@@ -130,7 +141,7 @@ const InteractiveGuide: React.FC<InteractiveGuideProps> = ({
         return {
           position: 'fixed',
           top: rect.bottom + gap,
-          left: '50%',
+          left: Math.max(20, Math.min(rect.left + (rect.width / 2), window.innerWidth - 160)) + 'px',
           transform: 'translateX(-50%)',
           zIndex: 9999
         };
@@ -222,7 +233,7 @@ const InteractiveGuide: React.FC<InteractiveGuideProps> = ({
     </div>
   );
 
-  // Renderizar paso final (como la imagen 3)
+  // Renderizar paso final (Tutorial Completado)
   const renderFinalStep = () => (
     <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 w-full max-w-2xl mx-4">
       <div className="p-8">
@@ -292,71 +303,74 @@ const InteractiveGuide: React.FC<InteractiveGuideProps> = ({
     </div>
   );
 
-  // Renderizar paso normal (como la imagen 2)
+  // Renderizar paso normal con el elemento resaltado
   const renderNormalStep = () => (
-    <div
-      style={getTooltipPosition()}
-      className="bg-white rounded-xl shadow-2xl border border-gray-200 z-9999 pointer-events-auto max-w-xs mx-4"
-    >
-      <div className="p-5">
-        <div className="flex items-start gap-3 mb-3">
-          <div className="text-2xl shrink-0">{currentStepData.icon}</div>
-          <div className="flex-1">
-            <h3 className="text-base font-bold text-[#11255A] mb-1">
-              {currentStepData.title}
-            </h3>
-            <div className="text-xs text-[#2a87ff] font-semibold">
-              Paso {currentStep} de 6
+    <>
+      {/* Tooltip */}
+      <div
+        style={getTooltipPosition()}
+        className="bg-white rounded-xl shadow-2xl border border-gray-200 z-9999 pointer-events-auto max-w-xs mx-4"
+      >
+        <div className="p-5">
+          <div className="flex items-start gap-3 mb-3">
+            <div className="text-2xl shrink-0">{currentStepData.icon}</div>
+            <div className="flex-1">
+              <h3 className="text-base font-bold text-[#11255A] mb-1">
+                {currentStepData.title}
+              </h3>
+              <div className="text-xs text-[#2a87ff] font-semibold">
+                Paso {currentStep} de 6
+              </div>
             </div>
           </div>
-        </div>
 
-        <p className="text-xs text-gray-700 mb-4 leading-relaxed">
-          {currentStepData.description}
-        </p>
+          <p className="text-xs text-gray-700 mb-4 leading-relaxed">
+            {currentStepData.description}
+          </p>
 
-        <div className="flex justify-between items-center">
-          <div className="flex space-x-2">
+          <div className="flex justify-between items-center">
+            <div className="flex space-x-2">
+              <button
+                onClick={onPrev}
+                disabled={currentStep === 1}
+                className={`px-3 py-1 rounded text-xs font-medium transition-all duration-200 ${
+                  currentStep === 1
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-[#eef7ff] text-[#2a87ff] hover:bg-[#d8ecff] hover:shadow-sm'
+                }`}
+              >
+                Anterior
+              </button>
+              
+              <button
+                onClick={onNext}
+                className="px-3 py-1 bg-[#2a87ff] text-white rounded text-xs font-medium hover:bg-[#1a347a] hover:shadow-sm transition-all duration-200"
+              >
+                Siguiente
+              </button>
+            </div>
+
             <button
-              onClick={onPrev}
-              disabled={currentStep === 1}
-              className={`px-3 py-1 rounded text-xs font-medium transition-all duration-200 ${
-                currentStep === 1
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-[#eef7ff] text-[#2a87ff] hover:bg-[#d8ecff] hover:shadow-sm'
-              }`}
+              onClick={onClose}
+              className="px-2 py-1 text-gray-500 hover:text-gray-700 text-xs font-medium transition-colors duration-200"
             >
-              Anterior
-            </button>
-            
-            <button
-              onClick={onNext}
-              className="px-3 py-1 bg-[#2a87ff] text-white rounded text-xs font-medium hover:bg-[#1a347a] hover:shadow-sm transition-all duration-200"
-            >
-              Siguiente
+              Saltar
             </button>
           </div>
-
-          <button
-            onClick={onClose}
-            className="px-2 py-1 text-gray-500 hover:text-gray-700 text-xs font-medium transition-colors duration-200"
-          >
-            Saltar
-          </button>
         </div>
       </div>
-    </div>
+    </>
   );
 
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-9997 flex items-center justify-center bg-black/70"
+      className="fixed inset-0 z-9997 flex items-center justify-center bg-black/80"
       onClick={handleOverlayClick}
     >
       {/* Resaltado del elemento actual - SOLO para pasos normales */}
       {currentStepData.type === 'step' && currentStepData.targetElement && (
-        <div style={getHighlightPosition()} />
+        <div style={highlightStyle} />
       )}
 
       {/* Renderizar el tipo de paso correspondiente */}
