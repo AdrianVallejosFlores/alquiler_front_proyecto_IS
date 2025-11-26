@@ -22,19 +22,22 @@ const InteractiveGuide: React.FC<InteractiveGuideProps> = ({
   onRestart
 }) => {
   const overlayRef = useRef<HTMLDivElement>(null);
-  const currentStepData: GuideStep = guideSteps[currentStep];
+  
+  // CORRECCIÓN: Verificar que currentStep sea válido
+  const isValidStep = currentStep >= 0 && currentStep < guideSteps.length;
+  const currentStepData: GuideStep | undefined = isValidStep ? guideSteps[currentStep] : undefined;
 
   useEffect(() => {
-    if (isActive && currentStepData.targetElement) {
+    if (isActive && currentStepData?.targetElement) {
       // Scroll al elemento objetivo si existe
       const targetElement = document.querySelector(currentStepData.targetElement);
       if (targetElement) {
         targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     }
-  }, [isActive, currentStep, currentStepData.targetElement]);
+  }, [isActive, currentStep, currentStepData?.targetElement]);
 
-  if (!isActive) return null;
+  if (!isActive || !currentStepData) return null;
 
   const handleOverlayClick = (e: React.MouseEvent) => {
     if (e.target === overlayRef.current) {
@@ -56,7 +59,7 @@ const InteractiveGuide: React.FC<InteractiveGuideProps> = ({
       width: rect.width,
       height: rect.height,
       borderRadius: '8px',
-      boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.7), 0 0 0 3px #52abff, 0 0 20px rgba(82, 171, 255, 0.5)',
+      boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.4), 0 0 0 3px #52abff, 0 0 20px rgba(82, 171, 255, 0.5)',
       zIndex: 9998,
       pointerEvents: 'none' as React.CSSProperties['pointerEvents']
     };
@@ -115,10 +118,14 @@ const InteractiveGuide: React.FC<InteractiveGuideProps> = ({
     }
   };
 
+  // Estilos especiales para el primer paso (bienvenida)
+  const isWelcomeStep = currentStep === 0;
+  const isFinalStep = currentStep === guideSteps.length - 1;
+
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-9999 flex items-center justify-center bg-black bg-opacity-70 transition-opacity duration-300"
+      className="fixed inset-0 z-9999 flex items-center justify-center bg-black bg-opacity-40 transition-opacity duration-300"
       onClick={handleOverlayClick}
     >
       {/* Highlight del elemento actual */}
@@ -129,7 +136,9 @@ const InteractiveGuide: React.FC<InteractiveGuideProps> = ({
       {/* Tooltip de la guía */}
       <div
         style={getTooltipPosition()}
-        className="bg-white rounded-lg shadow-2xl max-w-sm mx-4 z-9999"
+        className={`bg-white rounded-lg shadow-2xl max-w-sm mx-4 z-9999 ${
+          isWelcomeStep || isFinalStep ? 'max-w-md' : 'max-w-sm'
+        }`}
       >
         <div className="p-6">
           {/* Header */}
@@ -144,19 +153,63 @@ const InteractiveGuide: React.FC<InteractiveGuideProps> = ({
                 </span>
               </div>
             </div>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors text-lg font-bold"
-              aria-label="Cerrar guía"
-            >
-              ×
-            </button>
+            {!isWelcomeStep && !isFinalStep && (
+              <button
+                onClick={onClose}
+                className="text-gray-400 hover:text-gray-600 transition-colors text-lg font-bold"
+                aria-label="Cerrar guía"
+              >
+                ×
+              </button>
+            )}
           </div>
 
           {/* Descripción */}
           <p className="text-gray-600 mb-6 leading-relaxed">
             {currentStepData.description}
           </p>
+
+          {/* Contenido especial para el paso final */}
+          {isFinalStep && (
+            <div className="mb-6 space-y-4">
+              <div className="space-y-3">
+                <div>
+                  <h4 className="font-semibold text-gray-800 mb-2">Como Cliente</h4>
+                  <ul className="space-y-1 text-sm text-gray-600">
+                    <li className="flex items-center">
+                      <span className="text-green-500 mr-2">✓</span>
+                      Buscar servicios que necesitas
+                    </li>
+                    <li className="flex items-center">
+                      <span className="text-green-500 mr-2">✓</span>
+                      Contratar fixers verificados
+                    </li>
+                    <li className="flex items-center">
+                      <span className="text-green-500 mr-2">✓</span>
+                      Calificar trabajos realizados
+                    </li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-800 mb-2">Como Fixer</h4>
+                  <ul className="space-y-1 text-sm text-gray-600">
+                    <li className="flex items-center">
+                      <span className="text-green-500 mr-2">✓</span>
+                      Ofrecer tus servicios profesionales
+                    </li>
+                    <li className="flex items-center">
+                      <span className="text-green-500 mr-2">✓</span>
+                      Recibir solicitudes de trabajo
+                    </li>
+                    <li className="flex items-center">
+                      <span className="text-green-500 mr-2">✓</span>
+                      Construir tu reputación
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Navegación */}
           <div className="flex justify-between items-center">
@@ -173,7 +226,7 @@ const InteractiveGuide: React.FC<InteractiveGuideProps> = ({
                 Anterior
               </button>
               
-              {currentStep === guideSteps.length - 1 ? (
+              {isFinalStep ? (
                 <button
                   onClick={onRestart}
                   className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
@@ -185,17 +238,19 @@ const InteractiveGuide: React.FC<InteractiveGuideProps> = ({
                   onClick={onNext}
                   className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
                 >
-                  Siguiente
+                  {isWelcomeStep ? 'Comenzar recorrido' : 'Siguiente'}
                 </button>
               )}
             </div>
 
-            <button
-              onClick={onClose}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800 text-sm font-medium transition-colors"
-            >
-              Saltar tutorial
-            </button>
+            {!isWelcomeStep && !isFinalStep && (
+              <button
+                onClick={onClose}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800 text-sm font-medium transition-colors"
+              >
+                Saltar tutorial
+              </button>
+            )}
           </div>
 
           {/* Indicadores de progreso */}
@@ -209,12 +264,16 @@ const InteractiveGuide: React.FC<InteractiveGuideProps> = ({
               />
             ))}
           </div>
-        </div>
-      </div>
 
-      {/* Instrucciones de navegación */}
-      <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-4 py-2 rounded-lg text-sm">
-        Presiona ← → para navegar • ESC para salir
+          {/* Instrucciones de navegación para el primer paso */}
+          {isWelcomeStep && (
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <p className="text-xs text-gray-500 text-center">
+                Presiona → para avanzar, ← para retroceder, ESC para salir
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

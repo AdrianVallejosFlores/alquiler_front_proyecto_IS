@@ -24,11 +24,19 @@ export const useInteractiveGuide = () => {
   };
 
   const nextStep = () => {
-    setCurrentStep(prev => prev + 1);
+    setCurrentStep(prev => {
+      const next = prev + 1;
+      // CORRECCIÓN: No permitir que currentStep exceda el número de pasos
+      return next < guideSteps.length ? next : prev;
+    });
   };
 
   const prevStep = () => {
-    setCurrentStep(prev => prev - 1);
+    setCurrentStep(prev => {
+      const previous = prev - 1;
+      // CORRECCIÓN: No permitir que currentStep sea menor que 0
+      return previous >= 0 ? previous : prev;
+    });
   };
 
   const closeGuide = () => {
@@ -37,7 +45,7 @@ export const useInteractiveGuide = () => {
   };
 
   const restartGuide = () => {
-    startGuide();
+    setCurrentStep(0);
   };
 
   return {
@@ -53,3 +61,9 @@ export const useInteractiveGuide = () => {
     restartGuide
   };
 };
+
+// CORRECCIÓN: Mover guideSteps aquí para evitar dependencia circular
+const guideSteps = [
+  { id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 },
+  { id: 6 }, { id: 7 }, { id: 8 }, { id: 9 }
+];

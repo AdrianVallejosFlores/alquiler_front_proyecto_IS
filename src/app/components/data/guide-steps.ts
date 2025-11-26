@@ -17,15 +17,15 @@ export const guideSteps: GuideStep[] = [
   },
   {
     id: 2,
-    title: "Buscador de Servicios",
-    description: "Desde aquí puedes buscar el servicio que necesitas. Conectamos clientes con proveedores de servicios profesionales desde reparaciones del hogar hasta servicios especializados.",
+    title: "Encuentra lo que necesitas",
+    description: "Conectamos clientes con proveedores de servicios profesionales. Desde reparaciones del hogar hasta servicios especializados.",
     targetElement: "#search-section",
     position: "bottom"
   },
   {
     id: 3,
     title: "Ventajas de SERVINEO",
-    description: "Descubre por qué miles de personas eligen SERVINEO. Profesionales verificados, servicio a domicilio y la mejor experiencia para tus proyectos.",
+    description: "Haz clic en este botón para conocer por qué miles de personas eligen SERVINEO. Descubre nuestros beneficios exclusivos, profesionales verificados y servicio a domicilio.",
     targetElement: "#advantages-section",
     position: "top"
   },
@@ -39,7 +39,7 @@ export const guideSteps: GuideStep[] = [
   {
     id: 5,
     title: "Categorías de Servicios",
-    description: "Explora nuestras categorías: Limpieza, Cerrajería, Vidriería, Albañilería, Mecánica, Tapicería, Informática y más. Encuentra el servicio perfecto para tu necesidad.",
+    description: "Explora nuestras categorías: Limpieza, Cerrajería, Vidriería, Albañilería, Mecánica, Tapicería, Informática y más.",
     targetElement: "#servicios",
     position: "top"
   },
@@ -60,7 +60,7 @@ export const guideSteps: GuideStep[] = [
   {
     id: 8,
     title: "Conviértete en Fixer",
-    description: "¿Quieres ofrecer tus servicios? Únete a nuestra comunidad y empieza a generar ingresos con tus habilidades. Regístrate como Fixer y conecta con clientes.",
+    description: "¿Quieres ser FIXER? Únete a nuestra comunidad y empieza a generar ingresos con tus habilidades.",
     targetElement: "#become-fixer",
     position: "top"
   },

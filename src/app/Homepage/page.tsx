@@ -12,6 +12,50 @@ import HelpButton from "../components/HelpButton/HelpButton";
 export default function Home() {
   return (
     <main>
+      {/* --- Sección de búsqueda --- */}
+      <section id="search-section" className="my-8">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="bg-white rounded-lg shadow-lg p-8 text-center">
+            <h1 className="text-3xl font-bold text-gray-800 mb-4">
+              Encuentra lo que necesitas
+            </h1>
+            <p className="text-gray-600 mb-6">
+              Conectamos clientes con proveedores de servicios profesionales.<br />
+              Desde reparaciones del hogar hasta servicios especializados.
+            </p>
+            
+            <div className="max-w-2xl mx-auto">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="¿Qué servicio necesitas?"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <button className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition-colors">
+                  Buscar
+                </button>
+              </div>
+            </div>
+
+            {/* Estadísticas */}
+            <div className="grid grid-cols-3 gap-4 mt-8 max-w-md mx-auto">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-600">500+</div>
+                <div className="text-sm text-gray-600">FIXERS activos</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-600">1,200+</div>
+                <div className="text-sm text-gray-600">Servicios completados</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-600">4.8</div>
+                <div className="text-sm text-gray-600">Calificación promedio</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* --- Hero / inspiración --- */}
       <section id="carrusel" className="my-5">
         <CarruselInspirador />
@@ -20,6 +64,27 @@ export default function Home() {
       {/* Botón de ayuda flotante */}
       <HelpButton />
 
+      {/* --- Ventajas de SERVINEO --- */}
+      <section id="advantages-section" className="my-10 bg-gray-50 py-12">
+        <div className="max-w-6xl mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold text-gray-800 mb-8">Ventajas de SERVINEO</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <h3 className="text-xl font-semibold mb-4">Profesionales Verificados</h3>
+              <p className="text-gray-600">Todos nuestros fixers pasan por un proceso de verificación para garantizar calidad.</p>
+            </div>
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <h3 className="text-xl font-semibold mb-4">Servicio a Domicilio</h3>
+              <p className="text-gray-600">Los profesionales van hasta tu ubicación para realizar el trabajo.</p>
+            </div>
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <h3 className="text-xl font-semibold mb-4">Pago Seguro</h3>
+              <p className="text-gray-600">Sistema de pago seguro y garantía de satisfacción.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* --- Mapa --- */}
       <section id="mapa" className="my-10">
         <Mapa />
@@ -27,7 +92,6 @@ export default function Home() {
 
       {/* --- Servicios / categorías --- */}
       <section id="servicios" className="my-5 w-full">
-        {/* HomeFixer solo necesita id, titulo, descripcion, icono */}
         <HomeFixer categorias={categorias as CategoriaBase[]} />
       </section>
 
