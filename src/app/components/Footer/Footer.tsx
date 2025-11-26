@@ -27,7 +27,7 @@ const modalContents = {
         <p><strong>Protección:</strong> aplicamos medidas técnicas y organizativas para resguardar tu información.</p>
         <p><strong>Derechos del usuario:</strong> puedes acceder, rectificar o eliminar tus datos personales escribiéndonos a <button type="button" onClick={() => openMailClientOrGmail('Consulta sobre privacidad - Servineo', 'Hola, tengo una consulta sobre la política de privacidad...')} className="text-blue-600 hover:underline cursor-pointer bg-transparent border-0 p-0 m-0">nuestro correo de contacto</button>.</p>
         <p>Adicionalmente, almacenamos algunos registros de actividad (logs) para mejorar la seguridad y detectar patrones anómalos que puedan indicar fraudes o mal uso de la plataforma.</p>
-        <p>Cuando compartes información en tu perfil o en mensajes con otros usuarios, recuerda que parte de esos datos pueden ser visibles a terceros según la configuración de privacidad que hayas seleccionado.</p>
+        <p>Cuando compartas información en tu perfil o en mensajes con otros usuarios, recuerda que parte de esos datos pueden ser visibles a terceros según la configuración de privacidad que hayas seleccionado.</p>
         <p>Podemos compartir datos agregados y anonimizados con socios para análisis estadístico. Nunca compartiremos información personal identificable con terceros sin tu consentimiento explícito, salvo en los casos previstos por la ley.</p>
         <p>Si tienes dudas sobre el tratamiento de tus datos, puedes solicitar un informe o ejercer tus derechos enviando una solicitud a <button type="button" onClick={() => openMailClientOrGmail('Contacto desde Servineo', 'Hola, me gustaría contactarme contigo...')} className="text-blue-600 hover:underline cursor-pointer bg-transparent border-0 p-0 m-0">servineobol@gmail.com</button>. Responderemos en los plazos legales correspondientes.</p>
         <p>Esta política puede actualizarse periódicamente; te recomendamos revisarla con regularidad para estar al tanto de los cambios.</p>
@@ -210,6 +210,13 @@ const Footer = () => {
     setActiveModal(null);
   };
 
+  const handleStartGuide = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('servineo-guide-seen');
+      window.dispatchEvent(new Event('startInteractiveGuide'));
+    }
+  };
+
   return (
     <>
       <footer className="bg-[#11255a] text-[#d8ecff] font-sans">
@@ -230,7 +237,6 @@ const Footer = () => {
 
             <div className="space-y-4">
               <h4 className="text-xl font-semibold font-heading">Categorías</h4>
-              {/* ===== SECCIÓN "CATEGORÍAS" ACTUALIZADA (SIN MANUAL) ===== */}
               <nav className="flex flex-col space-y-2 items-center md:items-start">
                 <a href="#trabajos-recientes" className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">
                   Trabajos recientes
@@ -252,6 +258,7 @@ const Footer = () => {
               <nav className="flex flex-col space-y-2 items-center md:items-start">
                 <a href="/convertir-fixer" className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">Convertir en fixer</a>
                 <button type="button" onClick={() => setActiveModal('howItWorks')} className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 text-left focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">¿Cómo funciona?</button>
+                <button type="button" onClick={handleStartGuide} className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 text-left focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">Guía de usuario</button>
                 <a href="/login" className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">Iniciar sesión</a>
                 <a href="/registro" className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">Registrarse</a>
               </nav>
@@ -259,7 +266,6 @@ const Footer = () => {
 
             <div className="space-y-4">
               <h4 className="text-xl font-semibold font-heading">Soporte</h4>
-              {/* ===== SECCIÓN "SOPORTE" ACTUALIZADA (CON MANUAL) ===== */}
               <ul className="space-y-3">
                 <li className="flex items-center justify-center md:justify-start">
                   <a href="https://wa.me/59160379823" target="_blank" rel="noopener noreferrer" className="flex items-center transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">

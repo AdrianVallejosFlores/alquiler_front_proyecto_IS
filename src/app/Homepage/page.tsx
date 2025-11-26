@@ -1,17 +1,13 @@
-/// /src/app/Homepage/page.tsx
+// src/app/Homepage/page.tsx
 
 import Mapa from "../components/mapa/MapaWrapper";
 import CarruselOfertas from "../components/CarruselOfertas/CarruselOfertas";
 import HomeFixer from "../components/ListaCategorias/HomeFixer";
-// import type { Categoria } from "./components/ListaCategorias/tipos"; // ← no se usa
 import Footer from "../components/Footer/Footer";
 import CarruselInspirador from "../components/CarruselInspirador/CarruselInspirador";
 import Link from "next/link";
 import categorias, { type CategoriaBase } from "../components/data/categoriasData";
 import HelpButton from "../components/HelpButton/HelpButton";
-
-// 🔸 Línea relacionada con la guía de usuario (comentada)
-// import GiaUsuariosNuevos from "../components/guiaUsuarios/GiaUsuariosNuevos";
 
 export default function Home() {
   return (
@@ -41,7 +37,7 @@ export default function Home() {
       </section>
 
       {/* --- Acciones rápidas --- */}
-      <section className="my-10">
+      <section id="quick-actions" className="my-10">
         <div className="min-h-0 flex items-center justify-center">
           <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
             <h2 className="text-2xl font-bold text-center mb-6">Acciones rápidas</h2>
@@ -79,15 +75,21 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 🔸 Sección de Guía de Usuarios Nuevos (comentada completamente)
-          Esta parte era donde se mostraba una guía o tutorial para nuevos usuarios,
-          pero se comenta para desactivar cualquier referencia a la guía. */}
-
-      {/*
-      <section id="gia-usuarios-nuevos" className="my-5 w-full">
-        <GiaUsuariosNuevos />
+      {/* --- Sección para convertirse en Fixer --- */}
+      <section id="become-fixer" className="my-10">
+        <div className="min-h-0 flex items-center justify-center">
+          <div className="bg-linear-to-r from-blue-500 to-purple-600 text-white p-8 rounded-lg shadow-lg max-w-md w-full text-center">
+            <h2 className="text-2xl font-bold mb-4">¿Quieres ser Fixer?</h2>
+            <p className="mb-6">Únete a nuestra comunidad y empieza a generar ingresos con tus habilidades.</p>
+            <Link
+              href="/convertir-fixer"
+              className="bg-white text-blue-600 py-3 px-6 rounded-lg hover:bg-gray-100 transition-colors font-semibold"
+            >
+              Regístrate como Fixer
+            </Link>
+          </div>
+        </div>
       </section>
-      */}
 
       {/* --- Pie de página --- */}
       <Footer />

@@ -18,9 +18,9 @@ export default function HelpButton() {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         aria-label="¿Necesitas ayuda? Contáctanos por WhatsApp"
-        className="group relative flex items-center gap-3 bg-gradient-to-r from-[#2a87ff] to-[#1366fd] hover:from-[#1366fd] hover:to-[#0d4db8] text-white transition-all duration-300 ease-in-out rounded-full shadow-lg hover:shadow-2xl transform hover:scale-105 active:scale-95 overflow-hidden"
+        className="group relative flex items-center gap-3 bg-linear-to-r from-[#2a87ff] to-[#1366fd] hover:from-[#1366fd] hover:to-[#0d4db8] text-white transition-all duration-300 ease-in-out rounded-full shadow-lg hover:shadow-2xl transform hover:scale-105 active:scale-95 overflow-hidden"
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000 ease-in-out" />
+        <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000 ease-in-out" />
         
         <div className="relative flex items-center gap-3 px-4 py-3 md:px-5 md:py-3.5">
           <div className={`flex items-center justify-center transition-transform duration-300 ${isHovered ? 'rotate-12 scale-110' : ''}`}>
