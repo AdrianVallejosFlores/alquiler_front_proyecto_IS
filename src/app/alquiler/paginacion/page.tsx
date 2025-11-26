@@ -7,6 +7,7 @@ import UserProfileCard from "./components/UserProfileCard";
 import Pagination from "./components/Pagination";
 import { getJobs } from "./services/jobService";
 import { usePagination } from "./hooks/usePagination";
+import { useSearchTermsStorage } from "./hooks/useSearchTermsStorage";
 import { Job } from "../../../types/job";
 import BusquedaAutocompletado from "../Busqueda/busquedaAutocompletado";
 import FiltrosForm from "../Feature/Componentes/FiltroForm";
@@ -27,6 +28,7 @@ function LoadingFallback() {
 function BusquedaContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { saveSearchTerms, clearSearchTerms } = useSearchTermsStorage();
 
   const urlQuery = searchParams.get("q") || "";
   const urlPage = searchParams.get("page");
@@ -337,6 +339,7 @@ function BusquedaContent() {
 
       setSearchTerm("");
       setFiltersNoResults(false);
+      clearSearchTerms(); // 🔹 NUEVO: Limpiar términos del storage
 
       // Limpiar URL
       const params = new URLSearchParams(window.location.search);
@@ -376,6 +379,9 @@ function BusquedaContent() {
       setSearchTerm(terminoCap);
       setSearchResults(resultados);
       setFiltersNoResults(resultados.length === 0);
+      
+      // 🔹 NUEVO: Guardar términos en storage para persistencia
+      saveSearchTerms(terminoCap.split(/\s+/).filter(Boolean));
 
       if (actualizarUrl) actualizarURL(terminoCap);
       setEstadoBusqueda("success");
@@ -623,6 +629,7 @@ function BusquedaContent() {
                           <JobCard
                             key={`${job.title}-${index}`}
                             {...job}
+                            searchTerms={searchTerm ? searchTerm.split(/\s+/).filter(Boolean) : []}
                             onViewDetails={() => handleViewDetails(job.id)}
                           />
                         ))}

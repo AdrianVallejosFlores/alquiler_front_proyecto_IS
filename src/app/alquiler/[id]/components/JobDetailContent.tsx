@@ -14,6 +14,7 @@ interface JobDetailContentProps {
   postedDate: string;
   SERVER_ORIGIN: string;
   promedio?: number;
+  searchTerms?: string[];
 }
 
 export default function JobDetailContent({
@@ -21,6 +22,7 @@ export default function JobDetailContent({
   postedDate,
   SERVER_ORIGIN,
   promedio,
+  searchTerms = [],
 }: JobDetailContentProps) {
   const avatar = usuario.portfolio?.[0]?.imagen;
 
@@ -60,6 +62,7 @@ export default function JobDetailContent({
               : '/images/portfolio/placeholder.jpg'
           }
           rating={promedio ? Number(promedio.toFixed(1)) : undefined}
+          searchTerms={searchTerms}
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

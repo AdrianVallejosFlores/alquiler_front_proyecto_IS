@@ -1131,7 +1131,7 @@ export default function BusquedaAutocompletado({
             }
         };
 
-    }, [query, inputFocused, ejecutarBusquedaCompleta]);
+    }, [query, inputFocused]);
 
     // 🔥 MODIFICADO: Manejar cambio en el input - solo mensajes informativos
     const manejarCambioInput = useCallback((nuevoValor: string) => {

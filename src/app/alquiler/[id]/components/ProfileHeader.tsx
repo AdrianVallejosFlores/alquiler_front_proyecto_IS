@@ -1,4 +1,5 @@
 import React from 'react';
+import HighlightedText from '../../../../components/HighlightedText';
 
 type Props = {
   nombre?: string;
@@ -7,9 +8,10 @@ type Props = {
   fecha_registro?: string;
   avatarUrl?: string;
   rating?: number | string;
+  searchTerms?: string[];
 };
 
-const ProfileHeader = ({ nombre, servicios, activo, fecha_registro, avatarUrl, rating }: Props) => {
+const ProfileHeader = ({ nombre, servicios, activo, fecha_registro, avatarUrl, rating, searchTerms = [] }: Props) => {
   const postedDate = fecha_registro ? new Date(fecha_registro).toLocaleDateString() : '';
 
   // Avatar: si no hay imagen, mostrar iniciales
@@ -31,10 +33,22 @@ const ProfileHeader = ({ nombre, servicios, activo, fecha_registro, avatarUrl, r
         <div className="flex-1 w-full">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <div>
-              <h1 className="text-2xl font-bold text-blue-700 dark:text-blue-300">{nombre || 'Sin nombre'}</h1>
-              <p className="text-gray-600 dark:text-gray-300 mt-1 text-base">{(servicios && servicios.length > 0 && servicios[0].nombre) || 'Servicios'}</p>
+              <h1 className="text-2xl font-bold text-blue-700 dark:text-blue-300">
+                {searchTerms.length > 0 ? (
+                  <HighlightedText text={nombre || 'Sin nombre'} searchTerms={searchTerms} />
+                ) : (
+                  nombre || 'Sin nombre'
+                )}
+              </h1>
+              <p className="text-gray-600 dark:text-gray-300 mt-1 text-base">
+                {searchTerms.length > 0 ? (
+                  <HighlightedText text={(servicios && servicios.length > 0 && servicios[0].nombre) || 'Servicios'} searchTerms={searchTerms} />
+                ) : (
+                  (servicios && servicios.length > 0 && servicios[0].nombre) || 'Servicios'
+                )}
+              </p>
             </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400 mt-2 sm:mt-0">Registrado: {postedDate}</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400 mt-2 sm:mt-0">Registrado: {fecha_registro ? new Date(fecha_registro).toLocaleDateString() : ''}</div>
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
             <span className={`px-2 py-1 rounded-full text-xs font-semibold ${activo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{activo ? 'Disponible' : 'No disponible'}</span>
