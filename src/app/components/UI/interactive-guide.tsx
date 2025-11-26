@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, CSSProperties, useState } from 'react';
+import React, { useEffect, useRef, CSSProperties } from 'react';
 import { guideSteps, GuideStep } from '../data/guide-steps';
 
 interface InteractiveGuideProps {
@@ -21,44 +21,33 @@ const InteractiveGuide: React.FC<InteractiveGuideProps> = ({
   onRestart
 }) => {
   const overlayRef = useRef<HTMLDivElement>(null);
-  const [mounted, setMounted] = useState(false);
-  const [showWelcome, setShowWelcome] = useState(false);
   
-  const isValidStep = currentStep >= 0 && currentStep < guideSteps.length;
-  const currentStepData: GuideStep | undefined = isValidStep ? guideSteps[currentStep] : undefined;
+  // Paso actual (1-6)
+  const currentStepData: GuideStep | undefined = guideSteps.find(step => step.id === currentStep);
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Mostrar bienvenida solo al iniciar por primera vez
-  useEffect(() => {
-    if (isActive && currentStep === 0) {
-      setShowWelcome(true);
-    } else {
-      setShowWelcome(false);
-    }
-  }, [isActive, currentStep]);
-
-  useEffect(() => {
-    if (isActive && currentStepData?.targetElement && mounted && !showWelcome) {
-      const scrollToElement = () => {
+    if (isActive && currentStepData?.targetElement) {
+      console.log('🔍 [DEBUG] Buscando elemento:', currentStepData.targetElement);
+      
+      const timer = setTimeout(() => {
         const targetElement = document.querySelector(currentStepData.targetElement!);
         if (targetElement) {
+          console.log('🔍 [DEBUG] Elemento encontrado, haciendo scroll');
           targetElement.scrollIntoView({ 
             behavior: 'smooth', 
             block: 'center'
           });
-          targetElement.getBoundingClientRect();
+        } else {
+          console.log('🔍 [DEBUG] ERROR: No se encontró el elemento');
         }
-      };
+      }, 300);
 
-      const timer = setTimeout(scrollToElement, 100);
       return () => clearTimeout(timer);
     }
-  }, [isActive, currentStep, currentStepData?.targetElement, mounted, showWelcome]);
+  }, [isActive, currentStep, currentStepData?.targetElement]);
 
-  if (!isActive || !currentStepData || !mounted) {
+  if (!isActive || !currentStepData) {
+    console.log('🔍 [DEBUG] No renderizando - isActive:', isActive, 'currentStep:', currentStep);
     return null;
   }
 
@@ -69,36 +58,33 @@ const InteractiveGuide: React.FC<InteractiveGuideProps> = ({
   };
 
   const getHighlightPosition = (): CSSProperties => {
-    if (!currentStepData.targetElement || showWelcome) return {};
+    if (!currentStepData.targetElement) return {};
 
     const targetElement = document.querySelector(currentStepData.targetElement);
-    if (!targetElement) {
-      return {};
-    }
+    if (!targetElement) return {};
 
     const rect = targetElement.getBoundingClientRect();
     const scrollY = window.scrollY || window.pageYOffset;
-    const scrollX = window.scrollX || window.pageXOffset;
 
     return {
       position: 'fixed',
-      top: rect.top + scrollY - 8,
-      left: rect.left + scrollX - 8,
-      width: rect.width + 16,
-      height: rect.height + 16,
-      borderRadius: '12px',
+      top: rect.top + scrollY - 5,
+      left: rect.left - 5,
+      width: rect.width + 10,
+      height: rect.height + 10,
+      borderRadius: '8px',
       boxShadow: `
-        0 0 0 9999px rgba(17, 37, 90, 0.8),
+        0 0 0 9999px rgba(0, 0, 0, 0.6),
         0 0 0 3px #2a87ff, 
-        0 0 30px rgba(42, 135, 255, 0.9)
+        0 0 20px rgba(42, 135, 255, 0.8)
       `,
       zIndex: 9998,
-      pointerEvents: 'none' as React.CSSProperties['pointerEvents'],
+      pointerEvents: 'none',
     };
   };
 
   const getTooltipPosition = (): CSSProperties => {
-    if (currentStepData.position === 'center' || showWelcome) {
+    if (currentStepData.position === 'center') {
       return {
         position: 'fixed',
         top: '50%',
@@ -108,48 +94,44 @@ const InteractiveGuide: React.FC<InteractiveGuideProps> = ({
     }
 
     const highlightStyle = getHighlightPosition();
-    if (!highlightStyle.position) {
-      return {
-        position: 'fixed',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)'
-      };
-    }
+    if (!highlightStyle.position) return {};
 
-    const gap = 25;
-    const top = Number(highlightStyle.top) || 0;
-    const left = Number(highlightStyle.left) || 0;
-    const width = Number(highlightStyle.width) || 0;
-    const height = Number(highlightStyle.height) || 0;
+    const rect = {
+      top: Number(highlightStyle.top) || 0,
+      left: Number(highlightStyle.left) || 0,
+      width: Number(highlightStyle.width) || 0,
+      height: Number(highlightStyle.height) || 0
+    };
+
+    const gap = 20;
 
     switch (currentStepData.position) {
       case 'top':
         return {
           position: 'fixed',
-          bottom: `calc(100vh - ${top}px + ${gap}px)`,
-          left: left + (width / 2),
+          bottom: `calc(100vh - ${rect.top}px + ${gap}px)`,
+          left: '50%',
           transform: 'translateX(-50%)'
         };
       case 'bottom':
         return {
           position: 'fixed',
-          top: top + height + gap,
-          left: left + (width / 2),
+          top: rect.top + rect.height + gap,
+          left: '50%',
           transform: 'translateX(-50%)'
         };
       case 'left':
         return {
           position: 'fixed',
-          right: `calc(100vw - ${left}px + ${gap}px)`,
-          top: top + (height / 2),
+          right: `calc(100vw - ${rect.left}px + ${gap}px)`,
+          top: '50%',
           transform: 'translateY(-50%)'
         };
       case 'right':
         return {
           position: 'fixed',
-          left: left + width + gap,
-          top: top + (height / 2),
+          left: rect.left + rect.width + gap,
+          top: '50%',
           transform: 'translateY(-50%)'
         };
       default:
@@ -162,36 +144,7 @@ const InteractiveGuide: React.FC<InteractiveGuideProps> = ({
     }
   };
 
-  const isFinalStep = currentStepData.isFinalStep;
-
-  // Renderizar ventana de bienvenida (SOLO cuando showWelcome es true)
-  const renderWelcomeStep = () => (
-    <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 w-full max-w-md mx-4">
-      <div className="p-8 text-center">
-        {/* Header simple */}
-        <div className="mb-6">
-          <div className="text-4xl mb-4">👋</div>
-          <h2 className="text-2xl font-bold text-[#11255A] mb-3">
-            ¡Bienvenido a SERVINEO!
-          </h2>
-          <p className="text-gray-600 text-sm leading-relaxed">
-            Te mostraremos las funciones principales de la plataforma en un recorrido rápido de 2 minutos.
-          </p>
-        </div>
-
-        {/* Botón simple */}
-        <button
-          onClick={() => {
-            setShowWelcome(false);
-            onNext();
-          }}
-          className="w-full py-3 bg-[#2a87ff] text-white rounded-lg font-semibold hover:bg-[#1a347a] transition-all"
-        >
-          Comenzar Tour
-        </button>
-      </div>
-    </div>
-  );
+  const isFinalStep = currentStep === 6;
 
   // Renderizar paso final
   const renderFinalStep = () => (
@@ -267,7 +220,7 @@ const InteractiveGuide: React.FC<InteractiveGuideProps> = ({
   const renderNormalStep = () => (
     <div
       style={getTooltipPosition()}
-      className="bg-white rounded-xl shadow-2xl border border-gray-200 z-9999 pointer-events-auto max-w-xs"
+      className="bg-white rounded-xl shadow-2xl border border-gray-200 z-9999 pointer-events-auto max-w-xs mx-4"
     >
       <div className="p-5">
         <div className="flex items-start gap-3 mb-3">
@@ -277,7 +230,7 @@ const InteractiveGuide: React.FC<InteractiveGuideProps> = ({
               {currentStepData.title}
             </h3>
             <div className="text-xs text-[#2a87ff] font-semibold">
-              Paso {currentStep + 1} de {guideSteps.length}
+              Paso {currentStep} de 6
             </div>
           </div>
         </div>
@@ -290,9 +243,9 @@ const InteractiveGuide: React.FC<InteractiveGuideProps> = ({
           <div className="flex space-x-2">
             <button
               onClick={onPrev}
-              disabled={currentStep === 0}
+              disabled={currentStep === 1}
               className={`px-3 py-1 rounded text-xs ${
-                currentStep === 0
+                currentStep === 1
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                   : 'bg-[#eef7ff] text-[#2a87ff] hover:bg-[#d8ecff]'
               }`}
@@ -304,9 +257,16 @@ const InteractiveGuide: React.FC<InteractiveGuideProps> = ({
               onClick={onNext}
               className="px-3 py-1 bg-[#2a87ff] text-white rounded text-xs hover:bg-[#1a347a]"
             >
-              Siguiente
+              {isFinalStep ? 'Finalizar' : 'Siguiente'}
             </button>
           </div>
+
+          <button
+            onClick={onClose}
+            className="px-2 py-1 text-gray-500 hover:text-gray-700 text-xs"
+          >
+            Saltar
+          </button>
         </div>
       </div>
     </div>
@@ -315,18 +275,16 @@ const InteractiveGuide: React.FC<InteractiveGuideProps> = ({
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-9997 flex items-center justify-center bg-[#11255a]/70"
+      className="fixed inset-0 z-9997 flex items-center justify-center bg-black/60"
       onClick={handleOverlayClick}
     >
-      {/* Resaltado del elemento actual - SOLO cuando no es bienvenida */}
-      {!showWelcome && currentStepData.targetElement && (
+      {/* Resaltado del elemento actual */}
+      {currentStepData.targetElement && (
         <div style={getHighlightPosition()} />
       )}
 
       {/* Renderizar el tipo de paso correspondiente */}
-      {showWelcome && renderWelcomeStep()}
-      {isFinalStep && renderFinalStep()}
-      {!showWelcome && !isFinalStep && renderNormalStep()}
+      {isFinalStep ? renderFinalStep() : renderNormalStep()}
     </div>
   );
 };

@@ -5,14 +5,13 @@ export interface GuideStep {
   targetElement?: string;
   position?: 'top' | 'bottom' | 'left' | 'right' | 'center';
   icon: string;
-  isFinalStep?: boolean;
 }
 
 export const guideSteps: GuideStep[] = [
   {
     id: 1,
     title: "Buscador de Servicios",
-    description: "Encuentra fácilmente lo que necesitas. Escribe el servicio que buscas y encuentra proveedores calificados.",
+    description: "Escribe el servicio que necesitas y presiona Enter para buscar. Encontrarás proveedores calificados cerca de tu ubicación.",
     targetElement: "#search-header",
     position: "bottom",
     icon: "🔍"
@@ -20,7 +19,7 @@ export const guideSteps: GuideStep[] = [
   {
     id: 2,
     title: "Categorías de Servicios",
-    description: "Explora servicios organizados por categoría para tu proyecto.",
+    description: "Explora servicios organizados por categoría para encontrar fácilmente lo que necesitas.",
     targetElement: "#servicios",
     position: "top",
     icon: "📋"
@@ -28,7 +27,7 @@ export const guideSteps: GuideStep[] = [
   {
     id: 3,
     title: "Mapa Interactivo",
-    description: "Encuentra fixers cerca de tu ubicación en tiempo real.",
+    description: "Encuentra fixers cerca de tu ubicación en tiempo real con nuestro mapa interactivo.",
     targetElement: "#mapa",
     position: "left",
     icon: "🗺️"
@@ -36,7 +35,7 @@ export const guideSteps: GuideStep[] = [
   {
     id: 4,
     title: "Trabajos Recientes",
-    description: "Inspírate con trabajos realizados por nuestros fixers.",
+    description: "Inspírate con trabajos realizados recientemente por nuestros fixers verificados.",
     targetElement: "#trabajos-recientes",
     position: "top",
     icon: "🛠️"
@@ -44,7 +43,7 @@ export const guideSteps: GuideStep[] = [
   {
     id: 5,
     title: "Ser Fixer",
-    description: "Únete como profesional y ofrece tus servicios.",
+    description: "¿Quieres ofrecer tus servicios? Únete como fixer y empieza a generar ingresos.",
     targetElement: "#become-fixer",
     position: "top",
     icon: "💼"
@@ -54,7 +53,6 @@ export const guideSteps: GuideStep[] = [
     title: "¡Tutorial Completado!",
     description: "Ya conoces las funciones principales de SERVINEO.",
     position: "center",
-    icon: "🎉",
-    isFinalStep: true
+    icon: "🎉"
   }
 ];
