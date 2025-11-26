@@ -22,6 +22,7 @@ const InteractiveGuide: React.FC<InteractiveGuideProps> = ({
 }) => {
   const overlayRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false);
   
   const isValidStep = currentStep >= 0 && currentStep < guideSteps.length;
   const currentStepData: GuideStep | undefined = isValidStep ? guideSteps[currentStep] : undefined;
@@ -30,56 +31,32 @@ const InteractiveGuide: React.FC<InteractiveGuideProps> = ({
     setMounted(true);
   }, []);
 
-  // DEBUG: Ver qué está pasando
+  // Mostrar bienvenida solo al iniciar por primera vez
   useEffect(() => {
-    if (isActive) {
-      console.log('🔍 [GUIDE DEBUG] Guía activa, paso:', currentStep + 1);
-      console.log('🔍 [GUIDE DEBUG] Datos del paso:', guideSteps[currentStep]);
-      
-      const stepData = guideSteps[currentStep];
-      if (stepData?.targetElement) {
-        console.log('🔍 [GUIDE DEBUG] Buscando elemento:', stepData.targetElement);
-        const element = document.querySelector(stepData.targetElement);
-        console.log('🔍 [GUIDE DEBUG] Elemento encontrado:', element);
-      }
+    if (isActive && currentStep === 0) {
+      setShowWelcome(true);
+    } else {
+      setShowWelcome(false);
     }
   }, [isActive, currentStep]);
 
   useEffect(() => {
-    if (isActive && currentStepData?.targetElement && mounted) {
-      console.log('🔍 [GUIDE DEBUG] Intentando scroll a elemento:', currentStepData.targetElement);
-      
+    if (isActive && currentStepData?.targetElement && mounted && !showWelcome) {
       const scrollToElement = () => {
         const targetElement = document.querySelector(currentStepData.targetElement!);
         if (targetElement) {
-          console.log('🔍 [GUIDE DEBUG] Elemento encontrado, haciendo scroll');
-          
           targetElement.scrollIntoView({ 
             behavior: 'smooth', 
             block: 'center'
           });
-          
           targetElement.getBoundingClientRect();
-          
-        } else {
-          console.log('🔍 [GUIDE DEBUG] ERROR: Elemento NO encontrado:', currentStepData.targetElement);
-          setTimeout(() => {
-            const retryElement = document.querySelector(currentStepData.targetElement!);
-            console.log('🔍 [GUIDE DEBUG] Reintento - elemento encontrado:', retryElement);
-            if (retryElement) {
-              retryElement.scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'center' 
-              });
-            }
-          }, 500);
         }
       };
 
       const timer = setTimeout(scrollToElement, 100);
       return () => clearTimeout(timer);
     }
-  }, [isActive, currentStep, currentStepData?.targetElement, mounted]);
+  }, [isActive, currentStep, currentStepData?.targetElement, mounted, showWelcome]);
 
   if (!isActive || !currentStepData || !mounted) {
     return null;
@@ -92,11 +69,10 @@ const InteractiveGuide: React.FC<InteractiveGuideProps> = ({
   };
 
   const getHighlightPosition = (): CSSProperties => {
-    if (!currentStepData.targetElement) return {};
+    if (!currentStepData.targetElement || showWelcome) return {};
 
     const targetElement = document.querySelector(currentStepData.targetElement);
     if (!targetElement) {
-      console.log('🔍 [GUIDE DEBUG] No se pudo encontrar elemento para resaltar:', currentStepData.targetElement);
       return {};
     }
 
@@ -106,25 +82,23 @@ const InteractiveGuide: React.FC<InteractiveGuideProps> = ({
 
     return {
       position: 'fixed',
-      top: rect.top + scrollY - 5, // Margen adicional
-      left: rect.left + scrollX - 5,
-      width: rect.width + 10,
-      height: rect.height + 10,
+      top: rect.top + scrollY - 8,
+      left: rect.left + scrollX - 8,
+      width: rect.width + 16,
+      height: rect.height + 16,
       borderRadius: '12px',
       boxShadow: `
-        0 0 0 9999px rgba(17, 37, 90, 0.7),
+        0 0 0 9999px rgba(17, 37, 90, 0.8),
         0 0 0 3px #2a87ff, 
-        0 0 30px rgba(42, 135, 255, 0.9),
-        inset 0 0 0 2px #ffffff
+        0 0 30px rgba(42, 135, 255, 0.9)
       `,
       zIndex: 9998,
       pointerEvents: 'none' as React.CSSProperties['pointerEvents'],
-      transition: 'all 0.3s ease-out',
     };
   };
 
   const getTooltipPosition = (): CSSProperties => {
-    if (currentStepData.position === 'center') {
+    if (currentStepData.position === 'center' || showWelcome) {
       return {
         position: 'fixed',
         top: '50%',
@@ -143,7 +117,7 @@ const InteractiveGuide: React.FC<InteractiveGuideProps> = ({
       };
     }
 
-    const gap = 20;
+    const gap = 25;
     const top = Number(highlightStyle.top) || 0;
     const left = Number(highlightStyle.left) || 0;
     const width = Number(highlightStyle.width) || 0;
@@ -190,56 +164,28 @@ const InteractiveGuide: React.FC<InteractiveGuideProps> = ({
 
   const isFinalStep = currentStepData.isFinalStep;
 
-  // Renderizar paso de bienvenida (como imagen 2)
+  // Renderizar ventana de bienvenida (SOLO cuando showWelcome es true)
   const renderWelcomeStep = () => (
-    <div className="bg-white rounded-2xl shadow-2xl border-2 border-[#2a87ff] w-full max-w-md mx-4">
+    <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 w-full max-w-md mx-4">
       <div className="p-8 text-center">
-        {/* Header con efecto */}
+        {/* Header simple */}
         <div className="mb-6">
-          <div className="text-5xl mb-4 animate-bounce">👋</div>
+          <div className="text-4xl mb-4">👋</div>
           <h2 className="text-2xl font-bold text-[#11255A] mb-3">
             ¡Bienvenido a SERVINEO!
           </h2>
-          <p className="text-gray-600">
-            Conectamos clientes con proveedores. Desde reparaciones del hogar hasta servicios especializados.
+          <p className="text-gray-600 text-sm leading-relaxed">
+            Te mostraremos las funciones principales de la plataforma en un recorrido rápido de 2 minutos.
           </p>
         </div>
 
-        {/* Buscador simulado como en imagen 2 */}
-        <div className="mb-6 p-4 bg-[#f8fafc] rounded-lg border border-[#d8ecff]">
-          <div className="text-left mb-3">
-            <span className="text-sm font-medium text-[#11255A]">¿Qué servicio necesita?</span>
-          </div>
-          <div className="relative">
-            <div className="w-full px-4 py-3 pl-10 border-2 border-[#2a87ff] rounded-lg bg-white text-[#11255A] font-medium">
-              Escribe tu servicio aquí...
-            </div>
-            <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#2a87ff]">
-              🔍
-            </div>
-          </div>
-        </div>
-
-        {/* Estadísticas con iconos como imagen 2 */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
-          <div className="text-center">
-            <div className="text-xl font-bold text-[#2a87ff] mb-1">500+</div>
-            <div className="text-xs text-gray-600">FIXERS</div>
-          </div>
-          <div className="text-center">
-            <div className="text-xl font-bold text-[#2a87ff] mb-1">1,200+</div>
-            <div className="text-xs text-gray-600">Servicios</div>
-          </div>
-          <div className="text-center">
-            <div className="text-xl font-bold text-[#2a87ff] mb-1">4.8</div>
-            <div className="text-xs text-gray-600">Calificación</div>
-          </div>
-        </div>
-
-        {/* Botón de acción */}
+        {/* Botón simple */}
         <button
-          onClick={onNext}
-          className="w-full py-4 bg-[#2a87ff] text-white rounded-lg font-semibold hover:bg-[#1a347a] transition-all transform hover:scale-105 shadow-lg"
+          onClick={() => {
+            setShowWelcome(false);
+            onNext();
+          }}
+          className="w-full py-3 bg-[#2a87ff] text-white rounded-lg font-semibold hover:bg-[#1a347a] transition-all"
         >
           Comenzar Tour
         </button>
@@ -249,51 +195,51 @@ const InteractiveGuide: React.FC<InteractiveGuideProps> = ({
 
   // Renderizar paso final
   const renderFinalStep = () => (
-    <div className="bg-white rounded-2xl shadow-2xl border-2 border-[#2a87ff] w-full max-w-2xl mx-4">
+    <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 w-full max-w-2xl mx-4">
       <div className="p-8">
         <div className="text-center mb-6">
-          <div className="text-5xl mb-4">🎉</div>
+          <div className="text-4xl mb-4">🎉</div>
           <h2 className="text-2xl font-bold text-[#11255A] mb-2">
             ¡Tutorial Completado!
           </h2>
           <p className="text-gray-600">
-            Ya conoces las funciones principales de SERVINEO. Ahora estás listo para:
+            Ya conoces las funciones principales de SERVINEO.
           </p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6 mb-8">
-          <div className="bg-[#f8fafc] rounded-xl p-6 border border-[#d8ecff]">
-            <h3 className="font-semibold text-[#11255A] mb-4 text-center text-lg">Como Cliente</h3>
-            <ul className="space-y-3 text-sm">
+          <div className="bg-[#f8fafc] rounded-lg p-4">
+            <h3 className="font-semibold text-[#11255A] mb-3 text-center">Como Cliente</h3>
+            <ul className="space-y-2 text-sm">
               <li className="flex items-center">
-                <span className="text-green-500 mr-3 text-lg">✓</span>
-                <span>Buscar servicios que necesitas</span>
+                <span className="text-green-500 mr-2">✓</span>
+                Buscar servicios que necesitas
               </li>
               <li className="flex items-center">
-                <span className="text-green-500 mr-3 text-lg">✓</span>
-                <span>Contratar fixers verificados</span>
+                <span className="text-green-500 mr-2">✓</span>
+                Contratar fixers verificados
               </li>
               <li className="flex items-center">
-                <span className="text-green-500 mr-3 text-lg">✓</span>
-                <span>Calificar trabajos realizados</span>
+                <span className="text-green-500 mr-2">✓</span>
+                Calificar trabajos realizados
               </li>
             </ul>
           </div>
 
-          <div className="bg-[#f8fafc] rounded-xl p-6 border border-[#d8ecff]">
-            <h3 className="font-semibold text-[#11255A] mb-4 text-center text-lg">Como Fixer</h3>
-            <ul className="space-y-3 text-sm">
+          <div className="bg-[#f8fafc] rounded-lg p-4">
+            <h3 className="font-semibold text-[#11255A] mb-3 text-center">Como Fixer</h3>
+            <ul className="space-y-2 text-sm">
               <li className="flex items-center">
-                <span className="text-green-500 mr-3 text-lg">✓</span>
-                <span>Ofrecer tus servicios profesionales</span>
+                <span className="text-green-500 mr-2">✓</span>
+                Ofrecer tus servicios
               </li>
               <li className="flex items-center">
-                <span className="text-green-500 mr-3 text-lg">✓</span>
-                <span>Recibir solicitudes de trabajo</span>
+                <span className="text-green-500 mr-2">✓</span>
+                Recibir solicitudes
               </li>
               <li className="flex items-center">
-                <span className="text-green-500 mr-3 text-lg">✓</span>
-                <span>Construir tu reputación</span>
+                <span className="text-green-500 mr-2">✓</span>
+                Construir reputación
               </li>
             </ul>
           </div>
@@ -302,13 +248,13 @@ const InteractiveGuide: React.FC<InteractiveGuideProps> = ({
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
             onClick={onRestart}
-            className="px-8 py-3 bg-[#2a87ff] text-white rounded-lg font-semibold hover:bg-[#1a347a] transition-all transform hover:scale-105"
+            className="px-6 py-3 bg-[#2a87ff] text-white rounded-lg font-semibold hover:bg-[#1a347a] transition-all"
           >
             Ver de nuevo
           </button>
           <button
             onClick={onClose}
-            className="px-8 py-3 bg-white text-[#2a87ff] border-2 border-[#2a87ff] rounded-lg font-semibold hover:bg-[#eef7ff] transition-all"
+            className="px-6 py-3 bg-white text-[#2a87ff] border border-[#2a87ff] rounded-lg font-semibold hover:bg-[#eef7ff] transition-all"
           >
             Volver al inicio
           </button>
@@ -317,16 +263,15 @@ const InteractiveGuide: React.FC<InteractiveGuideProps> = ({
     </div>
   );
 
-  // Renderizar paso normal (alineado con el elemento)
+  // Renderizar paso normal
   const renderNormalStep = () => (
     <div
       style={getTooltipPosition()}
-      className="bg-white rounded-xl shadow-2xl border-2 border-[#2a87ff] z-9999 pointer-events-auto max-w-xs transform transition-all duration-300"
+      className="bg-white rounded-xl shadow-2xl border border-gray-200 z-9999 pointer-events-auto max-w-xs"
     >
       <div className="p-5">
-        {/* Header con icono animado */}
         <div className="flex items-start gap-3 mb-3">
-          <div className="text-2xl shrink-0 animate-pulse">{currentStepData.icon}</div>
+          <div className="text-2xl shrink-0">{currentStepData.icon}</div>
           <div className="flex-1">
             <h3 className="text-base font-bold text-[#11255A] mb-1">
               {currentStepData.title}
@@ -337,61 +282,51 @@ const InteractiveGuide: React.FC<InteractiveGuideProps> = ({
           </div>
         </div>
 
-        {/* Descripción */}
         <p className="text-xs text-gray-700 mb-4 leading-relaxed">
           {currentStepData.description}
         </p>
 
-        {/* Navegación */}
         <div className="flex justify-between items-center">
           <div className="flex space-x-2">
             <button
               onClick={onPrev}
               disabled={currentStep === 0}
-              className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
+              className={`px-3 py-1 rounded text-xs ${
                 currentStep === 0
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-[#eef7ff] text-[#2a87ff] hover:bg-[#d8ecff] hover:scale-105'
+                  : 'bg-[#eef7ff] text-[#2a87ff] hover:bg-[#d8ecff]'
               }`}
             >
-              ← Anterior
+              Anterior
             </button>
             
             <button
               onClick={onNext}
-              className="px-3 py-1 bg-[#2a87ff] text-white rounded-lg text-xs font-medium hover:bg-[#1a347a] hover:scale-105 transition-all"
+              className="px-3 py-1 bg-[#2a87ff] text-white rounded text-xs hover:bg-[#1a347a]"
             >
-              Siguiente →
+              Siguiente
             </button>
           </div>
         </div>
       </div>
-      
-      {/* Flecha indicadora */}
-      <div className="absolute w-4 h-4 bg-white border-r-2 border-t-2 border-[#2a87ff] transform rotate-45 -translate-x-1/2 -translate-y-1/2"
-        style={{
-          left: '50%',
-          [currentStepData.position === 'top' ? 'bottom' : 'top']: '-8px'
-        }}
-      ></div>
     </div>
   );
 
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-9997 flex items-center justify-center bg-[#11255a]/80 backdrop-blur-sm transition-all duration-300"
+      className="fixed inset-0 z-9997 flex items-center justify-center bg-[#11255a]/70"
       onClick={handleOverlayClick}
     >
-      {/* Resaltado del elemento actual */}
-      {currentStepData.targetElement && (
+      {/* Resaltado del elemento actual - SOLO cuando no es bienvenida */}
+      {!showWelcome && currentStepData.targetElement && (
         <div style={getHighlightPosition()} />
       )}
 
       {/* Renderizar el tipo de paso correspondiente */}
-      {currentStep === 0 && renderWelcomeStep()}
+      {showWelcome && renderWelcomeStep()}
       {isFinalStep && renderFinalStep()}
-      {currentStep > 0 && !isFinalStep && renderNormalStep()}
+      {!showWelcome && !isFinalStep && renderNormalStep()}
     </div>
   );
 };

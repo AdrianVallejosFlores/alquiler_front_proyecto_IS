@@ -16,7 +16,7 @@ export const useInteractiveGuide = () => {
 
   const startGuide = () => {
     setIsGuideActive(true);
-    setCurrentStep(0); // Empezar en paso 0 (bienvenida)
+    setCurrentStep(0); // Empezar en paso 0 (que mostrará la bienvenida)
     localStorage.setItem('servineo-guide-seen', 'true');
     setIsFirstVisit(false);
   };
@@ -24,7 +24,7 @@ export const useInteractiveGuide = () => {
   const nextStep = () => {
     setCurrentStep(prev => {
       const next = prev + 1;
-      return next < 6 ? next : prev; // 6 pasos totales
+      return next < guideSteps.length ? next : prev;
     });
   };
 
@@ -56,3 +56,8 @@ export const useInteractiveGuide = () => {
     restartGuide
   };
 };
+
+// Necesitamos definir guideSteps aquí también para la función nextStep
+const guideSteps = [
+  { id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 }
+];

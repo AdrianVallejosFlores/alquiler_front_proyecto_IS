@@ -52,7 +52,7 @@ export const guideSteps: GuideStep[] = [
   {
     id: 6,
     title: "¡Tutorial Completado!",
-    description: "Ya conoces las funciones principales de SERVINEO. Ahora estás listo para:",
+    description: "Ya conoces las funciones principales de SERVINEO.",
     position: "center",
     icon: "🎉",
     isFinalStep: true
