@@ -1,4 +1,3 @@
-// src/app/hooks/use-interactive-guide.ts
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -25,7 +24,7 @@ export const useInteractiveGuide = () => {
   const nextStep = () => {
     setCurrentStep(prev => {
       const next = prev + 1;
-      return next < 9 ? next : prev; // 9 pasos totales
+      return next < 6 ? next : prev; // CORREGIDO: 6 pasos totales
     });
   };
 
@@ -43,13 +42,12 @@ export const useInteractiveGuide = () => {
 
   const restartGuide = () => {
     setCurrentStep(0);
+    setIsGuideActive(true);
   };
 
   return {
     isGuideActive,
-    setIsGuideActive,
     currentStep,
-    setCurrentStep,
     isFirstVisit,
     startGuide,
     nextStep,

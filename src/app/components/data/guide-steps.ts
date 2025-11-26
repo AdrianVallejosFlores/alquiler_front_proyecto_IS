@@ -1,10 +1,9 @@
-// src/app/components/data/guide-steps.ts
 export interface GuideStep {
   id: number;
   title: string;
   description: string;
   targetElement?: string;
-  position?: 'top' | 'bottom' | 'left' | 'right';
+  position?: 'top' | 'bottom' | 'left' | 'right' | 'center'; // AÑADIR 'center'
   icon: string;
 }
 
@@ -12,30 +11,30 @@ export const guideSteps: GuideStep[] = [
   {
     id: 1,
     title: "¡Bienvenido a SERVINEO!",
-    description: "Te mostraremos las funciones principales en 2 minutos",
-    position: "bottom",
+    description: "Te mostraremos las funciones principales en 2 minutos. Aprenderás a buscar servicios y usar la plataforma.",
+    position: "center",
     icon: "👋"
   },
   {
     id: 2,
-    title: "Buscador",
-    description: "Encuentra servicios profesionales fácilmente",
-    targetElement: "#search-header", // BUSCADOR DEL HEADER DESKTOP
+    title: "Buscador de Servicios",
+    description: "Aquí puedes buscar cualquier servicio que necesites. Escribe lo que buscas y encuentra proveedores calificados cerca de ti.",
+    targetElement: "#search-header",
     position: "bottom",
     icon: "🔍"
   },
   {
     id: 3,
-    title: "Categorías",
-    description: "Explora servicios organizados por categoría",
+    title: "Categorías de Servicios",
+    description: "Explora nuestras categorías organizadas para encontrar fácilmente el servicio ideal para tu proyecto.",
     targetElement: "#servicios",
     position: "top",
     icon: "📋"
   },
   {
     id: 4,
-    title: "Mapa",
-    description: "Encuentra fixers cerca de tu ubicación",
+    title: "Mapa Interactivo",
+    description: "Encuentra fixers cerca de tu ubicación. Visualiza los profesionales disponibles en tu zona.",
     targetElement: "#mapa",
     position: "left",
     icon: "🗺️"
@@ -43,32 +42,16 @@ export const guideSteps: GuideStep[] = [
   {
     id: 5,
     title: "Trabajos Recientes",
-    description: "Inspírate con trabajos realizados recientemente",
+    description: "Inspírate con trabajos realizados recientemente por nuestros fixers verificados.",
     targetElement: "#trabajos-recientes",
     position: "top",
     icon: "🛠️"
   },
   {
     id: 6,
-    title: "Acciones Rápidas",
-    description: "Acceso directo a funciones importantes",
-    targetElement: "#quick-actions",
-    position: "top",
-    icon: "⚡"
-  },
-  {
-    id: 7,
-    title: "Ser Fixer",
-    description: "Únete como profesional y ofrece tus servicios",
-    targetElement: "#become-fixer",
-    position: "top",
-    icon: "💼"
-  },
-  {
-    id: 8,
-    title: "¡Tutorial Completado!",
-    description: "Ya estás listo para usar SERVINEO",
-    position: "bottom",
+    title: "¡Listo para Comenzar!",
+    description: "Ya conoces las funciones principales. ¡Empieza a encontrar o ofrecer servicios en SERVINEO!",
+    position: "center",
     icon: "🎉"
   }
 ];
