@@ -51,6 +51,7 @@ export default function RootLayout({
 
     // Escuchar evento para iniciar guía desde el footer
     const handleStartGuide = () => {
+      console.log('🔍 [LAYOUT DEBUG] Evento startInteractiveGuide recibido');
       startGuide();
     };
 
@@ -65,11 +66,15 @@ export default function RootLayout({
 
   // Efecto para iniciar automáticamente en la primera visita
   useEffect(() => {
+    console.log('🔍 [LAYOUT DEBUG] isFirstVisit:', isFirstVisit);
     if (isFirstVisit) {
-      // Pequeño delay para asegurar que la página esté cargada
+      console.log('🔍 [LAYOUT DEBUG] Primera visita - iniciando guía automáticamente');
+      // Delay más largo para asegurar que todo cargue
       const timer = setTimeout(() => {
+        console.log('🔍 [LAYOUT DEBUG] Ejecutando startGuide()');
+        console.log('🔍 [LAYOUT DEBUG] Elemento search-header existe:', document.querySelector('#search-header'));
         startGuide();
-      }, 1000);
+      }, 2000);
       
       return () => clearTimeout(timer);
     }
@@ -98,7 +103,6 @@ export default function RootLayout({
 
     if (isGuideActive) {
       document.addEventListener('keydown', handleKeyDown);
-      // Prevenir scroll
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';

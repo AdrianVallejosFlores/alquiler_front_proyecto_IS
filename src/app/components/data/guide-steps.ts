@@ -5,8 +5,8 @@ export interface GuideStep {
   targetElement?: string;
   position?: 'top' | 'bottom' | 'left' | 'right' | 'center';
   icon: string;
-  showStats?: boolean; // Para mostrar estadísticas como en imagen 2
-  isFinalStep?: boolean; // Para el paso final especial
+  showStats?: boolean;
+  isFinalStep?: boolean;
 }
 
 export const guideSteps: GuideStep[] = [
