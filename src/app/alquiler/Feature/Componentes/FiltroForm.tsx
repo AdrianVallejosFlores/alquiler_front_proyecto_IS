@@ -46,6 +46,7 @@ export default function FiltrosForm({
     departamentoSeleccionado,
     setDepartamentoSeleccionado,
     loadCiudadesByDepartamento,
+    conteos,
   } = useFiltros();
 
   const [mostrarFiltros, setMostrarFiltros] = useState(false);
@@ -58,7 +59,7 @@ export default function FiltrosForm({
     limpiarFiltros();
     try {
       setSort("Fecha (Reciente)");
-    } catch {}
+    } catch { }
   }, []);
 
   // Bloquea flechas globales salvo cuando selectAbierto === true
@@ -122,7 +123,7 @@ export default function FiltrosForm({
       return;
     }
   };
-
+  const hayDatosCargados = usuarios.length > 0 || sinResultados;
   return (
     <div className="w-full bg-white rounded-xl p-6 md:p-8 shadow-2xl shadow-gray-200/50 border border-gray-100">
 
@@ -160,22 +161,29 @@ export default function FiltrosForm({
               onChange={(e) => handleFiltroUnico("ciudad", e.target.value)}
               disabled={!departamentoSeleccionado || ciudades.length === 0}
               {...selectEvents}
-              className={`border rounded-lg px-3 py-2 text-sm text-black focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                !departamentoSeleccionado || ciudades.length === 0
-                  ? "opacity-60 cursor-not-allowed"
-                  : "border-gray-300"
-              }`}
+              className={`border rounded-lg px-3 py-2 text-sm text-black focus:ring-2 focus:ring-blue-500 ${!departamentoSeleccionado ? "opacity-60 cursor-not-allowed" : "border-gray-300"
+                }`}
             >
-              {(!departamentoSeleccionado || ciudades.length === 0) ? (
-                <option value="" disabled>Seleccione Provincia</option>
-              ) : (
-                <>
-                  <option value="">Seleccione Provincia</option>
-                  {ciudades.map((c) => (
-                    <option key={c.value} value={c.value}>{c.label}</option>
-                  ))}
-                </>
-              )}
+              <option value="">
+                {filtro.ciudad ? "Todas las ciudades" : "Seleccione Ciudad"}
+              </option>
+              {ciudades.map((c) => {
+                // 🔥 LÓGICA DE VISUALIZACIÓN DE CONTEO
+                const count = conteos.ciudades[c.value] || 0;
+                // Si hay datos cargados, mostramos conteo. Si es 0, deshabilitamos visualmente (o real disabled)
+                const label = hayDatosCargados ? `${c.label} (${count})` : c.label;
+
+                return (
+                  <option
+                    key={c.value}
+                    value={c.value}
+                    disabled={hayDatosCargados && count === 0} // Deshabilitar si es 0
+                    className={hayDatosCargados && count === 0 ? "text-gray-400 bg-gray-50" : ""}
+                  >
+                    {label}
+                  </option>
+                );
+              })}
             </select>
 
             {/* Disponibilidad */}
@@ -183,12 +191,23 @@ export default function FiltrosForm({
               value={filtro.disponibilidad || ""}
               onChange={(e) => handleFiltroUnico("disponibilidad", e.target.value)}
               {...selectEvents}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm text-black focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm text-black focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Disponibilidad</option>
-              {disponibilidad.map((d) => (
-                <option key={d.value} value={d.value}>{d.label}</option>
-              ))}
+              {disponibilidad.map((d) => {
+                const count = conteos.disponibilidad[d.value] || 0;
+                const label = hayDatosCargados ? `${d.label} (${count})` : d.label;
+                return (
+                  <option
+                    key={d.value}
+                    value={d.value}
+                    disabled={hayDatosCargados && count === 0}
+                    className={hayDatosCargados && count === 0 ? "text-gray-400 bg-gray-50" : ""}
+                  >
+                    {label}
+                  </option>
+                );
+              })}
             </select>
 
             {/* Tipo de Especialidad */}
@@ -196,12 +215,27 @@ export default function FiltrosForm({
               value={filtro.tipoEspecialidad || ""}
               onChange={(e) => handleFiltroUnico("tipoEspecialidad", e.target.value)}
               {...selectEvents}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm text-black focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm text-black focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Tipo de Especialidad</option>
-              {especialidades.map((t, index) => (
-                <option key={t.value + "-" + index} value={t.value}>{t.label}</option>
-              ))}
+              {especialidades.map((t, index) => {
+                const count = conteos.especialidades[t.value] || 0;
+                const label = hayDatosCargados ? `${t.label} (${count})` : t.label;
+
+                // Opción extra: Ocultar especialidades con 0 resultados para limpiar la lista
+                // if (hayDatosCargados && count === 0) return null; 
+
+                return (
+                  <option
+                    key={t.value + "-" + index}
+                    value={t.value}
+                    disabled={hayDatosCargados && count === 0}
+                    className={hayDatosCargados && count === 0 ? "text-gray-400 bg-gray-50" : ""}
+                  >
+                    {label}
+                  </option>
+                );
+              })}
             </select>
 
           </div>
@@ -218,9 +252,8 @@ export default function FiltrosForm({
             onChange={(e) => setSort(e.target.value)}
             disabled={disabled}
             {...selectEvents}
-            className={`border border-gray-400 rounded-lg px-3 py-2 text-sm text-black focus:ring-blue-500 focus:border-blue-500 ${
-              disabled ? "opacity-60 cursor-not-allowed" : ""
-            }`}
+            className={`border border-gray-400 rounded-lg px-3 py-2 text-sm text-black focus:ring-blue-500 focus:border-blue-500 ${disabled ? "opacity-60 cursor-not-allowed" : ""
+              }`}
           >
             {opcionesOrdenamiento?.map((opcion) => (
               <option key={opcion} value={opcion}>{opcion}</option>
@@ -229,12 +262,12 @@ export default function FiltrosForm({
         </div>
 
         <div className="flex items-center gap-3">
-            {/*<div className="text-sm text-gray-600 font-medium">Total de Ofertas: {totalItems}</div>*/}
+          {/*<div className="text-sm text-gray-600 font-medium">Total de Ofertas: {totalItems}</div>*/}
           <button
             type="button"
             onClick={() => {
               limpiarFiltros();
-              try { setSort("Fecha (Reciente)"); } catch {}
+              try { setSort("Fecha (Reciente)"); } catch { }
               if (onClearFilters) onClearFilters();
               router.push("/alquiler/paginacion");
             }}

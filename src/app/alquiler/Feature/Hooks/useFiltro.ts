@@ -7,8 +7,8 @@ import {
   getCiudadesPorDepartamento,
   getUsuariosPorEspecialidadId,
   getUsuariosPorCiudad,
-} from  "../Services/filtro.api";
-import type { UsuarioResumen } from "../Types/filtroType";
+} from "../Services/filtro.api";
+import type { UsuarioResumen, ConteosFiltros } from "../Types/filtroType";
 
 type Option = { value: string; label: string };
 
@@ -28,6 +28,13 @@ export function useFiltros() {
   const [especialidades, setEspecialidades] = useState<Option[]>([]);
 
   const [usuarios, setUsuarios] = useState<UsuarioResumen[]>([]);
+
+  const [conteos, setConteos] = useState<ConteosFiltros>({
+    ciudades: {},
+    especialidades: {},
+    disponibilidad: {}
+  });
+
   const [loadingUsuarios, setLoadingUsuarios] = useState(false);
   const [errorUsuarios, setErrorUsuarios] = useState<string | null>(null);
   const [sinResultados, setSinResultados] = useState(false);
@@ -49,7 +56,83 @@ export function useFiltros() {
     setFiltro((prev) => ({ ...prev, [campo]: valor }));
   };
 
-  
+  //  FUNCIÓN HELPER PARA CALCULAR CONTEOS 
+  const calcularConteos = (dataBase: UsuarioResumen[], filtrosActuales: typeof filtro, deptoSeleccionado: string) => {
+
+    // 1. Conteos de CIUDADES:
+    // Filtramos la base por TODO (especialidad, disponibilidad) MENOS ciudad.
+    const baseParaCiudades = dataBase.filter(u => {
+      let match = true;
+      if (filtrosActuales.disponibilidad) {
+        const disponible = filtrosActuales.disponibilidad === "true";
+        match = match && (disponible ? u.activo === true : u.activo === false);
+      }
+      if (filtrosActuales.tipoEspecialidad) {
+        const idEsp = Number(filtrosActuales.tipoEspecialidad);
+        match = match && u.especialidades?.some(e => e.id_especialidad === idEsp);
+      }
+
+      return match;
+    });
+
+    const conteoCiudades: Record<string, number> = {};
+    baseParaCiudades.forEach(u => {
+      const nombreCiudad = u.ciudad?.nombre;
+      if (nombreCiudad) {
+        conteoCiudades[nombreCiudad] = (conteoCiudades[nombreCiudad] || 0) + 1;
+      }
+    });
+
+    // 2. Conteos de ESPECIALIDADES:
+    // Filtramos la base por TODO (ciudad, disponibilidad) MENOS especialidad.
+    const baseParaEspecialidades = dataBase.filter(u => {
+      let match = true;
+      if (filtrosActuales.ciudad) {
+        match = match && u.ciudad?.nombre.toLowerCase() === filtrosActuales.ciudad.toLowerCase();
+      }
+      if (filtrosActuales.disponibilidad) {
+        const disponible = filtrosActuales.disponibilidad === "true";
+        match = match && (disponible ? u.activo === true : u.activo === false);
+      }
+      return match;
+    });
+
+    const conteoEspecialidades: Record<string, number> = {};
+    baseParaEspecialidades.forEach(u => {
+      if (u.especialidades) {
+        u.especialidades.forEach(esp => {
+          const id = String(esp.id_especialidad);
+          conteoEspecialidades[id] = (conteoEspecialidades[id] || 0) + 1;
+        });
+      }
+    });
+
+    // 3. Conteos de DISPONIBILIDAD:
+    // Filtramos por TODO MENOS disponibilidad.
+    const baseParaDisponibilidad = dataBase.filter(u => {
+      let match = true;
+      if (filtrosActuales.ciudad) {
+        match = match && u.ciudad?.nombre.toLowerCase() === filtrosActuales.ciudad.toLowerCase();
+      }
+      if (filtrosActuales.tipoEspecialidad) {
+        const idEsp = Number(filtrosActuales.tipoEspecialidad);
+        match = match && u.especialidades?.some(e => e.id_especialidad === idEsp);
+      }
+      return match;
+    });
+
+    const conteoDisp: Record<string, number> = { "true": 0, "false": 0 };
+    baseParaDisponibilidad.forEach(u => {
+      if (u.activo) conteoDisp["true"]++;
+      else conteoDisp["false"]++;
+    });
+
+    return {
+      ciudades: conteoCiudades,
+      especialidades: conteoEspecialidades,
+      disponibilidad: conteoDisp
+    };
+  };
 
 
   // 🔥 FUNCIÓN CORREGIDA SIN BÚSQUEDA
@@ -58,6 +141,7 @@ export function useFiltros() {
     if (!filtro.ciudad && !filtro.disponibilidad && !filtro.tipoEspecialidad && !departamentoSeleccionado) {
       console.log("🔄 No hay filtros activos, limpiando resultados");
       setUsuarios([]);
+      setConteos({ ciudades: {}, especialidades: {}, disponibilidad: {} }); // Resetear conteos
       setSinResultados(false);
       return;
     }
@@ -87,7 +171,7 @@ export function useFiltros() {
       // CASO 1: Solo departamento (necesita lógica especial)
       if (departamentoSeleccionado && !filtro.ciudad && !filtro.disponibilidad && !filtro.tipoEspecialidad) {
         console.log("🔍 Buscando usuarios para departamento:", departamentoSeleccionado);
-        
+
         try {
           // Primero obtener las ciudades del departamento
           const ciudadesDelDepartamento = await getCiudadesPorDepartamento(departamentoSeleccionado);
@@ -148,6 +232,7 @@ export function useFiltros() {
 
       console.log("🎯 Datos base obtenidos:", data.length);
 
+
       // Si no hay datos después de la obtención base
       if (data.length === 0) {
         console.log("📭 No hay datos después de la obtención base");
@@ -157,7 +242,10 @@ export function useFiltros() {
         return;
       }
 
-      // 🔥 APLICAR FILTROS ADICIONALES EN CASCADA
+      const nuevosConteos = calcularConteos(data, filtro, departamentoSeleccionado);
+      setConteos(nuevosConteos);
+
+      // APLICAR FILTROS ADICIONALES EN CASCADA
       let datosFiltrados = [...data];
 
       // Filtro por ciudad (si está activo y no fue el criterio principal)
@@ -324,6 +412,9 @@ export function useFiltros() {
     setUsuarios([]);
     setSinResultados(false);
     setErrorUsuarios(null);
+    setConteos({ ciudades: {}, especialidades: {}, disponibilidad: {} });
+    setSinResultados(false);
+    setErrorUsuarios(null);
     console.log("🧹 Limpiando todos los filtros");
   };
 
@@ -353,5 +444,7 @@ export function useFiltros() {
     loadingProvincias,
     loadingEspecialidades,
     loadCiudadesByDepartamento,
+    //conteo
+    conteos,
   };
 }
