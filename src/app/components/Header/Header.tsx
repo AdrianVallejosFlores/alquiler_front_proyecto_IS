@@ -130,6 +130,7 @@ export default function Header() {
           <div className="grow mx-8">
             <div className="relative">
               <input
+                id="search-header"
                 type="text"
                 placeholder="Buscar"
                 onKeyDown={handleSearch}
@@ -235,6 +236,7 @@ export default function Header() {
           {shouldShowSearchBar && (
             <div className="flex-1 relative">
               <input
+                id="search-header-mobile"
                 type="text"
                 placeholder="Buscar"
                 onKeyDown={handleSearch}

@@ -23,7 +23,6 @@ const InteractiveGuide: React.FC<InteractiveGuideProps> = ({
 }) => {
   const overlayRef = useRef<HTMLDivElement>(null);
   
-  // Verificar que currentStep sea válido
   const isValidStep = currentStep >= 0 && currentStep < guideSteps.length;
   const currentStepData: GuideStep | undefined = isValidStep ? guideSteps[currentStep] : undefined;
 
@@ -57,11 +56,10 @@ const InteractiveGuide: React.FC<InteractiveGuideProps> = ({
       left: rect.left + window.scrollX,
       width: rect.width,
       height: rect.height,
-      borderRadius: '12px',
-      boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.05), 0 0 0 4px #52abff, 0 0 30px rgba(82, 171, 255, 0.6)',
+      borderRadius: '8px',
+      boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.1), 0 0 0 3px #2a87ff, 0 0 20px rgba(42, 135, 255, 0.5)',
       zIndex: 9998,
       pointerEvents: 'none' as React.CSSProperties['pointerEvents'],
-      transition: 'all 0.3s ease'
     };
   };
 
@@ -124,74 +122,38 @@ const InteractiveGuide: React.FC<InteractiveGuideProps> = ({
   return (
     <div
       ref={overlayRef}
-      // OVERLAY COMPLETAMENTE TRANSPARENTE - SOLO RESALTA EL ELEMENTO
-      className="fixed inset-0 z-9999 flex items-center justify-center transition-opacity duration-300 pointer-events-none"
+      // OVERLAY COMPLETAMENTE TRANSPARENTE - SOLO RESALTA ELEMENTOS
+      className="fixed inset-0 z-9999 flex items-center justify-center pointer-events-none"
       onClick={handleOverlayClick}
     >
-      {/* Highlight del elemento actual - MUY SUTIL */}
+      {/* Solo el resaltado del elemento actual */}
       {currentStepData.targetElement && (
         <div style={getHighlightPosition()} />
       )}
 
-      {/* Tooltip de la guía - VENTANA PEQUEÑA */}
+      {/* Ventana de la guía */}
       <div
         style={getTooltipPosition()}
-        className={`bg-white rounded-xl shadow-xl mx-4 z-9999 border-2 border-blue-200 pointer-events-auto ${
-          isWelcomeStep || isFinalStep ? 'max-w-xs' : 'max-w-xs'
-        } transform transition-all duration-300 scale-100`}
+        className="bg-white rounded-lg shadow-lg border border-gray-200 mx-4 z-9999 pointer-events-auto max-w-xs"
       >
         <div className="p-4">
-          {/* Header con icono */}
-          <div className="flex items-start gap-3 mb-3">
-            <div className="shrink-0 w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm">
-              {currentStepData.icon}
-            </div>
+          {/* Header */}
+          <div className="flex items-center gap-3 mb-3">
+            <div className="text-xl">{currentStepData.icon}</div>
             <div className="flex-1">
-              <h3 className="text-sm font-bold text-gray-900 leading-tight">
+              <h3 className="text-sm font-semibold text-[#11255A]">
                 {currentStepData.title}
               </h3>
-              <div className="flex items-center mt-1">
-                <span className="text-xs font-medium text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-full">
-                  {currentStep + 1}/{guideSteps.length}
-                </span>
+              <div className="text-xs text-[#2a87ff] font-medium">
+                Paso {currentStep + 1} de {guideSteps.length}
               </div>
             </div>
-            {!isWelcomeStep && !isFinalStep && (
-              <button
-                onClick={onClose}
-                className="shrink-0 text-gray-400 hover:text-gray-600 transition-colors text-sm font-bold hover:bg-gray-100 w-6 h-6 rounded-full flex items-center justify-center"
-                aria-label="Cerrar guía"
-              >
-                ×
-              </button>
-            )}
           </div>
 
           {/* Descripción */}
-          <p className="text-xs text-gray-600 mb-4 leading-relaxed">
+          <p className="text-xs text-gray-600 mb-4">
             {currentStepData.description}
           </p>
-
-          {/* Contenido especial para el paso final */}
-          {isFinalStep && (
-            <div className="mb-4 space-y-2 bg-gradient-to-br from-blue-50 to-purple-50 p-3 rounded-lg border border-blue-100">
-              <div className="space-y-2">
-                <div>
-                  <h4 className="font-semibold text-gray-800 text-xs mb-1">Como Cliente</h4>
-                  <ul className="space-y-1 text-xs text-gray-600">
-                    <li className="flex items-center">
-                      <span className="text-green-500 mr-1 text-xs">✓</span>
-                      Buscar servicios
-                    </li>
-                    <li className="flex items-center">
-                      <span className="text-green-500 mr-1 text-xs">✓</span>
-                      Contratar fixers
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Navegación */}
           <div className="flex justify-between items-center">
@@ -199,28 +161,28 @@ const InteractiveGuide: React.FC<InteractiveGuideProps> = ({
               <button
                 onClick={onPrev}
                 disabled={currentStep === 0}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
+                className={`px-3 py-1 rounded text-xs ${
                   currentStep === 0
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 shadow-sm'
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                 }`}
               >
-                ←
+                Anterior
               </button>
               
               {isFinalStep ? (
                 <button
                   onClick={onRestart}
-                  className="px-3 py-1.5 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg text-xs font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-md"
+                  className="px-3 py-1 bg-[#2a87ff] text-white rounded text-xs hover:bg-[#1a347a]"
                 >
                   Ver de nuevo
                 </button>
               ) : (
                 <button
                   onClick={onNext}
-                  className="px-3 py-1.5 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg text-xs font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-md"
+                  className="px-3 py-1 bg-[#2a87ff] text-white rounded text-xs hover:bg-[#1a347a]"
                 >
-                  {isWelcomeStep ? 'Comenzar' : '→'}
+                  {isWelcomeStep ? 'Comenzar' : 'Siguiente'}
                 </button>
               )}
             </div>
@@ -228,7 +190,7 @@ const InteractiveGuide: React.FC<InteractiveGuideProps> = ({
             {!isWelcomeStep && !isFinalStep && (
               <button
                 onClick={onClose}
-                className="px-2 py-1.5 text-gray-500 hover:text-gray-700 text-xs font-medium transition-colors hover:bg-gray-50 rounded"
+                className="px-2 py-1 text-gray-500 hover:text-gray-700 text-xs"
               >
                 Saltar
               </button>

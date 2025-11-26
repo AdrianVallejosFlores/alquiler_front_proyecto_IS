@@ -11,8 +11,8 @@ export interface GuideStep {
 export const guideSteps: GuideStep[] = [
   {
     id: 1,
-    title: "¡Bienvenido!",
-    description: "Recorrido rápido de 2 minutos por las funciones principales",
+    title: "¡Bienvenido a SERVINEO!",
+    description: "Te mostraremos las funciones principales en 2 minutos",
     position: "bottom",
     icon: "👋"
   },
@@ -20,17 +20,17 @@ export const guideSteps: GuideStep[] = [
     id: 2,
     title: "Buscador",
     description: "Encuentra servicios profesionales fácilmente",
-    targetElement: "#search-section",
+    targetElement: "#search-header", // BUSCADOR DEL HEADER DESKTOP
     position: "bottom",
     icon: "🔍"
   },
   {
     id: 3,
-    title: "Ventajas",
-    description: "Descubre por qué nos eligen miles de usuarios",
-    targetElement: "#advantages-section",
+    title: "Categorías",
+    description: "Explora servicios organizados por categoría",
+    targetElement: "#servicios",
     position: "top",
-    icon: "⭐"
+    icon: "📋"
   },
   {
     id: 4,
@@ -42,40 +42,32 @@ export const guideSteps: GuideStep[] = [
   },
   {
     id: 5,
-    title: "Servicios",
-    description: "Explora todas nuestras categorías disponibles",
-    targetElement: "#servicios",
-    position: "top",
-    icon: "📋"
-  },
-  {
-    id: 6,
-    title: "Trabajos",
-    description: "Inspírate con trabajos recientes",
+    title: "Trabajos Recientes",
+    description: "Inspírate con trabajos realizados recientemente",
     targetElement: "#trabajos-recientes",
     position: "top",
     icon: "🛠️"
   },
   {
-    id: 7,
-    title: "Acciones",
-    description: "Acceso rápido a funciones importantes",
+    id: 6,
+    title: "Acciones Rápidas",
+    description: "Acceso directo a funciones importantes",
     targetElement: "#quick-actions",
     position: "top",
     icon: "⚡"
   },
   {
-    id: 8,
+    id: 7,
     title: "Ser Fixer",
-    description: "Únete y genera ingresos con tus habilidades",
+    description: "Únete como profesional y ofrece tus servicios",
     targetElement: "#become-fixer",
     position: "top",
     icon: "💼"
   },
   {
-    id: 9,
-    title: "¡Listo!",
-    description: "Ya conoces SERVINEO. ¡Empieza a usar la plataforma!",
+    id: 8,
+    title: "¡Tutorial Completado!",
+    description: "Ya estás listo para usar SERVINEO",
     position: "bottom",
     icon: "🎉"
   }

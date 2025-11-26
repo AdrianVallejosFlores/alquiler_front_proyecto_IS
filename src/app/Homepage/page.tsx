@@ -11,129 +11,63 @@ import HelpButton from "../components/HelpButton/HelpButton";
 
 export default function Home() {
   return (
-    <main className="bg-gradient-to-b from-white to-gray-50">
+    <main>
       {/* --- Hero / inspiración --- */}
-      <section id="carrusel" className="py-8">
+      <section id="carrusel" className="my-5">
         <CarruselInspirador />
       </section>
 
       {/* Botón de ayuda flotante */}
       <HelpButton />
 
-      {/* --- Sección de búsqueda (SIN TEXTO EXTRA) --- */}
-      <section id="search-section" className="py-8 bg-gradient-to-r from-blue-50 to-purple-50">
-        <div className="max-w-2xl mx-auto px-4">
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-blue-100">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="¿Qué servicio necesitas?"
-                className="w-full px-6 py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 text-lg transition-all duration-200"
-              />
-              <button className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-3 rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl">
-                🔍 Buscar
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* --- Ventajas de SERVINEO --- */}
-      <section id="advantages-section" className="py-16 bg-white">
-        <div className="max-w-6xl mx-auto px-4 text-center">
-          <h2 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
-            Ventajas de SERVINEO
-          </h2>
-          <p className="text-gray-600 text-lg mb-12 max-w-2xl mx-auto">
-            Descubre por qué miles de personas confían en nosotros para sus proyectos
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-gradient-to-br from-blue-50 to-white p-8 rounded-2xl shadow-lg border border-blue-100 hover:shadow-xl transition-all duration-300">
-              <div className="w-16 h-16 bg-blue-500 rounded-2xl flex items-center justify-center text-white text-2xl mb-4 mx-auto">
-                ✅
-              </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-4">Profesionales Verificados</h3>
-              <p className="text-gray-600">Todos nuestros fixers pasan por un riguroso proceso de verificación.</p>
-            </div>
-            <div className="bg-gradient-to-br from-purple-50 to-white p-8 rounded-2xl shadow-lg border border-purple-100 hover:shadow-xl transition-all duration-300">
-              <div className="w-16 h-16 bg-purple-500 rounded-2xl flex items-center justify-center text-white text-2xl mb-4 mx-auto">
-                🏠
-              </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-4">Servicio a Domicilio</h3>
-              <p className="text-gray-600">Los profesionales van hasta tu ubicación para realizar el trabajo.</p>
-            </div>
-            <div className="bg-gradient-to-br from-green-50 to-white p-8 rounded-2xl shadow-lg border border-green-100 hover:shadow-xl transition-all duration-300">
-              <div className="w-16 h-16 bg-green-500 rounded-2xl flex items-center justify-center text-white text-2xl mb-4 mx-auto">
-                🔒
-              </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-4">Pago Seguro</h3>
-              <p className="text-gray-600">Sistema de pago 100% seguro con garantía de satisfacción.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* --- Mapa --- */}
-      <section id="mapa" className="py-16 bg-gray-50">
-        <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">
-            Fixers cerca de ti
-          </h2>
-          <Mapa />
-        </div>
+      <section id="mapa" className="my-10">
+        <Mapa />
       </section>
 
       {/* --- Servicios / categorías --- */}
-      <section id="servicios" className="py-16 bg-white">
-        <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center text-gray-800 mb-12">
-            Nuestros Servicios
-          </h2>
-          <HomeFixer categorias={categorias as CategoriaBase[]} />
-        </div>
+      <section id="servicios" className="my-5 w-full">
+        <HomeFixer categorias={categorias as CategoriaBase[]} />
       </section>
 
       {/* --- Trabajos recientes --- */}
-      <section id="trabajos-recientes" className="py-16 bg-gray-50">
-        <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center text-gray-800 mb-12">
-            Trabajos Recientes
-          </h2>
-          <CarruselOfertas />
-        </div>
+      <section id="trabajos-recientes" className="my-5 w-full">
+        <CarruselOfertas />
       </section>
 
       {/* --- Acciones rápidas --- */}
-      <section id="quick-actions" className="py-16 bg-white">
-        <div className="max-w-4xl mx-auto px-4">
-          <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl shadow-2xl p-8 text-white">
-            <h2 className="text-3xl font-bold text-center mb-8">
-              Acciones Rápidas
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <section id="quick-actions" className="my-10">
+        <div className="min-h-0 flex items-center justify-center">
+          <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+            <h2 className="text-2xl font-bold text-center mb-6">Acciones rápidas</h2>
+
+            <div className="flex flex-col gap-4">
               <Link
                 href="/register_a_job"
-                className="bg-white text-blue-600 py-4 px-6 rounded-xl hover:bg-gray-100 transition-all duration-200 text-center font-semibold shadow-lg hover:shadow-xl hover:scale-105"
+                className="bg-blue-500 text-white py-3 px-6 rounded-lg hover:bg-red-600 transition-colors text-center"
               >
-                📅 Agregar Disponibilidad
+                Agregar Disponibilidad
               </Link>
+
               <Link
                 href="/agenda_proveedor"
-                className="bg-white text-blue-600 py-4 px-6 rounded-xl hover:bg-gray-100 transition-all duration-200 text-center font-semibold shadow-lg hover:shadow-xl hover:scale-105"
+                className="bg-blue-500 text-white py-3 px-6 rounded-lg hover:bg-cyan-600 transition-colors text-center"
               >
-                ⚡ Agendar tu servicio
+                Agendar tu servicio
               </Link>
+
               <Link
                 href="/epic_VisualizadorDeTrabajosAgendadosVistaProveedor"
-                className="bg-white text-blue-600 py-4 px-6 rounded-xl hover:bg-gray-100 transition-all duration-200 text-center font-semibold shadow-lg hover:shadow-xl hover:scale-105"
+                className="bg-blue-500 text-white py-3 px-6 rounded-lg hover:bg-green-600 transition-colors text-center"
               >
-                👨‍💼 Trabajos Agendados
+                Trabajos Agendados (Vista-Proveedor)
               </Link>
+
               <Link
                 href="/epic_VisualizadorDeTrabajosAgendadosVistaCliente"
-                className="bg-white text-blue-600 py-4 px-6 rounded-xl hover:bg-gray-100 transition-all duration-200 text-center font-semibold shadow-lg hover:shadow-xl hover:scale-105"
+                className="bg-blue-500 text-white py-3 px-6 rounded-lg hover:bg-blue-600 transition-colors text-center"
               >
-                📋 Mis Trabajos
+                Mis Trabajos (Vista-Cliente)
               </Link>
             </div>
           </div>
@@ -141,20 +75,16 @@ export default function Home() {
       </section>
 
       {/* --- Sección para convertirse en Fixer --- */}
-      <section id="become-fixer" className="py-16 bg-gradient-to-r from-blue-50 to-purple-50">
-        <div className="max-w-4xl mx-auto px-4">
-          <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl shadow-2xl p-8 text-white text-center">
-            <h2 className="text-3xl font-bold mb-4">
-              ¿Quieres ser Fixer?
-            </h2>
-            <p className="text-blue-100 text-lg mb-6 max-w-2xl mx-auto">
-              Únete a nuestra comunidad y empieza a generar ingresos con tus habilidades profesionales.
-            </p>
+      <section id="become-fixer" className="my-10">
+        <div className="min-h-0 flex items-center justify-center">
+          <div className="bg-blue-500 text-white p-8 rounded-lg shadow-lg max-w-md w-full text-center">
+            <h2 className="text-2xl font-bold mb-4">¿Quieres ser Fixer?</h2>
+            <p className="mb-6">Únete a nuestra comunidad y empieza a generar ingresos con tus habilidades.</p>
             <Link
               href="/convertir-fixer"
-              className="inline-block bg-white text-blue-600 py-4 px-8 rounded-xl hover:bg-gray-100 transition-all duration-200 font-bold text-lg shadow-lg hover:shadow-xl hover:scale-105"
+              className="bg-white text-blue-600 py-3 px-6 rounded-lg hover:bg-gray-100 transition-colors font-semibold"
             >
-              💼 Regístrate como Fixer
+              Regístrate como Fixer
             </Link>
           </div>
         </div>
