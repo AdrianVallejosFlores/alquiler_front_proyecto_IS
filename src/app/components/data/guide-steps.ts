@@ -3,22 +3,25 @@ export interface GuideStep {
   title: string;
   description: string;
   targetElement?: string;
-  position?: 'top' | 'bottom' | 'left' | 'right' | 'center'; // AÑADIR 'center'
+  position?: 'top' | 'bottom' | 'left' | 'right' | 'center';
   icon: string;
+  showStats?: boolean; // Para mostrar estadísticas como en imagen 2
+  isFinalStep?: boolean; // Para el paso final especial
 }
 
 export const guideSteps: GuideStep[] = [
   {
     id: 1,
     title: "¡Bienvenido a SERVINEO!",
-    description: "Te mostraremos las funciones principales en 2 minutos. Aprenderás a buscar servicios y usar la plataforma.",
+    description: "Te mostraremos las funciones principales de la plataforma en un recorrido rápido de 2 minutos. Aprenderás a buscar servicios, registrarte como Fixer o cliente, y más.",
     position: "center",
-    icon: "👋"
+    icon: "👋",
+    showStats: true
   },
   {
     id: 2,
     title: "Buscador de Servicios",
-    description: "Aquí puedes buscar cualquier servicio que necesites. Escribe lo que buscas y encuentra proveedores calificados cerca de ti.",
+    description: "Encuentra fácilmente lo que necesitas. Escribe el servicio que buscas y encuentra proveedores calificados.",
     targetElement: "#search-header",
     position: "bottom",
     icon: "🔍"
@@ -26,7 +29,7 @@ export const guideSteps: GuideStep[] = [
   {
     id: 3,
     title: "Categorías de Servicios",
-    description: "Explora nuestras categorías organizadas para encontrar fácilmente el servicio ideal para tu proyecto.",
+    description: "Explora servicios organizados por categoría para tu proyecto.",
     targetElement: "#servicios",
     position: "top",
     icon: "📋"
@@ -34,7 +37,7 @@ export const guideSteps: GuideStep[] = [
   {
     id: 4,
     title: "Mapa Interactivo",
-    description: "Encuentra fixers cerca de tu ubicación. Visualiza los profesionales disponibles en tu zona.",
+    description: "Encuentra fixers cerca de tu ubicación en tiempo real.",
     targetElement: "#mapa",
     position: "left",
     icon: "🗺️"
@@ -42,16 +45,17 @@ export const guideSteps: GuideStep[] = [
   {
     id: 5,
     title: "Trabajos Recientes",
-    description: "Inspírate con trabajos realizados recientemente por nuestros fixers verificados.",
+    description: "Inspírate con trabajos realizados por nuestros fixers.",
     targetElement: "#trabajos-recientes",
     position: "top",
     icon: "🛠️"
   },
   {
     id: 6,
-    title: "¡Listo para Comenzar!",
-    description: "Ya conoces las funciones principales. ¡Empieza a encontrar o ofrecer servicios en SERVINEO!",
+    title: "¡Tutorial Completado!",
+    description: "Ya conoces las funciones principales de SERVINEO. Ahora estás listo para:",
     position: "center",
-    icon: "🎉"
+    icon: "🎉",
+    isFinalStep: true
   }
 ];
