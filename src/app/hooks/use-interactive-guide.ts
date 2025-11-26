@@ -9,7 +9,6 @@ export const useInteractiveGuide = () => {
   const [isFirstVisit, setIsFirstVisit] = useState(false);
 
   useEffect(() => {
-    // Verificar si es la primera visita del usuario
     const hasSeenGuide = localStorage.getItem('servineo-guide-seen');
     if (!hasSeenGuide) {
       setIsFirstVisit(true);
@@ -26,15 +25,13 @@ export const useInteractiveGuide = () => {
   const nextStep = () => {
     setCurrentStep(prev => {
       const next = prev + 1;
-      // CORRECCIÓN: No permitir que currentStep exceda el número de pasos
-      return next < guideSteps.length ? next : prev;
+      return next < 9 ? next : prev; // 9 pasos totales
     });
   };
 
   const prevStep = () => {
     setCurrentStep(prev => {
       const previous = prev - 1;
-      // CORRECCIÓN: No permitir que currentStep sea menor que 0
       return previous >= 0 ? previous : prev;
     });
   };
@@ -61,9 +58,3 @@ export const useInteractiveGuide = () => {
     restartGuide
   };
 };
-
-// CORRECCIÓN: Mover guideSteps aquí para evitar dependencia circular
-const guideSteps = [
-  { id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 },
-  { id: 6 }, { id: 7 }, { id: 8 }, { id: 9 }
-];
