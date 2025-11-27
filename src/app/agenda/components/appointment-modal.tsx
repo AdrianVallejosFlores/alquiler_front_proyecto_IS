@@ -6,14 +6,12 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "./ui/dialog";
 import { cn } from "@/lib/utils";
+import LocationForm from "./LocationForms";
+import ModalConfirmacion from "./ModalConfirmacion";
 import { createAndNotify } from "@/lib/appointments_gmail";
 import { updateAndNotify } from "@/lib/appointments_gmail";
 import { createAndNotifyWhatsApp } from "@/lib/appointments_whatsapp";
 import { updateAndNotifyWhatsApp } from "@/lib/appointments_whatsapp";
-
-import LocationForm from "./LocationForms";
-import ModalConfirmacion from "./ModalConfirmacion";
-import TopNotificationAlert from "@/components/TopNotificationAlert";
 
 type UISlot = { label: string; startISO: string; endISO: string };
 
@@ -32,6 +30,9 @@ interface AppointmentModalProps {
   initialAppointment?: any;
   isEditing?: boolean;
   appointmentId?: string;
+  slotMinutes?: number;
+  hours?: string;
+
 }
 
 const APPOINTMENT_STATES = {
@@ -43,7 +44,7 @@ const APPOINTMENT_STATES = {
 };
 
 const toYYYYMMDD = (d: Date) =>
-  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
 
 export function AppointmentModal({
   open,
@@ -77,43 +78,39 @@ export function AppointmentModal({
   // Confirmación
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [showAlert, setShowAlert] = useState(false);
-  const [alertType, setAlertType] = useState<"success" | "error">("success");
-  const [alertMessage, setAlertMessage] = useState("");
-
-  const isEdit = false;
 
   // Días feriados
   const holidays = ["2025-11-01", "2025-11-02", "2025-12-24"];
 
   // Días ya ocupados
   const [bookedDays, setBookedDays] = useState<string[]>([]);
+  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
 
-  // Cargar días con citas del proveedor desde el backend
   async function loadBookedDays() {
     try {
       if (!providerId) return;
       const res = await fetch(`${API_URL}/api/devcode/citas/proveedor/${providerId}`);
       if (!res.ok) throw new Error(`Error HTTP ${res.status}`);
-      const data: any[] = await res.json();
+      const data = await res.json();
 
-      // Si estamos editando, excluimos la cita actual de los días ocupados
+      const citasArray = Array.isArray(data) ? data : data?.citas ?? [];
+
       let fechasOcupadas: string[];
       if (isEditing && appointmentId) {
-        fechasOcupadas = data
+        fechasOcupadas = citasArray
           .filter((cita: any) => cita._id !== appointmentId)
           .map((cita: any) => cita.fecha);
       } else {
-        fechasOcupadas = data.map((cita: any) => cita.fecha);
+        fechasOcupadas = citasArray.map((cita: any) => cita.fecha);
       }
 
       const fechasUnicas: string[] = [...new Set(fechasOcupadas)];
-      console.log("Fechas con citas para proveedor:", fechasUnicas);
       setBookedDays(fechasUnicas);
     } catch (error) {
       console.error("Error cargando citas del proveedor:", error);
     }
   }
+
 
   // ---- UI helpers ----
   const formatDateForSummary = (date: Date) =>
@@ -128,7 +125,10 @@ export function AppointmentModal({
     setSelectedDate(date);
     setSelectedTime(null);
     setSelectedSlot(null);
-    if (date) setDateInput(date.toLocaleDateString("es-ES"));
+    if (date) {
+      setDateInput(date.toLocaleDateString("es-ES"));
+      setCurrentMonth(date);
+    }
   };
 
   const handleToday = () => handleDateSelect(new Date());
@@ -136,7 +136,6 @@ export function AppointmentModal({
   const handleTimeSelect = (slot: UISlot) => {
     setSelectedTime(slot.label);
     setSelectedSlot(slot);
-    // Scroll suave hacia el formulario
     setTimeout(() => {
       locationFormRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 100);
@@ -151,7 +150,6 @@ export function AppointmentModal({
   async function loadAvailable(date: Date) {
     if (!date || !providerId) return;
 
-    // Mock: Simular horarios disponibles sin fetch
     const dateStr = toYYYYMMDD(date);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -193,8 +191,8 @@ export function AppointmentModal({
         });
       }
 
-      // añadir el slot actual si estamos editando
-      if (isEditing && initialAppointment && initialAppointment.fecha === fechaStr) {
+      // Añadir slot actual si estamos editando
+      if (isEditing && initialAppointment?.horario && initialAppointment.fecha === fechaStr) {
         const currentTimeSlot = {
           startISO: new Date(`${initialAppointment.fecha}T${initialAppointment.horario.inicio}`).toISOString(),
           endISO: new Date(`${initialAppointment.fecha}T${initialAppointment.horario.fin}`).toISOString(),
@@ -205,10 +203,7 @@ export function AppointmentModal({
           slot.startISO === currentTimeSlot.startISO && slot.endISO === currentTimeSlot.endISO
         );
 
-        if (!slotExists) {
-          slots.unshift(currentTimeSlot);
-        }
-
+        if (!slotExists) slots.unshift(currentTimeSlot);
         if (!selectedTime) {
           setSelectedTime(currentTimeSlot.label);
           setSelectedSlot(currentTimeSlot);
@@ -226,30 +221,20 @@ export function AppointmentModal({
   // Init cuando se abre el modal
   useEffect(() => {
     if (open) {
-      console.log(" Inicializando modal en modo:", isEditing ? "EDICIÓN" : "CREACIÓN");
-      console.log(" Cita inicial:", initialAppointment);
-
       if (isEditing && initialAppointment) {
-        // MODO EDICIÓN
         const initialDate = new Date(initialAppointment.fecha);
         setSelectedDate(initialDate);
         setDateInput(initialDate.toLocaleDateString("es-ES"));
-
+        setCurrentMonth(initialDate);
         if (initialAppointment.ubicacion) {
           setLocationData(initialAppointment.ubicacion);
           setFormSubmitted(true);
         }
-
-        console.log(" Datos precargados para edición:", {
-          fecha: initialAppointment.fecha,
-          horario: initialAppointment.horario,
-          ubicacion: initialAppointment.ubicacion
-        });
       } else {
-        // MODO CREACIÓN
         const today = new Date();
         setSelectedDate(today);
         setDateInput(today.toLocaleDateString("es-ES"));
+        setCurrentMonth(today);
         setSelectedTime(null);
         setSelectedSlot(null);
         setFormSubmitted(false);
@@ -258,7 +243,7 @@ export function AppointmentModal({
 
       loadBookedDays();
     }
-  }, [open, isEditing, initialAppointment]);
+  }, [open, isEditing, initialAppointment, providerId]);
 
   // Recargar disponibilidad cuando cambia fecha/props
   useEffect(() => {
@@ -272,28 +257,29 @@ export function AppointmentModal({
     const dateStr = toYYYYMMDD(day);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
     const isWeekend = (d: Date) => d.getDay() === 0 || d.getDay() === 6;
 
-    // Días pasados
     if (day < today) return true;
-
-    // Fines de semana
     if (isWeekend(day)) return true;
 
-    // Feriados
+    const maxDate = new Date();
+    maxDate.setMonth(maxDate.getMonth() + 6);
+    if (day > maxDate) return true;
+
     if (holidays.includes(dateStr)) return true;
-
-    // Permitir la fecha actual de la cita cuando editamos
-    if (isEditing && initialAppointment && dateStr === initialAppointment.fecha) {
-      return false;
-    }
-
-    // Días ocupados
+    if (isEditing && initialAppointment && dateStr === initialAppointment.fecha) return false;
     return bookedDays.includes(dateStr);
   };
 
-  // ---- POST/PUT para crear/actualizar cita ----
+/*
+cliente: {
+          nombre: patientName,
+          email: "adrianvallejosflores24@gmail.com",
+          phone: "59177484270",
+        }
+*/
+
+
   const handleConfirm = async () => {
     if (!API_URL) return alert("Falta NEXT_PUBLIC_API_URL en .env.local");
     if (!selectedDate || !selectedSlot) return alert("Selecciona fecha y horario");
@@ -317,48 +303,17 @@ export function AppointmentModal({
         },
         ubicacion: locationData,
         estado: "pendiente",
-        cliente: {
-          nombre: patientName,
-          email: "adrianvallejosflores24@gmail.com", //reemplázalo dinámicamente si lo tienes
-          phone: "59177484270" //se reemplazaria cuando clienteId este completo o usable
-        },
       };
 
-      console.log("Enviando payload:", payload);
+      console.log("🟢 Enviando payload:", payload);
 
-      /*
-      let url = `${API_URL}/api/devcode/citas`;
-      let method = "POST";
-
-      
-      if (isEditing && appointmentId) {
-        url = `${API_URL}/api/devcode/citas/${appointmentId}`;
-        method = "PUT";
-        console.log(" Actualizando cita existente:", appointmentId);
-      }
-
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      const body = await res.json().catch(() => ({}));
-      
-      if (!res.ok) {
-        if (res.status === 409) return alert(body?.message || "Horario no disponible.");
-        return alert(body?.message || `Error HTTP ${res.status}`);
-      }
-      */
-     
-     //Si es edición, actualizamos SIN enviar notificación.
+      // 📡 URL y método según si es edición o creación
       const url = isEditing && appointmentId
         ? `${API_URL}/api/devcode/citas/${appointmentId}`
         : `${API_URL}/api/devcode/citas`;
 
       const method = isEditing ? "PUT" : "POST";
 
-      // Llamada principal al backend (crea o actualiza la cita)
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
@@ -367,64 +322,44 @@ export function AppointmentModal({
 
       const body = await res.json().catch(() => ({}));
 
+      // ❌ Manejo de errores HTTP
       if (!res.ok) {
-        if (res.status === 409) return alert(body?.message || "Horario no disponible.");
-        return alert(body?.message || `Error HTTP ${res.status}`);
+        const message =
+          body?.message ||
+          (res.status === 409 ? "Horario no disponible." : `Error HTTP ${res.status}`);
+        alert(message)
+        return;
       }
 
-      // Enviar notificación según el caso
-      let resultNotify;
+      // 🔔 Notificaciones (solo si la cita se creó o actualizó correctamente)
       if (isEditing) {
-        console.log("📨 Enviando notificación de actualización...");
-        resultNotify = await updateAndNotify(payload);
+        await Promise.allSettled([
+          updateAndNotify(payload),
+          updateAndNotifyWhatsApp(payload),
+        ]);
       } else {
-        console.log("📨 Enviando notificación de creación...");
-        resultNotify = await createAndNotify(payload);
+        await Promise.allSettled([
+          createAndNotify(payload),
+          createAndNotifyWhatsApp(payload),
+        ]);
       }
 
-      // Validar resultado de notificación
-      try {
-        if (isEditing) {
-          console.log("📨 Enviando notificación de actualización...");
+      alert(isEditing ? "Cita actualizada correctamente" : "Cita creada correctamente");
 
-          await Promise.allSettled([
-            updateAndNotify(payload),
-            updateAndNotifyWhatsApp(payload),
-          ]);
-        } else {
-          console.log("📨 Enviando notificación de creación...");
-
-          await Promise.allSettled([
-            createAndNotify(payload),
-            createAndNotifyWhatsApp(payload),
-          ]);
-        }
-
-        console.log("✅ Notificaciones procesadas (Gmail y WhatsApp)");
-      } catch (notifyError) {
-        console.warn("⚠️ Ocurrió un error al enviar las notificaciones:", notifyError);
-      }
-
-      // Mostrar modal de confirmación y limpiar estado
       setShowConfirmationModal(true);
       onOpenChange(false);
       setSelectedTime(null);
       setSelectedSlot(null);
-      setAlertType("success");
-      setAlertMessage("Cita creada correctamente");
-      setShowAlert(true);
 
     } catch (err) {
-      console.error(err);
+      console.error("❌ Error al crear o actualizar la cita:", err);
       alert("No se pudo crear o actualizar la cita");
     } finally {
       setSaving(false);
     }
   };
 
-
   return (
-  <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="!w-[50vw] !max-w-none !sm:max-w-none bg-white rounded-xl shadow-2xl overflow-x-auto max-h-[90vh] overflow-y-auto p-0">
         <div className="p-6 border-b">
@@ -439,15 +374,44 @@ export function AppointmentModal({
         <div className="p-6">
           {/* Barra superior */}
           <div className="flex items-center justify-between mb-6">
-            <Input 
-              type="text" 
-              placeholder="dd/mm/aaaa" 
-              value={dateInput} 
-              onChange={e => setDateInput(e.target.value)} 
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-32" 
+            <Input
+              type="text"
+              placeholder="dd/mm/aaaa"
+              value={dateInput}
+              onChange={(e) => {
+                const val = e.target.value;
+                setDateInput(val);
+                const [dd, mm, yyyy] = val.split("/").map(Number);
+                if (!isNaN(dd) && !isNaN(mm) && !isNaN(yyyy)) {
+                  const newDate = new Date(yyyy, mm - 1, dd);
+                  if (!isNaN(newDate.getTime())) {
+                    setCurrentMonth(newDate);
+                  }
+                }
+              }}
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-32"
             />
             <div className="flex gap-2">
-              <Button onClick={() => selectedDate && loadAvailable(selectedDate)} className="bg-blue-100 hover:bg-blue-200 px-4 py-2 rounded-lg text-sm font-medium text-blue-600">
+              <Button onClick={() => {
+                const [dd, mm, yyyy] = dateInput.split("/").map(Number);
+                if (!isNaN(dd) && !isNaN(mm) && !isNaN(yyyy)) {
+                  const newDate = new Date(yyyy, mm - 1, dd);
+                  const isValidDate =
+                    newDate.getFullYear() === yyyy &&
+                    newDate.getMonth() === mm - 1 &&
+                    newDate.getDate() === dd;
+                  if (isValidDate) {
+                    setSelectedDate(newDate);
+                    setCurrentMonth(newDate);
+                    loadAvailable(newDate);
+                  } else {
+                    alert("Fecha inválida. Asegúrate de que el día y el mes sean correctos (dd/mm/aaaa).");
+                  }
+                } else {
+                  alert("Ingresa una fecha completa en formato (dd/mm/aaaa)");
+                }
+              }}  
+              className="bg-blue-100 hover:bg-blue-200 px-4 py-2 rounded-lg text-sm font-medium text-blue-600">
                 Buscar
               </Button>
               <Button onClick={handleToday} className="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg text-sm font-medium text-gray-800">
@@ -463,6 +427,8 @@ export function AppointmentModal({
                 mode="single"
                 selected={selectedDate}
                 onSelect={handleDateSelect}
+                month={currentMonth}
+                onMonthChange={setCurrentMonth}
                 className="w-full"
                 captionLayout="dropdown-months"
                 disabled={isDayDisabled}
@@ -483,6 +449,7 @@ export function AppointmentModal({
                   } : {})
                 }}
               />
+
               <div className="mt-4 text-xs space-y-2">
                 {Object.entries(APPOINTMENT_STATES).map(([key, state]) => (
                   <div key={key} className="flex items-center space-x-2">
@@ -490,7 +457,6 @@ export function AppointmentModal({
                     <span>{state.label}</span>
                   </div>
                 ))}
-                {/* Leyenda extra: fin de semana */}
                 <div className="flex items-center space-x-2">
                   <div className="w-4 h-4 rounded bg-gray-200" />
                   <span>Fin de semana</span>
@@ -549,8 +515,7 @@ export function AppointmentModal({
                 
                 {availableSlots.map(slot => {
                   const isCurrentAppointmentSlot = isEditing && 
-                    initialAppointment && 
-                    initialAppointment.horario && 
+                    initialAppointment?.horario && 
                     `${initialAppointment.horario.inicio} - ${initialAppointment.horario.fin}` === slot.label;
                   
                   return (
@@ -609,14 +574,11 @@ export function AppointmentModal({
                   {saving ? "Guardando..." : isEditing ? "Guardar cambios" : "Confirmar Cita"}
                 </Button>
 
-                {/* Editar ubicación: vuelve a mostrar LocationForm para cambiar mapa/dirección */}
                 <Button
                   variant="outline"
                   className="flex-1"
                   onClick={() => {
-                    // permitir editar la ubicación (mostrar el formulario otra vez)
                     setFormSubmitted(false);
-                    // opcional: forzar scroll hasta el formulario si existe
                     setTimeout(() => {
                       locationFormRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
                     }, 50);
@@ -625,7 +587,6 @@ export function AppointmentModal({
                   Editar ubicación
                 </Button>
 
-                {/* Cancelar (resetea selección de hora solo) */}
                 <Button
                   variant="ghost"
                   className="flex-1"
@@ -647,16 +608,6 @@ export function AppointmentModal({
         onClose={() => setShowConfirmationModal(false)} 
       />
     </Dialog>
-
-    {/* 🔔 ALERTA SUPERIOR */}
-    <TopNotificationAlert
-      show={showAlert}
-      type={alertType}
-      message={alertMessage}
-      onClose={() => setShowAlert(false)}
-      duration={4000}
-    />
-  </>
   );
 }
 
