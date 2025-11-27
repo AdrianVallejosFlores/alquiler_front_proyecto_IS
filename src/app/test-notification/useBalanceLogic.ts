@@ -9,7 +9,7 @@ export interface BalanceLogic {
   resetBalance: () => void;
 }
 
-// se añade el servicio de notificaciones integrado
+// servicio de notificaciones integrado
 const sendEmailNotification = async (type: 'HU5' | 'HU6', balance: number): Promise<boolean> => {
   try {
     const userData = {
