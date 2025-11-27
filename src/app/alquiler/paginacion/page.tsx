@@ -13,6 +13,11 @@ import FiltrosForm from "../Feature/Componentes/FiltroForm";
 import { UsuarioResumen } from "../Feature/Types/filtroType";
 import BusquedaAvanzada from "../BusquedaAvanzada/BusquedaAvanzada";
 
+// imports para el resaltado 
+import { JobCardWithHighlight } from "./components/JobCardWithHighlight";
+import { UserProfileCardWithHighlight } from "./components/UserProfileCardWithHighlight";
+import { useHighlighting } from "./hooks/useHighlighting";
+
 // Componente de carga
 function LoadingFallback() {
   return (
@@ -27,6 +32,8 @@ function LoadingFallback() {
 function BusquedaContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  const { searchTerms, hasHighlighting } = useHighlighting();
 
   const urlQuery = searchParams.get("q") || "";
   const urlPage = searchParams.get("page");
@@ -443,13 +450,24 @@ function BusquedaContent() {
               <>
                 <div className="UserProfilesContainer space-y-6">
                   {usuariosFiltrados.map((usuario, index) => (
-                    <UserProfileCard
-                      key={`${usuario.id_usuario}-${index}`}
-                      usuario={usuario}
-                      onContactClick={() =>
-                        router.push(`/alquiler/${usuario.id_usuario}`)
-                      }
-                    />
+                    // ✅ REEMPLAZADO: UserProfileCard condicional con resaltado
+                    hasHighlighting ? (
+                      <UserProfileCardWithHighlight
+                        key={`${usuario.id_usuario}-${index}-highlight`}
+                        usuario={usuario}
+                        onContactClick={() =>
+                          router.push(`/alquiler/${usuario.id_usuario}`)
+                        }
+                      />
+                    ) : (
+                      <UserProfileCard
+                        key={`${usuario.id_usuario}-${index}`}
+                        usuario={usuario}
+                        onContactClick={() =>
+                          router.push(`/alquiler/${usuario.id_usuario}`)
+                        }
+                      />
+                    )
                   ))}
                 </div>
                 <p className="text-sm text-gray-600 mt-4">
@@ -532,12 +550,20 @@ function BusquedaContent() {
                     // Mostrar resultados
                     <>
                       <div className="space-y-6">
-                        {currentItems.map((job, index) => (
-                          <JobCard
-                            key={`${job.title}-${index}`}
-                            {...job}
-                            onViewDetails={() => handleViewDetails(job.id)}
-                          />
+                        {currentItems.map((job, index) => (                      
+                          hasHighlighting ? (
+                            <JobCardWithHighlight
+                              key={`${job.title}-${index}-highlight`}
+                              {...job}
+                              onViewDetails={() => handleViewDetails(job.id)}
+                            />
+                          ) : (
+                            <JobCard
+                              key={`${job.title}-${index}`}
+                              {...job}
+                              onViewDetails={() => handleViewDetails(job.id)}
+                            />
+                          )
                         ))}
                       </div>
 
