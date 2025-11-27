@@ -195,7 +195,7 @@ export const useBalanceLogic = (): BalanceLogic => {
     setBalance(prev => {
       const newBalance = prev + amount;
       
-      // Log genera log cambio
+      // Log genera log cambio final 
       addLog(`Balance actualizado: ${prev.toFixed(2)} → ${newBalance.toFixed(2)}`);
       
       // ✅ CORRECCIÓN: Lógica mejorada de detección sin duplicados
