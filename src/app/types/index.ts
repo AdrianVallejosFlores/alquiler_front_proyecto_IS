@@ -19,7 +19,6 @@ export interface Ubicacion {
 }
 
 export interface Fixer {
-  imagenPerfil: string;
   _id: string;
   nombre: string;
   posicion: {
@@ -31,8 +30,8 @@ export interface Fixer {
   rating?: number;
   whatsapp?: string;
   verified?: boolean;
+  imagenPerfil?: string; // ← OPCIONAL, viene de la base de datos
 }
-
 export interface UserLocation {
   lat: number;
   lng: number;
