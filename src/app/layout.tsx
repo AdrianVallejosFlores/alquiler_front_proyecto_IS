@@ -1,79 +1,75 @@
-"use client"; // 👈 1. Convertir a Client Component
+"use client";
 
-import { useState, useEffect } from "react"; // 👈 2. Importar hooks
-import "leaflet/dist/leaflet.css";
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { useState, useEffect } from "react";
+
+import { Geist, Geist_Mono, Inter, Roboto_Mono } from "next/font/google";
+
 import "./globals.css";
+import "leaflet/dist/leaflet.css";
+import "maplibre-gl/dist/maplibre-gl.css";
 
 import Header from "./components/Header/Header";
+import NotificationBell from "@/components/NotificationBell";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+// Fuentes
+const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
+const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
+const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
+const robotoMono = Roboto_Mono({ variable: "--font-roboto-mono", subsets: ["latin"] });
 
 export default function RootLayout({
   children,
-
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  // 3. Estado para rastrear la conexión
+}: Readonly<{ children: React.ReactNode }>) {
   const [isOnline, setIsOnline] = useState(true);
 
-  // 4. Efecto para escuchar eventos de conexión
   useEffect(() => {
-    // Función para actualizar el estado
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
 
-    // Asignar estado inicial al cargar
-    if (typeof window !== "undefined") {
-      setIsOnline(navigator.onLine);
-    }
+    setIsOnline(navigator.onLine);
 
-    // Agregar event listeners
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
 
-    // Limpiar listeners al desmontar el componente
     return () => {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
     };
-  }, []); // El array vacío asegura que esto solo se ejecute al montar/desmontar
+  }, []);
 
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        suppressHydrationWarning={true}
-      >
-        {/* 5. Banner de "Sin Conexión" */}
+    <html
+      lang="es"
+      className={`
+        ${geistSans.variable}
+        ${geistMono.variable}
+        ${inter.variable}
+        ${robotoMono.variable}
+      `}
+      suppressHydrationWarning
+    >
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+      </head>
+
+      <body className="bg-blue-50 text-gray-900 antialiased min-h-screen" suppressHydrationWarning>
+        {/* Banner de desconexión */}
         {!isOnline && (
           <div className="fixed top-0 left-0 w-full bg-red-600 text-white text-center p-2 z-50 shadow-lg animate-pulse">
-            <p className="font-semibold">
-              Estás sin conexión
-            </p>
-            <p className="text-sm">
-              Comprueba tu conexión a internet.
-            </p>
+            <p className="font-semibold">Estás sin conexión</p>
+            <p className="text-sm">Comprueba tu conexión a internet.</p>
           </div>
         )}
 
-        <Header />
+        {/* Header + campanita */}
+        <header className="flex items-center justify-between px-6 py-3 bg-white border-b shadow-sm z-40">
+          <Header />
+          <NotificationBell />
+        </header>
 
-        {/* SOLUCIÓN: Cambiar el padding para que funcione en todos los dispositivos */}
-        <div className="pt-16 sm:pt-20">
-          {/* Aumenté el padding-top */}
-          {children}
-        </div>
+        {/* Contenido */}
+        <main className="pt-16 sm:pt-20 p-4">{children}</main>
       </body>
     </html>
   );
