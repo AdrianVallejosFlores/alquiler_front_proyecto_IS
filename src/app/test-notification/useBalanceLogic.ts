@@ -179,7 +179,7 @@ export const useBalanceLogic = (): BalanceLogic => {
       const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
       addLog(`❌ FALLO ENVÍO ${type}: ${errorMessage}`);
       
-      // Si falla, permitir reintento resetando la referencia
+      // Si falla, permitir reintento resetando la referencia.
       lastNotifiedRef.current = { type: null, balance: 100 };
       
       // Si se da error de red, sugerir verificar backend
