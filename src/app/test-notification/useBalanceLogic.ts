@@ -118,7 +118,7 @@ const sendEmailNotification = async (type: 'HU5' | 'HU6', balance: number): Prom
     console.log('✅ Respuesta del backend:', data);
     
     // CORRECCIÓN: El backend puede estar retornando el mensaje de ecito de diferentes maneras
-    // Verificamos varias formas posibles de éxito
+    // Verificamos varias formas posibles de éxito para esta parte
     if (data.success === true || data.status === 'success' || data.message?.includes('enviado') || response.status === 200) {
       return true;
     } else {
