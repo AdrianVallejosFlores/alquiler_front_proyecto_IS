@@ -1,26 +1,11 @@
 @import "tailwindcss";
-/* ✅ CORRECCIÓN: Eliminar import de Leaflet CSS aquí, se maneja en layout.tsx */
 
-/*:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}*/
-
-/* ✅ CORRECCIÓN: Eliminar @theme que no es compatible */
-/* Usar las variables de CSS directamente */
 :root {
   --color-background: #ffffff;
   --color-foreground: #171717;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
-
-/*@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #ffffff;
-    --foreground: #000000;
-  }
-}*/
 
 body {
   background: var(--color-background);
@@ -53,103 +38,166 @@ html {
 }
 
 /* ==================== */
-/* ESTILOS PARA EL TUTORIAL */
+/* ESTILOS GARANTIZADOS PARA EL TUTORIAL - EFECTO LED */
 /* ==================== */
 
-/* Estilos para el efecto spotlight del tutorial */
-.tutorial-overlay {
-  position: relative;
-  overflow: hidden;
+/* RESET PARA ASEGURAR FUNCIONAMIENTO */
+.tutorial-overlay-container * {
+  box-sizing: border-box;
 }
 
-.spotlight-area {
-  position: absolute;
-  top: var(--spotlight-top, 0);
-  left: var(--spotlight-left, 0);
-  width: var(--spotlight-width, 0);
-  height: var(--spotlight-height, 0);
-  background: transparent;
-  border-radius: 12px;
+/* EFECTO LED GARANTIZADO - ENFOQUE SIMPLE */
+.tutorial-led-glow {
+  position: fixed !important;
+  border: 3px solid #3b82f6 !important;
+  border-radius: 10px !important;
   box-shadow: 
-    0 0 0 9999px rgba(255, 255, 255, 0.1),
-    0 0 0 4px rgba(82, 171, 255, 0.8),
-    0 0 30px rgba(82, 171, 255, 0.6);
-  pointer-events: none;
-  z-index: 1;
-  transition: all 0.3s ease;
-  animation: spotlight-pulse 2s infinite;
+    0 0 0 9999px rgba(0, 0, 0, 0.7),
+    0 0 0 2px rgba(255, 255, 255, 0.9),
+    0 0 0 4px #3b82f6,
+    0 0 25px rgba(59, 130, 246, 0.8),
+    0 0 45px rgba(59, 130, 246, 0.6) !important;
+  pointer-events: none !important;
+  z-index: 9999 !important;
+  animation: tutorial-led-pulse 2s ease-in-out infinite !important;
 }
 
-@keyframes spotlight-pulse {
+@keyframes tutorial-led-pulse {
   0%, 100% {
     box-shadow: 
-      0 0 0 9999px rgba(255, 255, 255, 0.1),
-      0 0 0 4px rgba(82, 171, 255, 0.8),
-      0 0 30px rgba(82, 171, 255, 0.6);
+      0 0 0 9999px rgba(0, 0, 0, 0.7),
+      0 0 0 2px rgba(255, 255, 255, 0.9),
+      0 0 0 4px #3b82f6,
+      0 0 25px rgba(59, 130, 246, 0.8),
+      0 0 45px rgba(59, 130, 246, 0.6);
+    border-color: #3b82f6;
   }
   50% {
     box-shadow: 
-      0 0 0 9999px rgba(255, 255, 255, 0.15),
-      0 0 0 6px rgba(82, 171, 255, 1),
-      0 0 40px rgba(82, 171, 255, 0.8);
+      0 0 0 9999px rgba(0, 0, 0, 0.7),
+      0 0 0 2px rgba(255, 255, 255, 1),
+      0 0 0 6px #60a5fa,
+      0 0 35px rgba(96, 165, 250, 0.9),
+      0 0 65px rgba(96, 165, 250, 0.7);
+    border-color: #60a5fa;
   }
 }
 
-/* Asegurar que el elemento destacado tenga z-index alto */
-.tutorial-highlight {
-  position: relative;
-  z-index: 55 !important;
+/* ELEMENTO OBJETIVO - DEBE SER VISIBLE */
+.tutorial-spotlight-element {
+  position: relative !important;
+  z-index: 10001 !important;
+  filter: brightness(1.1) contrast(1.05) !important;
+  transition: all 0.3s ease !important;
 }
 
-/* Mejorar la posición del tooltip del tutorial */
-.fixed.z-60 {
-  z-index: 60;
+/* TOOLTIP DEL TUTORIAL */
+.tutorial-tooltip {
+  position: fixed !important;
+  z-index: 10002 !important;
+  background: white !important;
+  border-radius: 12px !important;
+  box-shadow: 
+    0 20px 25px -5px rgba(0, 0, 0, 0.3),
+    0 10px 10px -5px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(82, 171, 255, 0.2) !important;
+  border: 1px solid rgba(82, 171, 255, 0.3) !important;
+  max-width: 380px !important;
+  min-width: 300px !important;
 }
 
-/* Smooth transitions for tutorial */
-.tutorial-step-enter {
-  opacity: 0;
-  transform: scale(0.9);
+/* HEADER DEL TOOLTIP CON GRADIENTE SERVINEO */
+.tutorial-tooltip-header {
+  background: linear-gradient(135deg, #11255a 0%, #52abff 100%) !important;
+  border-radius: 12px 12px 0 0 !important;
+  padding: 1rem !important;
 }
 
-.tutorial-step-enter-active {
-  opacity: 1;
-  transform: scale(1);
-  transition: opacity 300ms, transform 300ms;
+/* CONTENIDO DEL TOOLTIP */
+.tutorial-content {
+  line-height: 1.6 !important;
+  color: #374151 !important;
+  padding: 1rem !important;
 }
 
-.tutorial-step-exit {
-  opacity: 1;
-  transform: scale(1);
+/* BOTONES DEL TUTORIAL */
+.tutorial-button {
+  transition: all 0.2s ease-in-out !important;
+  border-radius: 8px !important;
+  font-weight: 500 !important;
 }
 
-.tutorial-step-exit-active {
-  opacity: 0;
-  transform: scale(0.9);
-  transition: opacity 300ms, transform 300ms;
+.tutorial-button:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
 }
 
-/* Asegurar que el tutorial esté por encima de otros elementos */
-.fixed.z-50 {
-  z-index: 10000;
+/* BOTÓN PRINCIPAL */
+.tutorial-primary-button {
+  background: linear-gradient(135deg, #52abff 0%, #11255a 100%) !important;
+  color: white !important;
+  border: none !important;
+}
+
+.tutorial-primary-button:hover {
+  background: linear-gradient(135deg, #3a9cff 0%, #0e1f4d 100%) !important;
+}
+
+/* BOTÓN SECUNDARIO */
+.tutorial-secondary-button {
+  background: #eff6ff !important;
+  color: #2563eb !important;
+  border: 1px solid #dbeafe !important;
+}
+
+.tutorial-secondary-button:hover {
+  background: #dbeafe !important;
+}
+
+/* BOTÓN DESHABILITADO */
+.tutorial-disabled-button {
+  background: #f3f4f6 !important;
+  color: #9ca3af !important;
+  cursor: not-allowed !important;
+}
+
+/* ==================== */
+/* Z-INDEX GARANTIZADOS */
+/* ==================== */
+
+/* OVERLAY DE FONDO */
+.tutorial-background-overlay {
+  z-index: 9990 !important;
+}
+
+/* EFECTO LED */
+.tutorial-led-effect {
+  z-index: 9995 !important;
+}
+
+/* ELEMENTO OBJETIVO */
+.tutorial-spotlight-element {
+  z-index: 9996 !important;
+}
+
+/* TOOLTIP */
+.tutorial-tooltip {
+  z-index: 10000 !important;
 }
 
 /* ==================== */
 /* ESTILOS PARA EL VIDEO */
 /* ==================== */
 
-/* Estilos para el video responsivo */
 .aspect-video {
   aspect-ratio: 16 / 9;
 }
 
-/* Mejorar la apariencia del iframe de YouTube */
 iframe {
   border: none;
   border-radius: 12px;
 }
 
-/* Efectos hover para botones de video */
 .bg-red-600 {
   transition: all 0.3s ease;
 }
@@ -159,67 +207,87 @@ iframe {
   box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
 }
 
-/* Mejorar la experiencia del video en móviles */
+/* ==================== */
+/* RESPONSIVE */
+/* ==================== */
+
 @media (max-width: 768px) {
   .max-w-4xl {
     margin-left: 1rem;
     margin-right: 1rem;
   }
   
-  /* Ajustar el tamaño del video en móviles */
-  .aspect-video {
-    aspect-ratio: 16 / 9;
-  }
-}
-
-/* ==================== */
-/* ESTILOS ADICIONALES PARA MEJOR UX */
-/* ==================== */
-
-/* Mejorar el scroll suave para el tutorial */
-.tutorial-scroll {
-  scroll-behavior: smooth;
-}
-
-/* Asegurar que los elementos del tutorial sean accesibles */
-.tutorial-tooltip {
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  border: 2px solid rgba(82, 171, 255, 0.2);
-}
-
-/* Mejorar la legibilidad del texto en el tutorial */
-.tutorial-content {
-  line-height: 1.6;
-}
-
-/* Efectos de hover para botones del tutorial */
-.tutorial-button {
-  transition: all 0.2s ease-in-out;
-}
-
-.tutorial-button:hover {
-  transform: translateY(-1px);
-}
-
-/* Responsive adjustments for tutorial steps */
-@media (max-width: 640px) {
   .tutorial-tooltip {
-    max-width: 90vw;
-    margin: 0 auto;
+    max-width: 90vw !important;
+    min-width: 280px !important;
+    margin: 0 1rem !important;
+  }
+  
+  .tutorial-led-glow {
+    border-width: 2px !important;
+    border-radius: 8px !important;
   }
 }
 
-/* Asegurar que el overlay del tutorial cubra toda la pantalla */
-.tutorial-overlay-full {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+@media (max-width: 480px) {
+  .tutorial-tooltip {
+    min-width: 250px !important;
+    margin: 0 0.5rem !important;
+  }
 }
 
-/* Mejorar la visibilidad del elemento destacado */
-.tutorial-spotlight-element {
-  filter: brightness(1.1);
-  transition: filter 0.3s ease;
+/* ==================== */
+/* UTILITARIOS */
+/* ==================== */
+
+.tutorial-no-pointer {
+  pointer-events: none !important;
+}
+
+.tutorial-pointer-auto {
+  pointer-events: auto !important;
+}
+
+.tutorial-visible {
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.tutorial-hidden {
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
+/* ==================== */
+/* ANIMACIONES SEGURAS */
+/* ==================== */
+
+@keyframes tutorial-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes tutorial-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tutorial-animate-fade {
+  animation: tutorial-fade-in 0.3s ease-out;
+}
+
+.tutorial-animate-slide {
+  animation: tutorial-slide-up 0.3s ease-out;
 }
