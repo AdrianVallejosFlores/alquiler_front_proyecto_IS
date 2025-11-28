@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    // Puedes usar remotePatterns o domains, aquí combino ambos por claridad
     remotePatterns: [
       {
         protocol: "https",
@@ -19,7 +18,6 @@ const nextConfig = {
         pathname: "/**",
       },
     ],
-    // Opcional: dominios permitidos directos
     domains: [
       "images.unsplash.com",
       "lh3.googleusercontent.com",
@@ -32,12 +30,10 @@ const nextConfig = {
   },
 
   eslint: {
-    // ⚠️ Esto hace que el build no falle por errores de ESLint
     ignoreDuringBuilds: true,
   },
 
   typescript: {
-    // ⚠️ Esto hace que el build no falle por errores de TypeScript
     ignoreBuildErrors: true,
   },
 };

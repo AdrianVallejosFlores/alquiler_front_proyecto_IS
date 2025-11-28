@@ -38,79 +38,44 @@ html {
 }
 
 /* ==================== */
-/* ESTILOS GARANTIZADOS PARA EL TUTORIAL - EFECTO LED */
+/* ESTILOS PARA VISIBILIDAD TOTAL - SIN DIFUMINADO */
 /* ==================== */
 
-/* RESET PARA ASEGURAR FUNCIONAMIENTO */
-.tutorial-overlay-container * {
-  box-sizing: border-box;
+/* Elemento destacado en el tutorial - COMPLETAMENTE VISIBLE */
+.tutorial-highlight {
+  position: relative !important;
+  z-index: 100 !important;
 }
 
-/* EFECTO LED GARANTIZADO - ENFOQUE SIMPLE */
-.tutorial-led-glow {
-  position: fixed !important;
-  border: 3px solid #3b82f6 !important;
-  border-radius: 10px !important;
-  box-shadow: 
-    0 0 0 9999px rgba(0, 0, 0, 0.7),
-    0 0 0 2px rgba(255, 255, 255, 0.9),
-    0 0 0 4px #3b82f6,
-    0 0 25px rgba(59, 130, 246, 0.8),
-    0 0 45px rgba(59, 130, 246, 0.6) !important;
-  pointer-events: none !important;
-  z-index: 9999 !important;
-  animation: tutorial-led-pulse 2s ease-in-out infinite !important;
-}
-
-@keyframes tutorial-led-pulse {
+/* Animación del borde del spotlight */
+@keyframes border-pulse {
   0%, 100% {
+    border-color: rgba(59, 130, 246, 0.9);
     box-shadow: 
-      0 0 0 9999px rgba(0, 0, 0, 0.7),
-      0 0 0 2px rgba(255, 255, 255, 0.9),
-      0 0 0 4px #3b82f6,
-      0 0 25px rgba(59, 130, 246, 0.8),
-      0 0 45px rgba(59, 130, 246, 0.6);
-    border-color: #3b82f6;
+      0 0 0 9999px rgba(37, 99, 235, 0.2),
+      0 0 30px rgba(59, 130, 246, 0.6);
   }
   50% {
+    border-color: rgba(59, 130, 246, 1);
     box-shadow: 
-      0 0 0 9999px rgba(0, 0, 0, 0.7),
-      0 0 0 2px rgba(255, 255, 255, 1),
-      0 0 0 6px #60a5fa,
-      0 0 35px rgba(96, 165, 250, 0.9),
-      0 0 65px rgba(96, 165, 250, 0.7);
-    border-color: #60a5fa;
+      0 0 0 9999px rgba(37, 99, 235, 0.25),
+      0 0 50px rgba(59, 130, 246, 0.8);
   }
 }
 
-/* ELEMENTO OBJETIVO - DEBE SER VISIBLE */
-.tutorial-spotlight-element {
-  position: relative !important;
-  z-index: 10001 !important;
-  filter: brightness(1.1) contrast(1.05) !important;
-  transition: all 0.3s ease !important;
+/* Borde más grueso para el tutorial */
+.border-3 {
+  border-width: 3px;
 }
 
-/* TOOLTIP DEL TUTORIAL */
-.tutorial-tooltip {
-  position: fixed !important;
-  z-index: 10002 !important;
-  background: white !important;
-  border-radius: 12px !important;
-  box-shadow: 
-    0 20px 25px -5px rgba(0, 0, 0, 0.3),
-    0 10px 10px -5px rgba(0, 0, 0, 0.2),
-    0 0 0 1px rgba(82, 171, 255, 0.2) !important;
-  border: 1px solid rgba(82, 171, 255, 0.3) !important;
-  max-width: 380px !important;
-  min-width: 300px !important;
+/* Asegurar que el overlay esté por encima de todo */
+.fixed.z-50 {
+  z-index: 10000;
 }
 
-/* HEADER DEL TOOLTIP CON GRADIENTE SERVINEO */
-.tutorial-tooltip-header {
-  background: linear-gradient(135deg, #11255a 0%, #52abff 100%) !important;
-  border-radius: 12px 12px 0 0 !important;
-  padding: 1rem !important;
+/* Tooltip del tutorial - asegurar que esté por encima */
+.fixed.z-60 {
+  z-index: 10001;
 }
 
 /* CONTENIDO DEL TOOLTIP */
@@ -159,30 +124,6 @@ html {
   background: #f3f4f6 !important;
   color: #9ca3af !important;
   cursor: not-allowed !important;
-}
-
-/* ==================== */
-/* Z-INDEX GARANTIZADOS */
-/* ==================== */
-
-/* OVERLAY DE FONDO */
-.tutorial-background-overlay {
-  z-index: 9990 !important;
-}
-
-/* EFECTO LED */
-.tutorial-led-effect {
-  z-index: 9995 !important;
-}
-
-/* ELEMENTO OBJETIVO */
-.tutorial-spotlight-element {
-  z-index: 9996 !important;
-}
-
-/* TOOLTIP */
-.tutorial-tooltip {
-  z-index: 10000 !important;
 }
 
 /* ==================== */
@@ -278,16 +219,4 @@ iframe {
     opacity: 0;
     transform: translateY(20px);
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.tutorial-animate-fade {
-  animation: tutorial-fade-in 0.3s ease-out;
-}
-
-.tutorial-animate-slide {
-  animation: tutorial-slide-up 0.3s ease-out;
 }
