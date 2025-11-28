@@ -2,7 +2,7 @@ import { getFixer } from "@/lib/api/fixer";
 import Link from "next/link";
 import FixerOwnerActions from "../components/FixerOwnerActions";
 import FixerSkillsList from "../components/FixerSkillsList";
-import WorkExperienceBridge from "../components/WorkExperienceBridge";
+import WorkExperienceBridge from "../../fixers/components/WorkExperienceBridge";
 
 type PageProps = { params: Promise<{ id: string }> };
 
