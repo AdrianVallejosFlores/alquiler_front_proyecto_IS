@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Header from "./components/Header";
@@ -10,7 +10,7 @@ import { getFixer, getFixerByUser, type FixerDTO } from "@/lib/api/fixer";
 
 const formatRating = (rating?: number) => (rating ? rating.toFixed(1) : "—");
 
-export default function Page() {
+function AboutFixerPageContent() {
   const { user, ready } = useClientSession();
   const searchParams = useSearchParams();
   const queryFixerId = searchParams.get("fixerId");
@@ -161,5 +161,13 @@ export default function Page() {
         )}
       </main>
     </>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={null}>
+      <AboutFixerPageContent />
+    </Suspense>
   );
 }
