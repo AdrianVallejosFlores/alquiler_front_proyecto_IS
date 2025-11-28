@@ -115,6 +115,7 @@ export default function Header() {
                 type="text"
                 placeholder="Buscar"
                 onKeyDown={handleSearch}
+                data-tutorial="search-bar"
                 className="w-full px-4 py-2 pl-10 border border-[#D8ECFF] rounded-md focus:outline-none focus:ring-2 focus:ring-[#2a87ff] bg-white text-[#11255A]"
               />
               <svg
@@ -218,6 +219,7 @@ export default function Header() {
                 type="text"
                 placeholder="Buscar"
                 onKeyDown={handleSearch}
+                data-tutorial="search-bar"
                 className="w-full px-3 py-1.5 pl-9 border border-[#D8ECFF] rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-[#2a87ff] bg-white text-[#11255A]"
               />
               <svg

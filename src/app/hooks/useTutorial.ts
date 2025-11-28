@@ -33,6 +33,24 @@ export const useTutorial = () => {
     }
   }, []);
 
+  // Escuchar evento personalizado para mostrar el tutorial
+  useEffect(() => {
+    const handleShowTutorial = () => {
+      setTutorialState({
+        isActive: true,
+        currentStep: 0,
+        isCompleted: false,
+        showStartPanel: false
+      });
+    };
+
+    window.addEventListener('show-tutorial', handleShowTutorial);
+    
+    return () => {
+      window.removeEventListener('show-tutorial', handleShowTutorial);
+    };
+  }, []);
+
   const startTutorial = () => {
     setTutorialState({
       isActive: true,
