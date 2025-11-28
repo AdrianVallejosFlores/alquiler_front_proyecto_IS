@@ -145,8 +145,12 @@ export default function Header() {
             : !isLoggedIn
             ? (
               <>
+                {/* ✅ MODIFICADO: Agregar data-tutorial al botón Ser Fixer */}
                 <Link href={fixerEntryHref}>
-                  <button className="px-4 py-2 font-semibold text-white bg-[#2a87ff] rounded-md hover:bg-[#1a347a] transition-colors">
+                  <button 
+                    data-tutorial="become-fixer" // ✅ NUEVO: Para paso 5 del tutorial
+                    className="px-4 py-2 font-semibold text-white bg-[#2a87ff] rounded-md hover:bg-[#1a347a] transition-colors"
+                  >
                     {fixerEntryLabel}
                   </button>
                 </Link>
@@ -169,8 +173,12 @@ export default function Header() {
               )
             : (
               <>
+                {/* ✅ MODIFICADO: Agregar data-tutorial al botón Ser Fixer */}
                 <Link href={fixerCtaHref}>
-                  <button className="px-4 py-2 font-semibold text-white bg-[#2a87ff] rounded-md hover:bg-[#1a347a] transition-colors">
+                  <button 
+                    data-tutorial="become-fixer" // ✅ NUEVO: Para paso 5 del tutorial
+                    className="px-4 py-2 font-semibold text-white bg-[#2a87ff] rounded-md hover:bg-[#1a347a] transition-colors"
+                  >
                     {fixerCtaLabel}
                   </button>
                 </Link>
@@ -281,8 +289,12 @@ export default function Header() {
                     Ofertas
                   </button>
                 </Link>
+                {/* ✅ MODIFICADO: Agregar data-tutorial al botón Ser Fixer en móvil */}
                 <Link href={fixerCtaHref} className="flex-1">
-                  <button className="w-full px-2 py-1 text-xs font-semibold text-white bg-[#2a87ff] rounded-md hover:bg-[#1a347a]">
+                  <button 
+                    data-tutorial="become-fixer" // ✅ NUEVO: Para paso 5 del tutorial
+                    className="w-full px-2 py-1 text-xs font-semibold text-white bg-[#2a87ff] rounded-md hover:bg-[#1a347a]"
+                  >
                     {fixerCtaLabel}
                   </button>
                 </Link>

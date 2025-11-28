@@ -12,9 +12,9 @@ export const tutorialSteps: TutorialStep[] = [
   {
     id: 2,
     title: "Paso 2 de 6: Soporte",
-    description: "💬 ¿Tienes preguntas? Nuestro equipo de soporte está aquí para ayudarte 24/7. Contáctanos por chat, teléfono o email.",
+    description: "💬 ¿Tienes preguntas? Nuestro equipo de soporte está aquí para ayudarte 24/7. Encuentra nuestros contactos en el footer de la página.",
     targetElement: "support-section",
-    position: "bottom",
+    position: "top", // Cambiado a top porque está en el footer
     icon: "💬"
   },
   {
@@ -36,15 +36,15 @@ export const tutorialSteps: TutorialStep[] = [
   {
     id: 5,
     title: "Paso 5 de 6: Ser Fixer",
-    description: "🛠️ ¿Quieres ofrecer tus servicios? Únete como Fixer y comienza a generar ingresos con tus habilidades profesionales.",
+    description: "🛠️ ¿Quieres ofrecer tus servicios? Haz clic aquí para convertirte en Fixer y comenzar a generar ingresos con tus habilidades profesionales.",
     targetElement: "become-fixer",
-    position: "top",
+    position: "bottom",
     icon: "🛠️"
   },
   {
     id: 6,
-    title: "Paso 6 de 6: Video explicativo",
-    description: "🎥 Mira nuestro video tutorial para conocer todas las funciones avanzadas de SERVINEO y sacarle el máximo provecho.",
+    title: "Paso 6 de 6: Video Tutorial",
+    description: "🎥 Mira nuestro video tutorial para aprender todo sobre cómo ser Fixer y aprovechar al máximo nuestra plataforma.",
     targetElement: "tutorial-video",
     position: "top",
     icon: "🎥"

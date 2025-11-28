@@ -246,7 +246,11 @@ const Footer = () => {
               </nav>
             </div>
 
-            <div className="space-y-4">
+            {/* ✅ MODIFICADO: Agregar data-tutorial a la sección de soporte */}
+            <div 
+              className="space-y-4"
+              data-tutorial="support-section" // ✅ NUEVO: Para paso 2 del tutorial
+            >
               <h4 className="text-xl font-semibold font-heading">Soporte</h4>
               <ul className="space-y-3">
                 <li className="flex items-center justify-center md:justify-start">
