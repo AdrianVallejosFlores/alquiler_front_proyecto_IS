@@ -19,6 +19,9 @@ const TutorialGuide: React.FC = () => {
     restartTutorial
   } = useTutorial();
 
+  // Obtener el paso actual para el spotlight
+  const currentStep = tutorialState.isActive ? tutorialSteps[tutorialState.currentStep] : null;
+
   // Manejar teclado
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -63,7 +66,10 @@ const TutorialGuide: React.FC = () => {
 
       {/* Overlay y Pasos del Tutorial */}
       {tutorialState.isActive && (
-        <TutorialOverlay isActive={true}>
+        <TutorialOverlay 
+          isActive={true}
+          targetElement={currentStep?.targetElement} // ✅ LÍNEA AÑADIDA
+        >
           {tutorialSteps.map((step, index) => (
             index === tutorialState.currentStep && (
               <TutorialStep

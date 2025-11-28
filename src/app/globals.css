@@ -53,57 +53,44 @@ html {
 }
 
 /* ==================== */
-/* ESTILOS PARA EL TUTORIAL */
+/* ESTILOS PARA VISIBILIDAD TOTAL - SIN DIFUMINADO */
 /* ==================== */
 
-/* Estilos para el efecto spotlight del tutorial */
-.tutorial-overlay {
-  position: relative;
-  overflow: hidden;
+/* Elemento destacado en el tutorial - COMPLETAMENTE VISIBLE */
+.tutorial-highlight {
+  position: relative !important;
+  z-index: 100 !important;
 }
 
-.spotlight-area {
-  position: absolute;
-  top: var(--spotlight-top, 0);
-  left: var(--spotlight-left, 0);
-  width: var(--spotlight-width, 0);
-  height: var(--spotlight-height, 0);
-  background: transparent;
-  border-radius: 12px;
-  box-shadow: 
-    0 0 0 9999px rgba(255, 255, 255, 0.1),
-    0 0 0 4px rgba(82, 171, 255, 0.8),
-    0 0 30px rgba(82, 171, 255, 0.6);
-  pointer-events: none;
-  z-index: 1;
-  transition: all 0.3s ease;
-  animation: spotlight-pulse 2s infinite;
-}
-
-@keyframes spotlight-pulse {
+/* Animación del borde del spotlight */
+@keyframes border-pulse {
   0%, 100% {
+    border-color: rgba(59, 130, 246, 0.9);
     box-shadow: 
-      0 0 0 9999px rgba(255, 255, 255, 0.1),
-      0 0 0 4px rgba(82, 171, 255, 0.8),
-      0 0 30px rgba(82, 171, 255, 0.6);
+      0 0 0 9999px rgba(37, 99, 235, 0.2),
+      0 0 30px rgba(59, 130, 246, 0.6);
   }
   50% {
+    border-color: rgba(59, 130, 246, 1);
     box-shadow: 
-      0 0 0 9999px rgba(255, 255, 255, 0.15),
-      0 0 0 6px rgba(82, 171, 255, 1),
-      0 0 40px rgba(82, 171, 255, 0.8);
+      0 0 0 9999px rgba(37, 99, 235, 0.25),
+      0 0 50px rgba(59, 130, 246, 0.8);
   }
 }
 
-/* Asegurar que el elemento destacado tenga z-index alto */
-.tutorial-highlight {
-  position: relative;
-  z-index: 55 !important;
+/* Borde más grueso para el tutorial */
+.border-3 {
+  border-width: 3px;
 }
 
-/* Mejorar la posición del tooltip del tutorial */
+/* Asegurar que el overlay esté por encima de todo */
+.fixed.z-50 {
+  z-index: 10000;
+}
+
+/* Tooltip del tutorial - asegurar que esté por encima */
 .fixed.z-60 {
-  z-index: 60;
+  z-index: 10001;
 }
 
 /* Smooth transitions for tutorial */
@@ -127,11 +114,6 @@ html {
   opacity: 0;
   transform: scale(0.9);
   transition: opacity 300ms, transform 300ms;
-}
-
-/* Asegurar que el tutorial esté por encima de otros elementos */
-.fixed.z-50 {
-  z-index: 10000;
 }
 
 /* ==================== */
@@ -207,19 +189,4 @@ iframe {
     max-width: 90vw;
     margin: 0 auto;
   }
-}
-
-/* Asegurar que el overlay del tutorial cubra toda la pantalla */
-.tutorial-overlay-full {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-}
-
-/* Mejorar la visibilidad del elemento destacado */
-.tutorial-spotlight-element {
-  filter: brightness(1.1);
-  transition: filter 0.3s ease;
 }
