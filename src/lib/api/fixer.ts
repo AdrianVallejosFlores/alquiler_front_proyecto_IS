@@ -58,11 +58,48 @@ export type FixerDTO = {
   ratingAvg?: number;
   ratingCount?: number;
   memberSince?: string;
+  workExperience?: WorkExperienceDTO;
 };
 
 export type FixerWithCategoriesDTO = FixerDTO & {
   categoriesInfo: CategoryDTO[];
   skillsInfo?: FixerSkillInfoDTO[];
+};
+
+export type JobPositionDTO = {
+  id: string;
+  positionName: string;
+  journeyType: string;
+  organization?: string;
+  isCurrent: boolean;
+  startDate: string;
+  endDate?: string;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type CertificationDTO = {
+  id: string;
+  name: string;
+  issuer: string;
+  issueDate: string;
+  expirationDate?: string;
+  credentialId?: string;
+  credentialUrl?: string;
+  imageUrl: string;
+  imageMeta: {
+    mimeType: string;
+    size: number;
+    originalName?: string;
+  };
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type WorkExperienceDTO = {
+  jobPositions: JobPositionDTO[];
+  certifications: CertificationDTO[];
+  updatedAt?: string;
 };
 
 export type FixersByCategoryDTO = {
@@ -74,7 +111,26 @@ export type FixersByCategoryDTO = {
 export type UpdateCategoriesPayload = {
   categories: string[];
   skills?: FixerSkillDTO[];
-  bio?: string; // ✅ BUG 1.1.1 FIX: Agregar campo bio
+  bio?: string;
+};
+
+export type JobPositionPayload = {
+  positionName: string;
+  journeyType: string;
+  organization?: string;
+  isCurrent: boolean;
+  startDate: string; // ISO
+  endDate?: string; // ISO
+};
+
+export type CertificationPayload = {
+  name: string;
+  issuer: string;
+  issueDate: string; // ISO
+  expirationDate?: string; // ISO
+  credentialId?: string;
+  credentialUrl?: string;
+  file?: File;
 };
 
 export async function checkCI(ci: string, excludeId?: string) {
@@ -148,7 +204,7 @@ export async function updateCategories(id: string, payload: UpdateCategoriesPayl
   return request<ApiSuccess<FixerDTO>>(`${FIXER_BASE}/${id}/categories`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload), // ✅ Esto ya enviará bio si está en el payload
+    body: JSON.stringify(payload),
   });
 }
 
@@ -172,4 +228,85 @@ export async function acceptTerms(id: string) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ accepted: true }),
   });
+}
+
+export async function getWorkExperience(fixerId: string): Promise<WorkExperienceDTO> {
+  const response = await request<ApiSuccess<WorkExperienceDTO>>(`${FIXER_BASE}/${fixerId}/work-experience`, {
+    cache: "no-store",
+  });
+  return response.data;
+}
+
+export async function createJobPosition(fixerId: string, payload: JobPositionPayload) {
+  const response = await request<ApiSuccess<JobPositionDTO>>(`${FIXER_BASE}/${fixerId}/work-experience/jobs`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return response.data;
+}
+
+export async function updateJobPosition(fixerId: string, jobId: string, payload: JobPositionPayload) {
+  const response = await request<ApiSuccess<JobPositionDTO>>(
+    `${FIXER_BASE}/${fixerId}/work-experience/jobs/${jobId}`,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    }
+  );
+  return response.data;
+}
+
+export async function deleteJobPosition(fixerId: string, jobId: string) {
+  await request<ApiSuccess<{ message: string }>>(`${FIXER_BASE}/${fixerId}/work-experience/jobs/${jobId}`, {
+    method: "DELETE",
+  });
+  return true;
+}
+
+function buildCertificationFormData(payload: CertificationPayload) {
+  const form = new FormData();
+  form.append("name", payload.name);
+  form.append("issuer", payload.issuer);
+  form.append("issueDate", payload.issueDate);
+  if (payload.expirationDate) form.append("expirationDate", payload.expirationDate);
+  if (payload.credentialId) form.append("credentialId", payload.credentialId);
+  if (payload.credentialUrl) form.append("credentialUrl", payload.credentialUrl);
+  if (payload.file) form.append("file", payload.file);
+  return form;
+}
+
+export async function createCertification(fixerId: string, payload: CertificationPayload & { file: File }) {
+  const response = await request<ApiSuccess<CertificationDTO>>(
+    `${FIXER_BASE}/${fixerId}/work-experience/certifications`,
+    {
+      method: "POST",
+      body: buildCertificationFormData(payload),
+    }
+  );
+  return response.data;
+}
+
+export async function updateCertification(
+  fixerId: string,
+  certificationId: string,
+  payload: CertificationPayload
+) {
+  const response = await request<ApiSuccess<CertificationDTO>>(
+    `${FIXER_BASE}/${fixerId}/work-experience/certifications/${certificationId}`,
+    {
+      method: "PUT",
+      body: buildCertificationFormData(payload),
+    }
+  );
+  return response.data;
+}
+
+export async function deleteCertification(fixerId: string, certificationId: string) {
+  await request<ApiSuccess<{ message: string }>>(
+    `${FIXER_BASE}/${fixerId}/work-experience/certifications/${certificationId}`,
+    { method: "DELETE" }
+  );
+  return true;
 }
