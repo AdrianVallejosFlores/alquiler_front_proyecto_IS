@@ -1,5 +1,5 @@
 import Header from "./components/Header";
-import React from "react";
+import React, { Suspense } from "react";
 import "./components/global.css"; // Importa los estilos de Tailwind
 import Image from "next/image";
 
@@ -17,7 +17,7 @@ const userData = {
   whatsappNumber: "59176543210" // Número de ejemplo
 };
 
-export default function Page() {
+function AboutFixerPageContent() {
   return (
     <>
       <Header />
@@ -107,5 +107,13 @@ export default function Page() {
         </section>
       </main>
     </>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={null}>
+      <AboutFixerPageContent />
+    </Suspense>
   );
 }
