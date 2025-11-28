@@ -32,6 +32,7 @@ body {
 html {
   scroll-behavior: smooth;
 }
+
 .user-location-marker {
   animation: pulse 2s infinite;
 }
@@ -49,4 +50,176 @@ html {
     transform: scale(1);
     opacity: 1;
   }
+}
+
+/* ==================== */
+/* ESTILOS PARA EL TUTORIAL */
+/* ==================== */
+
+/* Estilos para el efecto spotlight del tutorial */
+.tutorial-overlay {
+  position: relative;
+  overflow: hidden;
+}
+
+.spotlight-area {
+  position: absolute;
+  top: var(--spotlight-top, 0);
+  left: var(--spotlight-left, 0);
+  width: var(--spotlight-width, 0);
+  height: var(--spotlight-height, 0);
+  background: transparent;
+  border-radius: 12px;
+  box-shadow: 
+    0 0 0 9999px rgba(255, 255, 255, 0.1),
+    0 0 0 4px rgba(82, 171, 255, 0.8),
+    0 0 30px rgba(82, 171, 255, 0.6);
+  pointer-events: none;
+  z-index: 1;
+  transition: all 0.3s ease;
+  animation: spotlight-pulse 2s infinite;
+}
+
+@keyframes spotlight-pulse {
+  0%, 100% {
+    box-shadow: 
+      0 0 0 9999px rgba(255, 255, 255, 0.1),
+      0 0 0 4px rgba(82, 171, 255, 0.8),
+      0 0 30px rgba(82, 171, 255, 0.6);
+  }
+  50% {
+    box-shadow: 
+      0 0 0 9999px rgba(255, 255, 255, 0.15),
+      0 0 0 6px rgba(82, 171, 255, 1),
+      0 0 40px rgba(82, 171, 255, 0.8);
+  }
+}
+
+/* Asegurar que el elemento destacado tenga z-index alto */
+.tutorial-highlight {
+  position: relative;
+  z-index: 55 !important;
+}
+
+/* Mejorar la posición del tooltip del tutorial */
+.fixed.z-60 {
+  z-index: 60;
+}
+
+/* Smooth transitions for tutorial */
+.tutorial-step-enter {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+.tutorial-step-enter-active {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.tutorial-step-exit {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.tutorial-step-exit-active {
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 300ms, transform 300ms;
+}
+
+/* Asegurar que el tutorial esté por encima de otros elementos */
+.fixed.z-50 {
+  z-index: 10000;
+}
+
+/* ==================== */
+/* ESTILOS PARA EL VIDEO */
+/* ==================== */
+
+/* Estilos para el video responsivo */
+.aspect-video {
+  aspect-ratio: 16 / 9;
+}
+
+/* Mejorar la apariencia del iframe de YouTube */
+iframe {
+  border: none;
+  border-radius: 12px;
+}
+
+/* Efectos hover para botones de video */
+.bg-red-600 {
+  transition: all 0.3s ease;
+}
+
+.bg-red-600:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
+}
+
+/* Mejorar la experiencia del video en móviles */
+@media (max-width: 768px) {
+  .max-w-4xl {
+    margin-left: 1rem;
+    margin-right: 1rem;
+  }
+  
+  /* Ajustar el tamaño del video en móviles */
+  .aspect-video {
+    aspect-ratio: 16 / 9;
+  }
+}
+
+/* ==================== */
+/* ESTILOS ADICIONALES PARA MEJOR UX */
+/* ==================== */
+
+/* Mejorar el scroll suave para el tutorial */
+.tutorial-scroll {
+  scroll-behavior: smooth;
+}
+
+/* Asegurar que los elementos del tutorial sean accesibles */
+.tutorial-tooltip {
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(82, 171, 255, 0.2);
+}
+
+/* Mejorar la legibilidad del texto en el tutorial */
+.tutorial-content {
+  line-height: 1.6;
+}
+
+/* Efectos de hover para botones del tutorial */
+.tutorial-button {
+  transition: all 0.2s ease-in-out;
+}
+
+.tutorial-button:hover {
+  transform: translateY(-1px);
+}
+
+/* Responsive adjustments for tutorial steps */
+@media (max-width: 640px) {
+  .tutorial-tooltip {
+    max-width: 90vw;
+    margin: 0 auto;
+  }
+}
+
+/* Asegurar que el overlay del tutorial cubra toda la pantalla */
+.tutorial-overlay-full {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+/* Mejorar la visibilidad del elemento destacado */
+.tutorial-spotlight-element {
+  filter: brightness(1.1);
+  transition: filter 0.3s ease;
 }
