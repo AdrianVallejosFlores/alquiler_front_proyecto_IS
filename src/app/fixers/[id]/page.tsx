@@ -2,6 +2,7 @@ import { getFixer } from "@/lib/api/fixer";
 import Link from "next/link";
 import FixerOwnerActions from "../components/FixerOwnerActions";
 import FixerSkillsList from "../components/FixerSkillsList";
+import WorkExperienceBridge from "../components/WorkExperienceBridge";
 
 type PageProps = { params: Promise<{ id: string }> };
 
@@ -259,6 +260,10 @@ export default async function FixerDetailPage({ params }: PageProps) {
       </div>
 
       {/* ✅ Bug 1.1.1 RESUELTO: Componente de edición para el propietario */}
+      <div className="mt-8">
+        <WorkExperienceBridge fixerId={id} />
+      </div>
+
       <FixerOwnerActions
         fixerId={id}
         currentBio={bio}
