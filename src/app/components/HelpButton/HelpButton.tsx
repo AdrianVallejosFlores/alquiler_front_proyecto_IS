@@ -61,7 +61,7 @@ export default function HelpButton() {
                 <Bot className="text-white" size={18} strokeWidth={2.5} />
               </div>
               <div>
-                <p className="font-semibold text-gray-800 text-sm">Asistente IA</p>
+                <p className="font-semibold text-gray-800 text-sm">Asistente Servineo</p>
                 <p className="text-xs text-purple-600 font-medium">¡Nuevo! Descubre qué hace</p>
               </div>
             </button>
@@ -109,7 +109,7 @@ export default function HelpButton() {
 
         {/* 2. EL TEXTO (Se mantiene la animación de expansión) */}
         <div className="max-w-0 opacity-0 group-hover:max-w-[200px] group-hover:opacity-100 group-hover:pl-3 overflow-hidden transition-all duration-500 ease-in-out whitespace-nowrap text-left">
-          <p className="font-semibold text-gray-800 text-sm">Asistente IA</p>
+          <p className="font-semibold text-gray-800 text-sm">Asistente Servineo</p>
           <p className="text-xs text-purple-600 font-medium">¡Nuevo! Descubre qué hace</p>
         </div>
       </button>
