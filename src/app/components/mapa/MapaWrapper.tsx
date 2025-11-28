@@ -125,10 +125,10 @@ export default function MapaWrapper() {
       console.log("🔄 Intentando conectar con el backend...");
 
       const [resUbicaciones, resFixers] = await Promise.all([
-        fetch("http://localhost:5000/api/ubicaciones", {
+        fetch("http://localhost:4000/api/ubicaciones", {
           signal: AbortSignal.timeout(5000),
         }),
-        fetch("http://localhost:5000/api/fixers", {
+        fetch("http://localhost:4000/api/fixers", {
           signal: AbortSignal.timeout(5000),
         }),
       ]);
