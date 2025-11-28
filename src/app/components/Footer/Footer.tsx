@@ -238,7 +238,7 @@ const Footer = () => {
                   onClick={showTutorial}
                   className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 text-left focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded flex items-center gap-2"
                 >
-                  <span>🎯 Guía de Usuario</span>
+                  <span>Guía de Usuario</span>
                 </button>
                 
                 <a href="/login" className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">Iniciar sesión</a>
