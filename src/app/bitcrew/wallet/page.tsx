@@ -41,3 +41,15 @@ const handleAjustes = () => {
   </div>
 
   {/* El resto del header sigue igual por ahora... */}
+  {/* ... div izquierdo del header ... */}
+
+  {/* NUEVO: Contenedor para acciones del header */}
+  <div className="flex items-center gap-2">
+    {/* Aquí irán los botones de escritorio luego */}
+
+    {/* Botón de Ajustes (Visible siempre o ajustado luego) */}
+    <button onClick={handleAjustes} className="p-2 text-gray-500 hover:text-[#11255A] transition rounded-full hover:bg-gray-100">
+      <Settings className="w-6 h-6" />
+    </button>
+  </div>
+</header>
