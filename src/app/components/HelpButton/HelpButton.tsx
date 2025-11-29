@@ -53,18 +53,6 @@ export default function HelpButton() {
       {isMenuOpen && (
         <div className="bg-white rounded-xl shadow-xl overflow-hidden w-60 animate-in slide-in-from-bottom-5 fade-in duration-200 border border-gray-100">
           <div className="py-1">
-            <button
-              onClick={handleAIAssistant}
-              className="w-full px-4 py-2.5 flex items-center gap-3 hover:bg-purple-50 transition-all text-left group border-b border-gray-100"
-            >
-              <div className="bg-gradient-to-br from-purple-500 to-indigo-600 p-2 rounded-full group-hover:scale-105 transition-transform">
-                <Bot className="text-white" size={18} strokeWidth={2.5} />
-              </div>
-              <div>
-                <p className="font-semibold text-gray-800 text-sm">Asistente Servineo</p>
-                <p className="text-xs text-purple-600 font-medium">¡Nuevo! Descubre qué hace</p>
-              </div>
-            </button>
 
             <button
               onClick={handleFAQ}
