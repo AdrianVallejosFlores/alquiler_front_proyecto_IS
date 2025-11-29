@@ -99,3 +99,15 @@ const handleAjustes = () => {
               </div>
 
               <div className="mt-8"> ... </div>
+
+              <div className="flex flex-col gap-3 mt-4 mb-6 md:hidden">
+                {/* NUEVO: Botón Recargar Móvil */}
+                <button
+                  onClick={handleRecargar}
+                  disabled={loading || !fixerId}
+                  className="w-full flex items-center justify-center space-x-2 bg-[#11255A] text-white px-4 py-3 rounded-xl text-sm font-medium shadow-sm hover:bg-[#0B1A40] transition-colors disabled:opacity-50"
+                >
+                  <Wallet className="w-5 h-5" />
+                  <span>Recargar Saldo</span>
+                </button>
+              </div>
