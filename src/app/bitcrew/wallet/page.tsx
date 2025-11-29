@@ -91,3 +91,11 @@ const handleAjustes = () => {
   <span>Recargar Saldo</span>
 </button>
             </div >
+  <BalanceCard ... />
+
+{/* NUEVO: Contenedor solo para móvil */ }
+              <div className="flex flex-col gap-3 mt-4 mb-6 md:hidden">
+                 {/* Espacio para botones móviles */}
+              </div>
+
+              <div className="mt-8"> ... </div>
