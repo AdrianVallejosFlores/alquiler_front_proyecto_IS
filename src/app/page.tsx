@@ -6,7 +6,7 @@ import Footer from "./components/Footer/Footer";
 import CarruselInspirador from "./components/CarruselInspirador/CarruselInspirador";
 import Link from "next/link";
 import categorias, { type CategoriaBase } from "./components/data/categoriasData";
-
+export default function Home() {
   return (
     <main>
       {/* Hero / inspiración */}

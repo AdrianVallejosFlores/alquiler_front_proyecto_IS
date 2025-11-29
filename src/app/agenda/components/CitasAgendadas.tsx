@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AppointmentModal from "./appointment-modal";
+import { useCurrentClienteId } from "@/config/userConfig";
 
 interface Cita {
   _id: string;
@@ -31,8 +32,8 @@ const CitasAgendadas = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // cliente fijo en tu código original
-  const clienteId = "690c2c510c736bec44e473e9";
+  // cliente del usuario actual (centralizado en userConfig)
+  const clienteId = useCurrentClienteId();
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
   const fetchCitas = async () => {

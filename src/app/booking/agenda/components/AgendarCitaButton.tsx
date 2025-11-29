@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { AppointmentModal } from "./appointment-modal";
+import { useCurrentClienteId } from "@/config/userConfig";
 
 interface AgendarCitaButtonProps {
   proveedorId: string;  // <-- definir props aquí
@@ -9,7 +10,7 @@ interface AgendarCitaButtonProps {
 
 export default function AgendarCitaButton({ proveedorId, servicioId }: AgendarCitaButtonProps) {
   const [open, setOpen] = useState(false);
-  const clienteId = "6927e784567c50dddae45310"; 
+  const clienteId = useCurrentClienteId(); 
   
   return (
     <>
