@@ -26,3 +26,18 @@ const handleGrafico = () => {
 const handleAjustes = () => {
   console.log("Abrir Ajustes");
 };
+
+<header className="flex justify-between items-center mb-6">
+  <div className="flex items-center space-x-2">
+    <button onClick={() => router.back()} className="text-gray-500 hover:text-gray-800 p-2" title="Volver">
+      {/* CAMBIO: Icono Lucide */}
+      <ChevronLeft className="w-6 h-6" />
+    </button>
+    <div>
+      <h1 className="text-2xl md:text-3xl font-bold text-[#11255A]">Mi Billetera</h1>
+      {/* CAMBIO: Ocultar subtítulo en móvil para ganar espacio */}
+      <p className="text-xs text-gray-500 md:hidden">Billetera de: usuario</p>
+    </div>
+  </div>
+
+  {/* El resto del header sigue igual por ahora... */}
