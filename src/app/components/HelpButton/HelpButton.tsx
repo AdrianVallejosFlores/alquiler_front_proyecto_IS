@@ -98,16 +98,12 @@ export default function HelpButton() {
       {/* Botón acerca del asistente */}
       <button
         onClick={handleAIAssistant}
-        // Quitamos el p-1 para que el círculo dicte el tamaño exacto
         className="group flex items-center rounded-full transition-all duration-300 ease-in-out hover:bg-purple-50 hover:pr-4 border-b border-transparent hover:border-gray-100"
       >
-        {/* 1. EL ICONO (Ahora w-14 h-14 para ser idéntico a los otros) */}
         <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full shadow-lg z-10 flex-shrink-0 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-          {/* Aumentamos el tamaño del icono a 24 y el grosor a 2 para igualar a los demás */}
           <Bot className="text-white" size={24} strokeWidth={2} />
         </div>
 
-        {/* 2. EL TEXTO (Se mantiene la animación de expansión) */}
         <div className="max-w-0 opacity-0 group-hover:max-w-[200px] group-hover:opacity-100 group-hover:pl-3 overflow-hidden transition-all duration-500 ease-in-out whitespace-nowrap text-left">
           <p className="font-semibold text-gray-800 text-sm">Asistente Servineo</p>
           <p className="text-xs text-purple-600 font-medium">¡Nuevo! Descubre qué hace</p>
