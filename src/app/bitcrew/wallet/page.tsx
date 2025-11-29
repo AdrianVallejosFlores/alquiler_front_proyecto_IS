@@ -53,3 +53,17 @@ const handleAjustes = () => {
     </button>
   </div>
 </header>
+
+{/* Contenedor derecho del header */ }
+<div className="flex items-center gap-3">
+
+  {/* NUEVO: Contenedor exclusivo Desktop */}
+  <div className="hidden md:flex items-center space-x-3">
+    {/* Espacio reservado para botones */}
+  </div>
+
+  {/* Botón Ajustes se mantiene fuera o dentro según prefieras, dejémoslo al final */}
+  <button onClick={handleAjustes} className="p-2 text-gray-500 hover:text-[#11255A]">
+    <Settings className="w-6 h-6" />
+  </button>
+</div>
