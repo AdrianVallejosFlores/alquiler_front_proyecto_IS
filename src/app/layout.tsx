@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
-// ✅ CORRECCIÓN: Agregar declaración para CSS
 import "./globals.css";
 
 import Header from "./components/Header/Header";
-import { useUsuarioNuevo } from "./hooks/useUsuarioNuevo";
+// ELIMINADO: useUsuarioNuevo no se usa
+// import { useUsuarioNuevo } from "./hooks/useUsuarioNuevo";
+import TutorialGuide from "./components/TutorialGuide/TutorialGuide";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,7 +25,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const [isOnline, setIsOnline] = useState(true);
-  const { modalAbierto, cerrarModal } = useUsuarioNuevo();
+  // ELIMINADO: Variables no usadas
+  // const { modalAbierto, cerrarModal } = useUsuarioNuevo();
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -46,7 +48,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* ✅ CORRECCIÓN: Importar CSS de Leaflet aquí */}
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
       </head>
       <body
@@ -67,12 +68,14 @@ export default function RootLayout({
 
         <Header />
 
-        {/* ✅ CORRECCIÓN: Ajustar el padding según el dispositivo */}
         <div className="min-h-screen flex flex-col">
           <main className="flex-1 pb-16 sm:pb-0 pt-16 sm:pt-20">
             {children}
           </main>
         </div>
+
+        {/* ✅ NUEVO: Componente de Guía Tutorial */}
+        <TutorialGuide />
 
       </body>
     </html>
