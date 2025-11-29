@@ -67,3 +67,13 @@ const handleAjustes = () => {
     <Settings className="w-6 h-6" />
   </button>
 </div>
+<div className="hidden md:flex items-center space-x-3">
+              {/* NUEVO: Botón Gráfico */}
+              <button
+                onClick={handleGrafico}
+                className="flex items-center space-x-2 bg-[#11255A] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-md hover:bg-[#0B1A40] transition-colors"
+              >
+                <BarChart3 className="w-5 h-5" />
+                <span>Gráfico de Ingresos</span>
+              </button>
+            </div>
