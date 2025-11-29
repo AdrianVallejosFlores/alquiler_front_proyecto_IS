@@ -9,7 +9,7 @@ import {
   Home, 
   HelpCircle,
   FileText, 
-  Search as SearchIcon, // Renombramos el icono para evitar conflicto con el componente Search
+  Search as SearchIcon, 
   Phone,
   ShieldCheck,
   User,
@@ -558,7 +558,10 @@ const DATA_MANUAL: Record<string, Category> = {
 export default function PanelAyuda() {
   const [activeCategory, setActiveCategory] = useState<string>('inicio');
   const [activePageId, setActivePageId] = useState<string>('');
-  const [expandedSidebarItems, setExpandedSidebarItems] = useState<string[]>(['guia-uso']); 
+  
+  // CORREGIDO: Inicializamos vacío para que no se despliegue nada automáticamente
+  const [expandedSidebarItems, setExpandedSidebarItems] = useState<string[]>([]); 
+  
   const [openMainAccordion, setOpenMainAccordion] = useState<string | null>(null);
   const [query, setQuery] = useState('');
 
