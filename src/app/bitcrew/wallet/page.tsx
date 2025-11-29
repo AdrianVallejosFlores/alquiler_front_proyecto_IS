@@ -1,107 +1,108 @@
+"use client";
+
 import React, { Suspense, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useWallet } from "./hooks/useWallet";
 import WalletAlert from "./components/walletAlert";
 import BalanceCard from "./components/BalanceCard";
 import TransactionList from "./components/TransactionList";
-// NUEVO: Importamos los iconos
-import { ChevronLeft, BarChart3, Wallet, Settings } from "lucide-react";
+import { ChevronLeft, BarChart3, Wallet, Settings } from "lucide-react"; // Usamos lucide-react para limpieza
 
-// LEEMOS EL FIXER ID
-const fixerId = searchParams.get("fixer_id");
+function WalletLogic() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-const { balanceData, transactions, loading, error, reload } = useWallet(fixerId);
-const [showSaldo, setShowSaldo] = useState(true);
+  // LEEMOS EL FIXER ID
+  const fixerId = searchParams.get("fixer_id");
 
-// Handlers para las acciones
-const handleRecargar = () => {
-  if (fixerId) router.push(`/bitcrew/pagosQR?fixer_id=${fixerId}`);
-};
+  const { balanceData, transactions, loading, error, reload } = useWallet(fixerId);
+  const [showSaldo, setShowSaldo] = useState(true);
 
-const handleGrafico = () => {
-  // Aquí puedes añadir la navegación al gráfico cuando exista la ruta
-  console.log("Navegar a Gráfico de Ingresos");
-};
+  // Handlers para las acciones
+  const handleRecargar = () => {
+    if (fixerId) router.push(`/bitcrew/pagosQR?fixer_id=${fixerId}`);
+  };
 
-const handleAjustes = () => {
-  console.log("Abrir Ajustes");
-};
+  const handleGrafico = () => {
+    // Aquí puedes añadir la navegación al gráfico cuando exista la ruta
+    console.log("Navegar a Gráfico de Ingresos");
+  };
 
-<header className="flex justify-between items-center mb-6">
-  <div className="flex items-center space-x-2">
-    <button onClick={() => router.back()} className="text-gray-500 hover:text-gray-800 p-2" title="Volver">
-      {/* CAMBIO: Icono Lucide */}
-      <ChevronLeft className="w-6 h-6" />
-    </button>
-    <div>
-      <h1 className="text-2xl md:text-3xl font-bold text-[#11255A]">Mi Billetera</h1>
-      {/* CAMBIO: Ocultar subtítulo en móvil para ganar espacio */}
-      <p className="text-xs text-gray-500 md:hidden">Billetera de: usuario</p>
-    </div>
-  </div>
+  const handleAjustes = () => {
+    console.log("Abrir Ajustes");
+  };
 
-  {/* El resto del header sigue igual por ahora... */}
-  {/* ... div izquierdo del header ... */}
+  return (
+    <div className="bg-gray-50 min-h-screen">
+      <div className="max-w-4xl mx-auto px-4 md:px-8 pt-4 md:pt-6 pb-4 md:pb-8">
 
-  {/* NUEVO: Contenedor para acciones del header */}
-  <div className="flex items-center gap-2">
-    {/* Aquí irán los botones de escritorio luego */}
-
-    {/* Botón de Ajustes (Visible siempre o ajustado luego) */}
-    <button onClick={handleAjustes} className="p-2 text-gray-500 hover:text-[#11255A] transition rounded-full hover:bg-gray-100">
-      <Settings className="w-6 h-6" />
-    </button>
-  </div>
-</header>
-
-{/* Contenedor derecho del header */ }
-<div className="flex items-center gap-3">
-
-  {/* NUEVO: Contenedor exclusivo Desktop */}
-  <div className="hidden md:flex items-center space-x-3">
-    {/* Espacio reservado para botones */}
-  </div>
-
-  {/* Botón Ajustes se mantiene fuera o dentro según prefieras, dejémoslo al final */}
-  <button onClick={handleAjustes} className="p-2 text-gray-500 hover:text-[#11255A]">
-    <Settings className="w-6 h-6" />
-  </button>
-</div>
-<div className="hidden md:flex items-center space-x-3">
-              {/* NUEVO: Botón Gráfico */}
-              <button
-                onClick={handleGrafico}
-                className="flex items-center space-x-2 bg-[#11255A] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-md hover:bg-[#0B1A40] transition-colors"
-              >
-                <BarChart3 className="w-5 h-5" />
-                <span>Gráfico de Ingresos</span>
-              </button>
+        {/* ================= HEADER ================= */}
+        <header className="flex justify-between items-center mb-6">
+          <div className="flex items-center space-x-2">
+            <button onClick={() => router.back()} className="text-gray-500 hover:text-gray-800 p-2" title="Volver">
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-[#11255A]">Mi Billetera</h1>
+              <p className="text-xs text-gray-500 md:hidden">Billetera de: usuario</p>
             </div>
+          </div>
 
-            <div className="hidden md:flex items-center space-x-3">
-              <button onClick={handleGrafico} ... > ... </button>
+          {/* --- BOTONES DESKTOP (Alineados a la derecha) --- */}
+          <div className="hidden md:flex items-center space-x-3">
+            <button
+              onClick={handleGrafico}
+              className="flex items-center space-x-2 bg-[#11255A] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-md hover:bg-[#0B1A40] transition-colors"
+            >
+              <BarChart3 className="w-5 h-5" />
+              <span>Gráfico de Ingresos</span>
+            </button>
 
-{/* NUEVO: Botón Recargar */ }
-<button
-  onClick={handleRecargar}
-  disabled={loading || !fixerId}
-  className="flex items-center space-x-2 bg-[#11255A] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-md hover:bg-[#0B1A40] transition-colors disabled:opacity-50"
->
-  <Wallet className="w-5 h-5" />
-  <span>Recargar Saldo</span>
-</button>
-            </div >
-  <BalanceCard ... />
+            <button
+              onClick={handleRecargar}
+              disabled={loading || !fixerId}
+              className="flex items-center space-x-2 bg-[#11255A] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-md hover:bg-[#0B1A40] transition-colors disabled:opacity-50"
+            >
+              <Wallet className="w-5 h-5" />
+              <span>Recargar Saldo</span>
+            </button>
 
-{/* NUEVO: Contenedor solo para móvil */ }
+            {/* Botón de Ajustes (Tuerca) */}
+            <button onClick={handleAjustes} className="p-2 text-gray-500 hover:text-[#11255A] transition rounded-full hover:bg-gray-100">
+              <Settings className="w-6 h-6" />
+            </button>
+          </div>
+
+          {/* --- BOTÓN AJUSTES MOBILE (Solo la tuerca en el header) --- */}
+          <div className="md:hidden">
+            <button onClick={handleAjustes} className="p-2 text-gray-500 hover:text-[#11255A]">
+              <Settings className="w-6 h-6" />
+            </button>
+          </div>
+        </header>
+
+        <main>
+          {error && <div className="text-red-500 bg-red-50 p-3 rounded mb-4">{error}</div>}
+
+          {loading && !balanceData && <p className="text-center py-10">Cargando...</p>}
+
+          {!loading && balanceData && (
+            <>
+              <WalletAlert balance={balanceData.saldo} estado={balanceData.estado} />
+
+              {/* TARJETA DE SALDO */}
+              <BalanceCard
+                saldo={balanceData.saldo}
+                moneda={balanceData.moneda || "Bs"}
+                showSaldo={showSaldo}
+                onToggleShowSaldo={() => setShowSaldo(!showSaldo)}
+                onRefresh={reload}
+                loading={loading}
+                walletId={balanceData._id}
+              />
+
+              {/* --- BOTONES MOBILE (Reubicados debajo de la tarjeta) --- */}
               <div className="flex flex-col gap-3 mt-4 mb-6 md:hidden">
-                 {/* Espacio para botones móviles */}
-              </div>
-
-              <div className="mt-8"> ... </div>
-
-              <div className="flex flex-col gap-3 mt-4 mb-6 md:hidden">
-                {/* NUEVO: Botón Recargar Móvil */}
                 <button
                   onClick={handleRecargar}
                   disabled={loading || !fixerId}
@@ -110,4 +111,36 @@ const handleAjustes = () => {
                   <Wallet className="w-5 h-5" />
                   <span>Recargar Saldo</span>
                 </button>
+
+                <button
+                  onClick={handleGrafico}
+                  className="w-full flex items-center justify-center space-x-2 bg-[#11255A] text-white px-4 py-3 rounded-xl text-sm font-medium shadow-sm hover:bg-[#0B1A40] transition-colors"
+                >
+                  <BarChart3 className="w-5 h-5" />
+                  <span>Gráfico de Ingresos</span>
+                </button>
               </div>
+
+              {/* LISTA DE TRANSACCIONES */}
+              <div className="mt-8">
+                <TransactionList transactions={transactions} />
+              </div>
+            </>
+          )}
+
+          {!fixerId && !loading && (
+            <p className="text-center text-gray-500 mt-10">No se detectó un ID de Fixer.</p>
+          )}
+        </main>
+      </div>
+    </div>
+  );
+}
+
+export default function WalletPage() {
+  return (
+    <Suspense fallback={<div>Cargando...</div>}>
+      <WalletLogic />
+    </Suspense>
+  );
+}
