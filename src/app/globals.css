@@ -1,10 +1,10 @@
 @import "tailwindcss";
 /* ✅ CORRECCIÓN: Eliminar import de Leaflet CSS aquí, se maneja en layout.tsx */
 
-/*:root {
+:root {
   --background: #ffffff;
   --foreground: #171717;
-}*/
+}
 
 /* ✅ CORRECCIÓN: Eliminar @theme que no es compatible */
 /* Usar las variables de CSS directamente */
@@ -15,7 +15,7 @@
   --font-mono: var(--font-geist-mono);
 }
 
-/*@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   :root {
     --background: #ffffff;
     --foreground: #000000;

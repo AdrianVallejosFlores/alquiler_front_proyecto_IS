@@ -1,3 +1,4 @@
+/*
 'use client';
 
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
@@ -621,3 +622,4 @@ export default function AddOrEditOfferPage() {
     </Suspense>
   );
 }
+*/
