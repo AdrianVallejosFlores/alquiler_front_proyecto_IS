@@ -77,3 +77,17 @@ const handleAjustes = () => {
                 <span>Gráfico de Ingresos</span>
               </button>
             </div>
+
+            <div className="hidden md:flex items-center space-x-3">
+              <button onClick={handleGrafico} ... > ... </button>
+
+{/* NUEVO: Botón Recargar */ }
+<button
+  onClick={handleRecargar}
+  disabled={loading || !fixerId}
+  className="flex items-center space-x-2 bg-[#11255A] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-md hover:bg-[#0B1A40] transition-colors disabled:opacity-50"
+>
+  <Wallet className="w-5 h-5" />
+  <span>Recargar Saldo</span>
+</button>
+            </div >
