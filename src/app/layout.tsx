@@ -61,10 +61,10 @@ export default function RootLayout({
 
           {/* 🔔 Campanita flotante global + BOTONES a la derecha */}
           <div className="fixed top-20 right-4 z-50 flex items-center gap-3">
-
-            {/* BOTONES alineados horizontalmente */}
             <div className="flex gap-2">
+
               <a
+                id="btn-ir-agenda"
                 href="/booking/agenda"
                 className="px-3 py-2 bg-gray-700 text-white rounded-md text-sm hover:bg-gray-800 transition shadow"
               >
@@ -72,6 +72,7 @@ export default function RootLayout({
               </a>
 
               <a
+                id="btn-ir-agenda-fixer"
                 href="/booking/worker"
                 className="px-3 py-2 bg-gray-700 text-white rounded-md text-sm hover:bg-gray-800 transition shadow"
               >
@@ -79,6 +80,7 @@ export default function RootLayout({
               </a>
 
               <a
+                id="btn-ir-comision"
                 href="/bitcrew/comision"
                 className="px-3 py-2 bg-gray-700 text-white rounded-md text-sm hover:bg-gray-800 transition shadow"
               >
@@ -86,14 +88,15 @@ export default function RootLayout({
               </a>
 
               <a
+                id="btn-ir-billetera"
                 href="/bitcrew/wallet"
                 className="px-3 py-2 bg-gray-700 text-white rounded-md text-sm hover:bg-gray-800 transition shadow"
               >
                 Ir a Billetera
               </a>
+
             </div>
 
-            {/* CAMPANITA */}
             <NotificationBell />
           </div>
 
