@@ -9,6 +9,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 
 import { NotificationProvider } from "@/context/NotificationContext";
 import Header from "./components/Header/Header";
+import NotificationBell from "../components/NotificationBell"; // ⬅️ AÑADIDO
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -48,6 +49,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <NotificationProvider>
+
           {!isOnline && (
             <div className="fixed top-0 left-0 w-full bg-red-600 text-white text-center p-2 z-50 shadow-lg animate-pulse">
               <p className="font-semibold">Estás sin conexión</p>
@@ -56,6 +58,44 @@ export default function RootLayout({
           )}
 
           <Header />
+
+          {/* 🔔 Campanita flotante global + BOTONES a la derecha */}
+          <div className="fixed top-20 right-4 z-50 flex items-center gap-3">
+
+            {/* BOTONES alineados horizontalmente */}
+            <div className="flex gap-2">
+              <a
+                href="/booking/agenda"
+                className="px-3 py-2 bg-gray-700 text-white rounded-md text-sm hover:bg-gray-800 transition shadow"
+              >
+                Ir Agenda
+              </a>
+
+              <a
+                href="/booking/worker"
+                className="px-3 py-2 bg-gray-700 text-white rounded-md text-sm hover:bg-gray-800 transition shadow"
+              >
+                Ir Agenda (Fixer)
+              </a>
+
+              <a
+                href="/bitcrew/comision"
+                className="px-3 py-2 bg-gray-700 text-white rounded-md text-sm hover:bg-gray-800 transition shadow"
+              >
+                Ir a Comisión
+              </a>
+
+              <a
+                href="/bitcrew/wallet"
+                className="px-3 py-2 bg-gray-700 text-white rounded-md text-sm hover:bg-gray-800 transition shadow"
+              >
+                Ir a Billetera
+              </a>
+            </div>
+
+            {/* CAMPANITA */}
+            <NotificationBell />
+          </div>
 
           <div className="pt-16 sm:pt-20">
             {children}

@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import AppointmentButton from "./components/AgendarCitaButton";
 import Sidebar from "./components/Sidebar";
-import EnvConFigModal from "./components/EnvConfigModal"; // <-- IMPORTANTE
+import EnvConFigModal from "./components/EnvConfigModal";
 
 interface Servicio {
   _id: string;

@@ -261,15 +261,29 @@ export function AppointmentModal({
     today.setHours(0, 0, 0, 0);
     const isWeekend = (d: Date) => d.getDay() === 0 || d.getDay() === 6;
 
+    // No permitir días pasados
     if (day < today) return true;
+
+    // No fines de semana
     if (isWeekend(day)) return true;
 
+    // No más allá de 6 meses
     const maxDate = new Date();
     maxDate.setMonth(maxDate.getMonth() + 6);
     if (day > maxDate) return true;
 
+    // No feriados
     if (holidays.includes(dateStr)) return true;
-    if (isEditing && initialAppointment && dateStr === initialAppointment.fecha) return false;
+
+    // Si es edición → PERMITIR fecha original
+    if (isEditing && initialAppointment?.fecha === dateStr) return false;
+
+    // Si es edición → bloquear sólo días realmente ocupados por OTROS
+    if (isEditing) {
+      return bookedDays.includes(dateStr);
+    }
+
+    // Si es creación → bloquear cualquier día ocupado
     return bookedDays.includes(dateStr);
   };
 
@@ -352,6 +366,7 @@ export function AppointmentModal({
       }
 
       // Enviar notificación según el caso
+      /*
       let resultNotify;
       if (isEditing) {
         console.log("📨 Enviando notificación de actualización...");
@@ -360,6 +375,7 @@ export function AppointmentModal({
         console.log("📨 Enviando notificación de creación...");
         resultNotify = await createAndNotify(payload);
       }
+        */
 
       // Validar resultado de notificación
       try {

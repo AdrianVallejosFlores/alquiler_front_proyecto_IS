@@ -52,6 +52,13 @@ const safeStr = (v: any, fallback = "—") =>
    📧 Función base: Gmail
    =========================================================== */
 
+function isValidEmail(email?: string) {
+  if (!email) return false;
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return regex.test(String(email).trim());
+}
+
+
 export async function sendNotification(payload: {
   subject: string;
   message: string;
@@ -184,11 +191,20 @@ export async function createAndNotify(payload: CreateAppointmentPayload) {
     const fixerCorreo = fixer.correo || "";
     const fixerNumero = fixer.numero || "";
 
+    let servicioNombre = "Servicio no especificado";
+    try {
+      const servicio = await getServicioById(payload.servicioId);
+      if (servicio && servicio.nombre) {
+        servicioNombre = servicio.nombre;
+      }
+    } catch (e) {
+      console.warn("⚠️ No se pudo obtener el nombre del servicio:", e);
+    }
+
     // 🔹 3️⃣ Datos de la cita
     const fechaLocal = formatearFechaLarga(payload.fecha);
     const horaInicio = safeStr(payload.horario?.inicio);
     const horaFin = safeStr(payload.horario?.fin);
-    const servicioNombre = payload.servicioId ?? "Servicio no especificado";
     const direccion = payload.ubicacion?.direccion ?? "No especificada";
     const notas = payload.ubicacion?.notas ?? "Ninguna";
     const citaId = payload.citaId ?? "";
@@ -240,6 +256,7 @@ export async function createAndNotify(payload: CreateAppointmentPayload) {
         `🛠️ *Servicio:* ${servicioNombre}`,
         `👤 *Cliente:* ${clienteNombre}`,
         `📍 *Dirección:* ${direccion}`,
+        `🗒️ *Notas:* ${notas}`,
         citaId ? `🆔 *ID de cita:* ${citaId}` : "",
         "",
         "Asegúrate de estar disponible en el horario indicado.",
@@ -253,6 +270,25 @@ export async function createAndNotify(payload: CreateAppointmentPayload) {
         meta: { tipo: "booking_fixer" },
       });
     }
+
+    const noti = {
+      type: "create",
+      timestamp: Date.now(),
+      fixerNombre,
+      servicioNombre,
+      fecha: fechaLocal,
+      horaInicio,
+      horaFin
+    };
+
+    // Obtener el número de citas en el localStorage
+    let index = 1;
+    while (localStorage.getItem(`temp_appointment${index}`)) {
+      index++;
+    }
+
+    // Almacenar la nueva notificación con una clave única
+    localStorage.setItem(`temp_appointment${index}`, JSON.stringify(noti));
 
     return requesterResult.ok
       ? { ok: true, notified: true, notifyResult: requesterResult }
@@ -291,12 +327,21 @@ export async function updateAndNotify(
     const fixerCorreo = fixer.correo || "";
     const fixerNumero = fixer.numero || "";
 
+    let servicioNombre = "Servicio no especificado";
+    try {
+      const servicio = await getServicioById(payload.servicioId);
+      if (servicio && servicio.nombre) {
+        servicioNombre = servicio.nombre;
+      }
+    } catch (e) {
+      console.warn("⚠️ No se pudo obtener el nombre del servicio:", e);
+    }
+
     // 🔹 3️⃣ Datos de la cita
     const fechaLocal = formatearFechaLarga(payload.fecha);
     const horaInicio = safeStr(payload.horario?.inicio);
     const horaFin = safeStr(payload.horario?.fin);
     const direccion = payload.ubicacion?.direccion ?? "No especificada";
-    const servicioNombre = payload.servicioId ?? "Servicio no especificado";
     const citaId =
       payload.citaId || (payload as any)?._id || (payload as any)?.id || "";
 
@@ -374,8 +419,27 @@ export async function updateAndNotify(
         meta: { tipo: "update_fixer" },
       });
     } else {
-      console.warn("ℹ️ Proveedor sin email: no se envía notificación al fixer.");
+      console.warn("Proveedor sin email: no se envía notificación al fixer.");
     }
+
+    const noti = {
+      type: "update",
+      timestamp: Date.now(),
+      fixerNombre,
+      servicioNombre,
+      fecha: fechaLocal,
+      horaInicio,
+      horaFin
+    };
+
+    // Obtener el número de citas en el localStorage
+    let index = 1;
+    while (localStorage.getItem(`temp_appointment${index}`)) {
+      index++;
+    }
+
+    // Almacenar la nueva notificación con una clave única
+    localStorage.setItem(`temp_appointment${index}`, JSON.stringify(noti));
 
     return requesterResult.ok
       ? { ok: true, notified: true, notifyResult: requesterResult }
@@ -416,9 +480,18 @@ export async function cancelAndNotify(payload: CreateAppointmentPayload) {
     const fixerCorreo = fixer.correo || "";
     const fixerNumero = fixer.numero || "";
 
+    let servicioNombre = "Servicio no especificado";
+    try {
+      const servicio = await getServicioById(payload.servicioId);
+      if (servicio && servicio.nombre) {
+        servicioNombre = servicio.nombre;
+      }
+    } catch (e) {
+      console.warn("⚠️ No se pudo obtener el nombre del servicio:", e);
+    }
+
     // 🔹 3️⃣ Datos de la cita
     const fechaLocal = formatearFechaLarga(payload.fecha);
-    const servicioNombre = payload.servicioId ?? "Servicio no especificado";
 
     // 🔹 4️⃣ Notificación para el Requester
     const requesterSubject = `Cancelación de cita con ${fixerNombre}`;
@@ -477,6 +550,23 @@ export async function cancelAndNotify(payload: CreateAppointmentPayload) {
     } else {
       console.warn("ℹ️ Proveedor sin email: no se envía notificación al fixer.");
     }
+
+    const noti = {
+      type: "cancel",
+      timestamp: Date.now(),
+      fixerNombre,
+      servicioNombre,
+      fecha: fechaLocal,
+    };
+
+    // Obtener el número de citas en el localStorage
+    let index = 1;
+    while (localStorage.getItem(`temp_appointment${index}`)) {
+      index++;
+    }
+
+    // Almacenar la nueva notificación con una clave única
+    localStorage.setItem(`temp_appointment${index}`, JSON.stringify(noti));
 
     return requesterResult.ok
       ? { ok: true, notified: true, notifyResult: requesterResult }

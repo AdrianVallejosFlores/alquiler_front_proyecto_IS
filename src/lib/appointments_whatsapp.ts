@@ -32,6 +32,16 @@ export type CreateResponse = {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 
+const formatearFechaLarga = (iso: string) => {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString("es-ES", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+};
+
 /* ===========================================================
    📱 Base para enviar notificación WhatsApp
    =========================================================== */
@@ -115,20 +125,24 @@ export async function createAndNotifyWhatsApp(payload: CreateAppointmentPayload)
     // 2️⃣ Datos base
     const clienteNombre = request.nombre || "Cliente";
     const clienteNumero = request.numero || "";
+
     const fixerNombre = fixer.nombre || "Proveedor";
     const fixerNumero = fixer.numero || "";
 
-    // 3️⃣ Datos de la cita
-    const fechaLocal = new Date(payload.fecha).toLocaleDateString("es-ES", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
+    let servicioNombre = "Servicio no especificado";
+    try {
+      const servicio = await getServicioById(payload.servicioId);
+      if (servicio && servicio.nombre) {
+        servicioNombre = servicio.nombre;
+      }
+    } catch (e) {
+      console.warn("⚠️ No se pudo obtener el nombre del servicio:", e);
+    }
 
+    // 3️⃣ Datos de la cita
+    const fechaLocal = formatearFechaLarga(payload.fecha);
     const horaInicio = payload.horario?.inicio ?? "—";
     const horaFin = payload.horario?.fin ?? "—";
-    const servicioNombre = payload.servicioId ?? "Servicio no especificado";
     const direccion = payload.ubicacion?.direccion ?? "No especificada";
     const notas = payload.ubicacion?.notas ?? "Ninguna";
     const citaId = payload.citaId || (payload as any)?._id || "";
@@ -220,23 +234,26 @@ export async function updateAndNotifyWhatsApp(
     // 2️⃣ Datos base
     const clienteNombre = request.nombre || "Cliente";
     const clienteNumero = request.numero || "";
+
     const fixerNombre = fixer.nombre || "Proveedor";
     const fixerNumero = fixer.numero || "";
 
-    // 3️⃣ Datos de la cita
-    const fechaLocal = new Date(payload.fecha).toLocaleDateString("es-ES", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
+    let servicioNombre = "Servicio no especificado";
+    try {
+      const servicio = await getServicioById(payload.servicioId);
+      if (servicio && servicio.nombre) {
+        servicioNombre = servicio.nombre;
+      }
+    } catch (e) {
+      console.warn("⚠️ No se pudo obtener el nombre del servicio:", e);
+    }
 
+    const fechaLocal = formatearFechaLarga(payload.fecha);
     const horaInicio = payload.horario?.inicio ?? "—";
     const horaFin = payload.horario?.fin ?? "—";
     const cambiosTexto = payload.cambios?.length
       ? `🔄 *Cambios realizados:* ${payload.cambios.join(", ")}`
       : "Se han actualizado los detalles de tu cita.";
-    const servicioNombre = payload.servicioId ?? "Servicio no especificado";
     const citaId = payload.citaId || (payload as any)?._id || "";
 
     // 🔹 Mensaje para el cliente (request)
@@ -322,18 +339,21 @@ export async function cancelAndNotifyWhatsApp(payload: CreateAppointmentPayload)
     // 2️⃣ Datos base
     const clienteNombre = request.nombre || "Cliente";
     const clienteNumero = request.numero || "";
+    
     const fixerNombre = fixer.nombre || "Proveedor";
     const fixerNumero = fixer.numero || "";
 
-    // 3️⃣ Información de la cita
-    const fechaLocal = new Date(payload.fecha).toLocaleDateString("es-ES", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
+    let servicioNombre = "Servicio no especificado";
+    try {
+      const servicio = await getServicioById(payload.servicioId);
+      if (servicio && servicio.nombre) {
+        servicioNombre = servicio.nombre;
+      }
+    } catch (e) {
+      console.warn("⚠️ No se pudo obtener el nombre del servicio:", e);
+    }
 
-    const servicioNombre = payload.servicioId ?? "Servicio no especificado";
+    const fechaLocal = formatearFechaLarga(payload.fecha);
 
     // 🔹 Mensaje para el cliente (request)
     if (clienteNumero) {

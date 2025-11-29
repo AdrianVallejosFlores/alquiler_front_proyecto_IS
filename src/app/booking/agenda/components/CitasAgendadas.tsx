@@ -160,15 +160,17 @@ const CitasAgendadas = () => {
             setModalOpen(open);
             if (!open) {
               setSelectedCita(null);
-              // refrescar lista después de cerrar (posible cambio)
               fetchCitas();
             }
           }}
           patientName={selectedCita?.proveedorId?.nombre ?? "Proveedor"}
-          providerId={selectedCita?.proveedorId?._id ?? ""}
+
+          // ⬇️ HARD CODE AQUÍ
+          providerId="6927e823567c50dddae45313"
+
           servicioId={selectedCita?.servicioId?._id ?? ""}
           clienteId={selectedCita?.clienteId ?? clienteId}
-          // AÑADE ESTAS PROPS PARA EDITAR:
+
           initialAppointment={mapToInitial(selectedCita)}
           isEditing={true}
           appointmentId={selectedCita?._id}
