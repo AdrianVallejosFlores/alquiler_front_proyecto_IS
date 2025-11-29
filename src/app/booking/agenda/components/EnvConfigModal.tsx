@@ -125,6 +125,9 @@ export default function VentanaPrueba() {
             <DialogDescription>
               Datos del Requester, Fixer, Wallet y creación de servicios
             </DialogDescription>
+            <DialogDescription>
+              (Debe poner los datos correctos, sino los envios podrian tener fallos, el numero de celular debe ser puesto asi 5917777777)
+            </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-6 mt-4">
