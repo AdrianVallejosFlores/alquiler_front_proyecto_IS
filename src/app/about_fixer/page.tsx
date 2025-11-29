@@ -1,3 +1,4 @@
+//src/app/about_fixer/page.tsx
 import Header from "./components/Header";
 import React from "react";
 import "./components/global.css"; // Importa los estilos de Tailwind

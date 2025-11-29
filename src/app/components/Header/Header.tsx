@@ -1,5 +1,4 @@
 'use client';
-
 import Link from 'next/link';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Icono from './Icono';
@@ -115,6 +114,7 @@ export default function Header() {
                 type="text"
                 placeholder="Buscar"
                 onKeyDown={handleSearch}
+                data-tutorial="search-bar"
                 className="w-full px-4 py-2 pl-10 border border-[#D8ECFF] rounded-md focus:outline-none focus:ring-2 focus:ring-[#2a87ff] bg-white text-[#11255A]"
               />
               <svg
@@ -144,8 +144,12 @@ export default function Header() {
             : !isLoggedIn
             ? (
               <>
+                {/* ✅ MODIFICADO: Agregar data-tutorial al botón Ser Fixer */}
                 <Link href={fixerEntryHref}>
-                  <button className="px-4 py-2 font-semibold text-white bg-[#2a87ff] rounded-md hover:bg-[#1a347a] transition-colors">
+                  <button 
+                    data-tutorial="become-fixer" // ✅ NUEVO: Para paso 5 del tutorial
+                    className="px-4 py-2 font-semibold text-white bg-[#2a87ff] rounded-md hover:bg-[#1a347a] transition-colors"
+                  >
                     {fixerEntryLabel}
                   </button>
                 </Link>
@@ -168,8 +172,12 @@ export default function Header() {
               )
             : (
               <>
+                {/* ✅ MODIFICADO: Agregar data-tutorial al botón Ser Fixer */}
                 <Link href={fixerCtaHref}>
-                  <button className="px-4 py-2 font-semibold text-white bg-[#2a87ff] rounded-md hover:bg-[#1a347a] transition-colors">
+                  <button 
+                    data-tutorial="become-fixer" // ✅ NUEVO: Para paso 5 del tutorial
+                    className="px-4 py-2 font-semibold text-white bg-[#2a87ff] rounded-md hover:bg-[#1a347a] transition-colors"
+                  >
                     {fixerCtaLabel}
                   </button>
                 </Link>
@@ -218,6 +226,7 @@ export default function Header() {
                 type="text"
                 placeholder="Buscar"
                 onKeyDown={handleSearch}
+                data-tutorial="search-bar"
                 className="w-full px-3 py-1.5 pl-9 border border-[#D8ECFF] rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-[#2a87ff] bg-white text-[#11255A]"
               />
               <svg
@@ -279,8 +288,12 @@ export default function Header() {
                     Ofertas
                   </button>
                 </Link>
+                {/* ✅ MODIFICADO: Agregar data-tutorial al botón Ser Fixer en móvil */}
                 <Link href={fixerCtaHref} className="flex-1">
-                  <button className="w-full px-2 py-1 text-xs font-semibold text-white bg-[#2a87ff] rounded-md hover:bg-[#1a347a]">
+                  <button 
+                    data-tutorial="become-fixer" // ✅ NUEVO: Para paso 5 del tutorial
+                    className="w-full px-2 py-1 text-xs font-semibold text-white bg-[#2a87ff] rounded-md hover:bg-[#1a347a]"
+                  >
                     {fixerCtaLabel}
                   </button>
                 </Link>
@@ -312,7 +325,7 @@ export default function Header() {
       </footer>
 
       {/* Espacio para el header fijo */}
-      <div className="h-16 sm:h-20" />
+      <div className="h-16 sm:h-0" />
     </>
   );
 }

@@ -203,6 +203,10 @@ const Footer = () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [isLanguageMenuOpen]);
+  const showTutorial = () => {
+    // Disparar evento personalizado para mostrar el tutorial
+    window.dispatchEvent(new CustomEvent('show-tutorial'));
+  };
 
   const selectedLanguage = languageOptions.find((option) => option.code === currentLanguage) ?? languageOptions[0];
 
@@ -252,12 +256,23 @@ const Footer = () => {
               <nav className="flex flex-col space-y-2 items-center md:items-start">
                 <a href="/convertir-fixer" className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">Convertir en fixer</a>
                 <button type="button" onClick={() => setActiveModal('howItWorks')} className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 text-left focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">¿Cómo funciona?</button>
+                {/* ✅ NUEVO BOTÓN: Guía de Usuario */}
+                <button 
+                  type="button" 
+                  onClick={showTutorial}
+                  className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 text-left focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded flex items-center gap-2"
+                >
+                  <span>Guía de Usuario</span>
+                </button>
                 <a href="/login" className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">Iniciar sesión</a>
                 <a href="/registro" className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">Registrarse</a>
               </nav>
             </div>
 
-            <div className="space-y-4">
+             <div 
+              className="space-y-4"
+              data-tutorial="support-section" // ✅ NUEVO: Para paso 2 del tutorial
+            >
               <h4 className="text-xl font-semibold font-heading">Soporte</h4>
               {/* ===== SECCIÓN "SOPORTE" ACTUALIZADA (CON MANUAL) ===== */}
               <ul className="space-y-3">
