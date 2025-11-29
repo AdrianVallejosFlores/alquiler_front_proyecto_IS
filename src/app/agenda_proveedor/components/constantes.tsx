@@ -1,5 +1,5 @@
 // constantes.tsx - SIN DATOS MOCK
-
+//src/app/agenda_proveedor/components/constantes.tsx
 export interface Horario {
   id?: number; // Ya no es requerido porque viene del backend
   horaInicio: string;
