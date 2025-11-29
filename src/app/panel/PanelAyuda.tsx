@@ -9,27 +9,24 @@ import {
   Home, 
   HelpCircle,
   FileText, 
-  Search as SearchIcon,
+  Search as SearchIcon, // Renombramos el icono para evitar conflicto con el componente Search
   Phone,
   ShieldCheck,
   User,
-  Briefcase
+  Settings,
+  BookOpen,
+  MapPin,
+  MessageCircle,
+  Video
 } from 'lucide-react';
 import Link from 'next/link';
-
-// --- PALETA DE COLORES (Según PDF 'bay-of-many') ---
-// 50: '#eef7ff' (Fondos claros)
-// 100: '#d8ecff'
-// 200: '#b9ddff' (Bordes suaves)
-// 600: '#1366fd' (Azul vibrante)
-// 700: '#0c4fe9' (Botón Primary / Hover)
-// 800: '#1140bc' (Textos oscuros / Focus)
+import { motion, AnimatePresence } from "framer-motion";
 
 // --- TIPOS DE DATOS ---
 type ActionButton = {
   label: string;
   href?: string;
-  onClick?: string;
+  onClick?: () => void;
   type: 'primary' | 'secondary';
 };
 
@@ -60,7 +57,7 @@ type Category = {
 
 // --- DATOS DEL MANUAL ---
 const DATA_MANUAL: Record<string, Category> = {
-  'guia-inicio': {
+  'inicio': {
     title: 'Guía de inicio',
     icon: <Home className="w-5 h-5" />,
     directPageData: {
@@ -94,7 +91,7 @@ const DATA_MANUAL: Record<string, Category> = {
           ] 
         },
         { 
-          id: 'tour', 
+          id: 'tour-plataforma', 
           title: 'Tour por la plataforma', 
           description: 'Conoce las principales funcionalidades de Servineo y cómo aprovecharlas al máximo.',
           bullets: [
@@ -104,7 +101,7 @@ const DATA_MANUAL: Record<string, Category> = {
               'Mensajería directa con profesionales'
           ],
           actions: [
-              { label: 'Comenzar tour', onClick: 'startTour', type: 'primary' }
+              { label: 'Comenzar tour', onClick: () => alert("Iniciando tour..."), type: 'primary' }
           ]
         },
       ]
@@ -112,10 +109,10 @@ const DATA_MANUAL: Record<string, Category> = {
   },
   'guia-uso': {
     title: 'Guía de uso de Servineo',
-    icon: <FileText className="w-5 h-5" />,
+    icon: <BookOpen className="w-5 h-5" />,
     items: [
       {
-        id: 'que-es',
+        id: 'que-es-servineo',
         title: '¿Qué es Servineo?',
         pageData: {
           id: 'page-que-es',
@@ -154,7 +151,7 @@ const DATA_MANUAL: Record<string, Category> = {
           title: 'Guía para clientes',
           accordions: [
             {
-              id: 'como-buscar',
+              id: 'buscar-servicio',
               title: 'Cómo buscar un servicio',
               description: 'Utiliza nuestra barra de búsqueda inteligente en tiempo real o explora las categorías disponibles. También puedes usar el mapa interactivo para encontrar fixers cerca de tu ubicación.',
               bullets: [
@@ -164,7 +161,7 @@ const DATA_MANUAL: Record<string, Category> = {
                 'Activa la geolocalización para mejores resultados'
               ],
               actions: [
-                { label: 'Ir a búsqueda de servicios', href: '/servicios', type: 'secondary' }
+                { label: 'Ir a búsqueda', href: '/servicios', type: 'secondary' }
               ]
             },
             {
@@ -178,11 +175,11 @@ const DATA_MANUAL: Record<string, Category> = {
                 'Revisa el portafolio de trabajos anteriores'
               ],
               actions: [
-                { label: 'Ver servicios disponibles', href: '/servicios', type: 'secondary' }
+                { label: 'Ver categorías', href: '/categorias', type: 'secondary' }
               ]
             },
             {
-              id: 'contratar',
+              id: 'contratar-servicio',
               title: 'Contratar un servicio',
               description: "Haz clic en 'Contratar' para enviar tu solicitud. Describe los detalles del trabajo, coordina horarios y confirma el servicio de forma segura.",
               bullets: [
@@ -193,7 +190,7 @@ const DATA_MANUAL: Record<string, Category> = {
               ]
             },
             {
-              id: 'calificar',
+              id: 'calificar-servicio',
               title: 'Calificar el servicio recibido',
               description: 'Después de completar el servicio, podrás calificar tu experiencia. Esto ayuda a mantener la calidad de la plataforma y ayuda a otros usuarios.',
               bullets: [
@@ -214,7 +211,7 @@ const DATA_MANUAL: Record<string, Category> = {
           title: 'Guía para fixers',
           accordions: [
             {
-              id: 'registro-fixer',
+              id: 'registrarse-fixer',
               title: 'Cómo registrarse como Fixer',
               description: "Haz clic en 'Ser Fixer' y completa tu perfil profesional con tus habilidades, experiencia, certificaciones, portafolio y tarifas.",
               bullets: [
@@ -224,7 +221,7 @@ const DATA_MANUAL: Record<string, Category> = {
                 'Agrega todas tus certificaciones'
               ],
               actions: [
-                { label: 'Registrarme como Fixer', href: '/fixer/registro', type: 'secondary' }
+                { label: 'Registrarme como Fixer', href: '/registro-fixer', type: 'primary' }
               ]
             },
             {
@@ -239,7 +236,7 @@ const DATA_MANUAL: Record<string, Category> = {
               ]
             },
             {
-              id: 'reputacion',
+              id: 'ganar-reputacion',
               title: 'Ganar reputación',
               description: 'Realiza trabajos con profesionalismo y calidad. Las calificaciones positivas aumentan tu visibilidad y te traen más trabajos.',
               bullets: [
@@ -250,7 +247,7 @@ const DATA_MANUAL: Record<string, Category> = {
               ]
             },
             {
-              id: 'ingresos',
+              id: 'maximizar-ingresos',
               title: 'Maximizar tus ingresos',
               description: 'Aprovecha al máximo la plataforma para conseguir más trabajos y aumentar tus ganancias.',
               bullets: [
@@ -267,50 +264,312 @@ const DATA_MANUAL: Record<string, Category> = {
   },
   'como-funciona': {
     title: 'Cómo funciona',
-    icon: <SearchIcon className="w-5 h-5" />,
+    icon: <Settings className="w-5 h-5" />,
     items: [
-      { id: 'busqueda', title: 'Búsqueda de servicios', pageData: { id: 'p-busq', title: 'Búsqueda', accordions: [] } },
+      { 
+        id: 'busqueda-servicios', 
+        title: 'Búsqueda de servicios', 
+        pageData: { 
+            id: 'p-busqueda', 
+            title: 'Búsqueda de servicios', 
+            accordions: [
+                {
+                    id: 'busqueda-texto',
+                    title: 'Búsqueda por texto',
+                    description: 'Usa la barra de búsqueda en la parte superior para encontrar servicios específicos. La búsqueda es inteligente y muestra resultados en tiempo real.',
+                    bullets: ['Escribe palabras clave', 'Resultados en tiempo real', 'Búsqueda por fixer o servicio']
+                },
+                {
+                    id: 'mapa-fixers',
+                    title: 'Mapa de fixers cercanos',
+                    description: 'Usa el mapa interactivo para encontrar fixers cerca de tu ubicación.',
+                    bullets: ['Permite acceso a ubicación', 'Marcadores de disponibilidad', 'Ver detalles en mapa']
+                }
+            ] 
+        } 
+      },
+      { 
+        id: 'sistema-calificaciones', 
+        title: 'Sistema de calificaciones', 
+        pageData: { 
+            id: 'p-calificaciones', 
+            title: 'Sistema de calificaciones', 
+            accordions: [
+                {
+                    id: 'como-calificar',
+                    title: 'Cómo calificar',
+                    description: 'Después de completar un servicio, recibirás una notificación para calificar al fixer. Usa estrellas (1-5) y escribe un comentario.',
+                    bullets: ['Sé honesto y constructivo', 'Califica puntualidad y calidad', 'Tu calificación es pública']
+                },
+                {
+                    id: 'importancia',
+                    title: 'Importancia',
+                    description: 'Las calificaciones son fundamentales para mantener la calidad de la plataforma.',
+                    bullets: ['Fixers con mejores notas aparecen primero', 'Sistema verificado y auténtico']
+                }
+            ] 
+        } 
+      },
+      { 
+        id: 'mensajeria', 
+        title: 'Mensajería y comunicación', 
+        pageData: { 
+            id: 'p-mensajeria', 
+            title: 'Mensajería', 
+            accordions: [
+                {
+                    id: 'chat-directo',
+                    title: 'Chat directo',
+                    description: 'Comunícate directamente con los fixers a través de nuestro sistema integrado.',
+                    bullets: ['Conversaciones privadas', 'Comparte fotos y detalles', 'Historial disponible']
+                }
+            ] 
+        } 
+      },
     ]
   },
   'cuenta-perfil': {
     title: 'Cuenta y perfil',
     icon: <User className="w-5 h-5" />,
     items: [
-      { id: 'crear-cuenta', title: 'Crear cuenta', pageData: { id: 'p-crear', title: 'Crear cuenta', accordions: [] } },
+      { 
+        id: 'crear-cuenta', 
+        title: 'Crear una cuenta', 
+        pageData: { 
+            id: 'p-crear-cuenta', 
+            title: 'Crear una cuenta', 
+            accordions: [
+                {
+                    id: 'registro-cliente',
+                    title: 'Registro como cliente',
+                    description: 'Crear una cuenta es rápido y sencillo. Solo necesitas un correo electrónico o redes sociales.',
+                    bullets: ['Usa correo válido', 'Contraseña segura', 'Verifica tu email'],
+                    actions: [{ label: 'Crear cuenta ahora', href: '/auth/register', type: 'primary' }]
+                },
+                {
+                    id: 'registro-fixer-prof',
+                    title: 'Registro como Fixer',
+                    description: 'Proporciona información adicional sobre tus habilidades y experiencia.',
+                    bullets: ['Documento de identidad', 'Fotos de trabajos', 'Tarifas iniciales'],
+                    actions: [{ label: 'Registrarme como Fixer', href: '/registro-fixer', type: 'primary' }]
+                }
+            ] 
+        } 
+      },
+      {
+        id: 'completar-perfil',
+        title: 'Completar tu perfil',
+        pageData: {
+            id: 'p-completar',
+            title: 'Completar tu perfil',
+            accordions: [
+                {
+                    id: 'perfil-cliente',
+                    title: 'Perfil de cliente',
+                    description: 'Un perfil completo te ayuda a recibir mejores respuestas.',
+                    bullets: ['Foto de perfil', 'Verificar teléfono', 'Ubicación', 'Métodos de pago']
+                },
+                {
+                    id: 'perfil-fixer',
+                    title: 'Perfil de Fixer',
+                    description: 'Aumenta tus posibilidades de conseguir trabajos con un perfil profesional.',
+                    bullets: ['Fotos profesionales', 'Experiencia y habilidades', 'Certificaciones', 'Áreas de cobertura']
+                }
+            ]
+        }
+      },
+      {
+        id: 'configuracion',
+        title: 'Configuración de cuenta',
+        pageData: {
+            id: 'p-config',
+            title: 'Configuración',
+            accordions: [
+                {
+                    id: 'privacidad',
+                    title: 'Ajustes de privacidad',
+                    description: 'Controla quién puede ver tu información.',
+                    bullets: ['Visibilidad de perfil', 'Permisos de ubicación', 'Notificaciones']
+                }
+            ]
+        }
+      }
     ]
   },
   'seguridad': {
     title: 'Seguridad y confianza',
     icon: <ShieldCheck className="w-5 h-5" />,
     items: [
-        { id: 'verificacion', title: 'Verificación', pageData: { id: 'p-verif', title: 'Verificación', accordions: [] } },
+        { 
+            id: 'verificacion', 
+            title: 'Verificación de identidad', 
+            pageData: { 
+                id: 'p-verif', 
+                title: 'Verificación de identidad', 
+                accordions: [
+                    {
+                        id: 'proceso-verif',
+                        title: 'Proceso de verificación',
+                        description: 'Todos los fixers pasan por un proceso riguroso.',
+                        bullets: ['Verificación de documento', 'Antecedentes', 'Validación de certificaciones']
+                    },
+                    {
+                        id: 'badges',
+                        title: 'Insignias',
+                        description: 'Los fixers verificados reciben insignias en su perfil.',
+                        bullets: ['Identidad verificada', 'Profesional certificado', 'Sello de calidad']
+                    }
+                ] 
+            } 
+        },
+        { 
+            id: 'pagos-seguros', 
+            title: 'Pagos seguros', 
+            pageData: { 
+                id: 'p-pagos', 
+                title: 'Pagos seguros', 
+                accordions: [
+                    {
+                        id: 'metodos',
+                        title: 'Métodos de pago',
+                        description: 'Aceptamos múltiples métodos para tu seguridad.',
+                        bullets: ['Tarjetas crédito/débito', 'Transferencias', 'QR / Billeteras', 'Efectivo verificado']
+                    },
+                    {
+                        id: 'proteccion',
+                        title: 'Protección',
+                        description: 'Pagos protegidos con encriptación bancaria.',
+                        bullets: ['Encriptación SSL', 'Protección de fraude', 'Garantía de devolución']
+                    }
+                ] 
+            } 
+        },
+        { 
+            id: 'proteccion-datos', 
+            title: 'Protección de datos', 
+            pageData: { 
+                id: 'p-datos', 
+                title: 'Protección de datos', 
+                accordions: [
+                    {
+                        id: 'politica',
+                        title: 'Política de privacidad',
+                        description: 'Tus datos personales nunca se comparten sin consentimiento.',
+                        bullets: ['Normativas internacionales', 'Datos encriptados', 'Derecho al olvido']
+                    }
+                ] 
+            } 
+        }
     ]
   },
   'faqs': {
     title: 'Preguntas frecuentes',
     icon: <HelpCircle className="w-5 h-5" />,
-    directPageData: { id: 'p-faqs', title: 'Preguntas Frecuentes', accordions: [] }
+    directPageData: { 
+        id: 'p-faqs', 
+        title: 'Preguntas Frecuentes', 
+        accordions: [
+            {
+                id: 'faq-generales',
+                title: 'Preguntas generales',
+                description: 'Respuestas a las dudas más comunes.',
+                bullets: [
+                    '¿Cómo funciona? - Conectamos clientes con fixers',
+                    '¿Es gratis? - El registro y búsqueda son gratuitos',
+                    '¿Dónde opera? - Cochabamba, Bolivia'
+                ]
+            },
+            {
+                id: 'faq-pagos',
+                title: 'Sobre pagos',
+                description: 'Información sobre transacciones.',
+                bullets: [
+                    '¿Cuándo se paga? - Según acuerdo con el fixer',
+                    '¿Facturas? - Sí, todos los servicios se facturan',
+                    '¿Comisiones? - Pequeña comisión por transacción'
+                ]
+            }
+        ] 
+    }
   },
   'soporte': {
     title: 'Soporte y ayuda',
     icon: <Phone className="w-5 h-5" />,
     items: [
-        { id: 'contactar', title: 'Contactar soporte', pageData: { id: 'p-cont', title: 'Contacto', accordions: [] } }
+        { 
+            id: 'contacto', 
+            title: 'Contactar soporte', 
+            pageData: { 
+                id: 'p-cont', 
+                title: 'Contacto', 
+                accordions: [
+                    {
+                        id: 'canales',
+                        title: 'Canales de soporte',
+                        description: 'Estamos disponibles para ayudarte.',
+                        bullets: ['Chat en vivo (8am-10pm)', 'Email: soporte@servineo.com', 'WhatsApp disponible'],
+                        actions: [{ label: 'Ir al centro de ayuda', href: '/help', type: 'secondary' }]
+                    }
+                ] 
+            } 
+        },
+        { 
+            id: 'videos-tutoriales', 
+            title: 'Videos tutoriales', 
+            pageData: { 
+                id: 'p-videos', 
+                title: 'Videos tutoriales', 
+                accordions: [
+                    {
+                        id: 'tuto-cliente',
+                        title: 'Para clientes',
+                        description: 'Aprende visualmente a usar la plataforma.',
+                        bullets: ['Cómo buscar', 'Cómo contratar', 'Cómo gestionar perfil']
+                    },
+                    {
+                        id: 'tuto-fixer',
+                        title: 'Para fixers',
+                        description: 'Guías para profesionales.',
+                        bullets: ['Crear perfil atractivo', 'Responder solicitudes', 'Gestionar trabajos']
+                    }
+                ] 
+            } 
+        },
+        { 
+            id: 'reportar', 
+            title: 'Reportar un problema', 
+            pageData: { 
+                id: 'p-reportar', 
+                title: 'Reportar problema', 
+                accordions: [
+                    {
+                        id: 'tipos-reporte',
+                        title: 'Qué reportar',
+                        description: 'Si experimentas problemas, repórtalo.',
+                        bullets: ['Errores técnicos', 'Comportamiento inapropiado', 'Problemas de pago']
+                    }
+                ] 
+            } 
+        }
     ]
   }
 };
 
 export default function PanelAyuda() {
-  const [activeCategory, setActiveCategory] = useState<string>('guia-inicio');
+  const [activeCategory, setActiveCategory] = useState<string>('inicio');
   const [activePageId, setActivePageId] = useState<string>('');
-  const [expandedSidebarItems, setExpandedSidebarItems] = useState<string[]>([]);
+  const [expandedSidebarItems, setExpandedSidebarItems] = useState<string[]>(['guia-uso']); 
   const [openMainAccordion, setOpenMainAccordion] = useState<string | null>(null);
   const [query, setQuery] = useState('');
 
-  // Reset de página al volver a inicio
+  // Reset de página al cambiar categoría padre si es necesario
   useEffect(() => {
-    if (activeCategory === 'guia-inicio') {
+    const category = DATA_MANUAL[activeCategory];
+    if (category?.directPageData) {
        setActivePageId('');
+    } else if (category?.items && category.items.length > 0 && !activePageId) {
+       // Opcional: Seleccionar el primer hijo automáticamente
+       // setActivePageId(category.items[0].id);
     }
   }, [activeCategory]);
 
@@ -325,65 +584,65 @@ export default function PanelAyuda() {
 
   // Manejador de clicks en el Sidebar
   const handleSidebarClick = (catKey: string, subItem?: any) => {
-    // 1. Activar la categoría padre siempre
     setActiveCategory(catKey);
 
     if (subItem) {
         // --- CASO: Click en Sub-item (Hijo) ---
         setActivePageId(subItem.id);
-        setOpenMainAccordion(null); // Resetear acordeones internos
+        setOpenMainAccordion(null); // Resetear acordeones al cambiar de página
         setQuery('');
         
-        // Asegurar que el padre se mantenga abierto si clickeo un hijo
+        // Asegurar que el padre se mantenga abierto
         if (!expandedSidebarItems.includes(catKey)) {
             setExpandedSidebarItems(prev => [...prev, catKey]);
         }
     } else {
         // --- CASO: Click en Categoría (Padre) ---
         if (DATA_MANUAL[catKey].items) {
-            // Si tiene hijos, INTERCAMBIAMOS (Toggle) el estado
-            // Esto permite abrir y cerrar al hacer click repetido
+            // Si tiene hijos, solo expandimos/colapsamos
             toggleSidebarFolder(catKey);
         } else {
-            // Es una página directa (como Guia Inicio)
+            // Es una página directa
             setActivePageId('');
+            setOpenMainAccordion(null);
         }
         setQuery('');
     }
   };
 
-  // Renderizado dinámico
+  // Renderizado dinámico de la página actual
   const getCurrentPageData = (): PageData | null => {
     const category = DATA_MANUAL[activeCategory];
     if (!category) return null;
+    
+    // 1. Si es categoría directa (sin hijos), retornamos su data
     if (category.directPageData) return category.directPageData;
+    
+    // 2. Si hay un sub-item activo seleccionado, retornamos su data
     if (category.items && activePageId) {
         const item = category.items.find(i => i.id === activePageId);
         return item ? item.pageData : null;
     }
+    
+    // 3. Fallback: Si es categoría con hijos pero no hay hijo seleccionado,
+    // retornamos el primero por defecto
     if (category.items && category.items.length > 0) {
         return category.items[0].pageData; 
     }
+    
     return null;
   };
 
   const currentPage = getCurrentPageData();
 
-  const handleStartTour = () => {
-    alert('Iniciando tour...');
-  };
-
   return (
     <div className="min-h-screen bg-white flex flex-col font-sans">
       
-      {/* HEADER */}
+      {/* HEADER MODIFICADO (Sin logo) */}
       <header className="bg-white border-b border-[#b9ddff] sticky top-0 z-50">
         <div className="max-w-[1400px] mx-auto px-4 h-16 flex items-center justify-between gap-4">
+           {/* Lado Izquierdo: Solo buscador */}
            <div className="flex items-center gap-6 flex-1">
-              <Link href="/" className="flex items-center gap-2 text-[#1366fd] font-bold text-xl hover:opacity-80 transition-opacity">
-                  <div className="w-8 h-8 bg-[#1366fd] text-white rounded-lg flex items-center justify-center">S</div>
-                  <span className="hidden sm:inline">Servineo</span>
-              </Link>
               <div className="relative w-full max-w-md">
                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                  <input 
@@ -400,9 +659,13 @@ export default function PanelAyuda() {
                  )}
               </div>
            </div>
-           <Link href="/" className="text-sm font-medium text-[#1366fd] hover:text-[#0c4fe9] transition-colors flex items-center gap-1">
-              Volver a inicio
-           </Link>
+           
+           {/* Lado Derecho: Link de retorno */}
+           <div className="flex gap-4">
+               <Link href="/" className="text-sm font-medium text-[#1366fd] hover:text-[#0c4fe9] transition-colors flex items-center gap-1">
+                  Volver a inicio
+               </Link>
+           </div>
         </div>
       </header>
 
@@ -411,7 +674,7 @@ export default function PanelAyuda() {
         
         {/* --- SIDEBAR IZQUIERDO --- */}
         <aside className="md:col-span-4 lg:col-span-3">
-            <nav className="space-y-1 sticky top-24">
+            <nav className="space-y-1 sticky top-24 max-h-[calc(100vh-120px)] overflow-y-auto pr-2 custom-scrollbar">
                 {Object.entries(DATA_MANUAL).map(([key, category]) => {
                     const isActiveCategory = activeCategory === key;
                     const isExpanded = expandedSidebarItems.includes(key);
@@ -448,15 +711,22 @@ export default function PanelAyuda() {
 
                             {/* Submenús (Hijos) */}
                             {hasSubItems && isExpanded && (
-                                <div className="ml-4 pl-4 border-l border-[#b9ddff] mt-1 space-y-1">
+                                <motion.div 
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: "auto", opacity: 1 }}
+                                    className="ml-4 pl-4 border-l border-[#b9ddff] mt-1 space-y-1 overflow-hidden"
+                                >
                                     {category.items?.map(item => {
-                                        const isSubActive = activeCategory === key && (activePageId === item.id || (!activePageId && category.items![0].id === item.id)); 
+                                        const isSubActive = activeCategory === key && (
+                                            activePageId === item.id || 
+                                            (!activePageId && category.items![0].id === item.id)
+                                        );
                                         
                                         return (
                                             <button 
                                                 key={item.id}
                                                 onClick={(e) => {
-                                                    e.stopPropagation(); // Evitar disparar el click del padre
+                                                    e.stopPropagation();
                                                     handleSidebarClick(key, item);
                                                 }}
                                                 className={`block w-full text-left text-sm py-2 transition-all rounded-md px-2
@@ -470,7 +740,7 @@ export default function PanelAyuda() {
                                             </button>
                                         );
                                     })}
-                                </div>
+                                </motion.div>
                             )}
                         </div>
                     );
@@ -483,16 +753,25 @@ export default function PanelAyuda() {
             
             {currentPage ? (
                 <div className="animate-fadeIn space-y-4">
-                    <h1 className="text-2xl font-bold text-[#1140bc] mb-6 px-1">{currentPage.title}</h1>
+                    <motion.h1 
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-2xl font-bold text-[#1140bc] mb-6 px-1"
+                    >
+                        {currentPage.title}
+                    </motion.h1>
                     
                     {/* Lista de Acordeones */}
                     <div className="space-y-4">
-                        {currentPage.accordions.map((item) => {
+                        {currentPage.accordions.map((item, index) => {
                             const isOpen = openMainAccordion === item.id;
 
                             return (
-                                <div 
-                                    key={item.id} 
+                                <motion.div 
+                                    key={item.id}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: index * 0.05 }}
                                     className={`bg-white rounded-xl overflow-hidden transition-all duration-300
                                         ${isOpen 
                                             ? 'shadow-md border border-[#b9ddff] ring-1 ring-[#eef7ff]' 
@@ -512,55 +791,61 @@ export default function PanelAyuda() {
                                     </button>
 
                                     {/* Contenido desplegable */}
+                                    <AnimatePresence>
                                     {isOpen && (
-                                        <div className="px-6 pb-6 pt-0 animate-fadeIn">
-                                            <p className="text-gray-600 mb-5 leading-relaxed">
-                                                {item.description}
-                                            </p>
+                                        <motion.div 
+                                            initial={{ height: 0, opacity: 0 }}
+                                            animate={{ height: "auto", opacity: 1 }}
+                                            exit={{ height: 0, opacity: 0 }}
+                                            className="overflow-hidden"
+                                        >
+                                            <div className="px-6 pb-6 pt-0">
+                                                <p className="text-gray-600 mb-5 leading-relaxed">
+                                                    {item.description}
+                                                </p>
 
-                                            {item.bullets.length > 0 && (
-                                                <div className="bg-[#eef7ff] rounded-lg p-5 mb-6 border border-[#b9ddff]">
-                                                    <div className="flex items-center gap-2 mb-3 text-[#1140bc] font-bold text-sm uppercase tracking-wide">
-                                                        <HelpCircle className="w-4 h-4" />
-                                                        <span>Información útil</span>
+                                                {item.bullets && item.bullets.length > 0 && (
+                                                    <div className="bg-[#eef7ff] rounded-lg p-5 mb-6 border border-[#b9ddff]">
+                                                        <div className="flex items-center gap-2 mb-3 text-[#1140bc] font-bold text-sm uppercase tracking-wide">
+                                                            <HelpCircle className="w-4 h-4" />
+                                                            <span>Información útil</span>
+                                                        </div>
+                                                        <ul className="space-y-2">
+                                                            {item.bullets.map((bullet, idx) => (
+                                                                <li key={idx} className="flex items-start gap-2 text-[#1140bc] text-sm">
+                                                                    <span className="mt-1.5 w-1.5 h-1.5 bg-[#1366fd] rounded-full flex-shrink-0" />
+                                                                    <span>{bullet}</span>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
                                                     </div>
-                                                    <ul className="space-y-2">
-                                                        {item.bullets.map((bullet, idx) => (
-                                                            <li key={idx} className="flex items-start gap-2 text-[#1140bc] text-sm">
-                                                                <span className="mt-1.5 w-1.5 h-1.5 bg-[#1366fd] rounded-full flex-shrink-0" />
-                                                                <span>{bullet}</span>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </div>
-                                            )}
+                                                )}
 
-                                            {item.actions && item.actions.length > 0 && (
-                                                <div className="flex flex-wrap gap-4 mt-4">
-                                                    {item.actions.map((action, idx) => (
-                                                        action.onClick === 'startTour' ? (
-                                                            <button 
-                                                                key={idx}
-                                                                onClick={handleStartTour}
-                                                                className={action.type === 'primary' ? 'cta-button-primary' : 'cta-button-secondary'}
-                                                            >
-                                                                {action.label}
-                                                            </button>
-                                                        ) : (
-                                                            <Link 
-                                                                key={idx} 
-                                                                href={action.href || '#'}
-                                                                className={action.type === 'primary' ? 'cta-button-primary' : 'cta-button-secondary'}
-                                                            >
-                                                                {action.label}
-                                                            </Link>
-                                                        )
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
+                                                {item.actions && item.actions.length > 0 && (
+                                                    <div className="flex flex-wrap gap-4 mt-4">
+                                                        {item.actions.map((action, idx) => {
+                                                            const btnClass = action.type === 'primary' ? 'cta-button-primary' : 'cta-button-secondary';
+                                                            
+                                                            if (action.onClick) {
+                                                                return (
+                                                                    <button key={idx} onClick={action.onClick} className={btnClass}>
+                                                                        {action.label}
+                                                                    </button>
+                                                                );
+                                                            }
+                                                            return (
+                                                                <Link key={idx} href={action.href || '#'} className={btnClass}>
+                                                                    {action.label}
+                                                                </Link>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </motion.div>
                                     )}
-                                </div>
+                                    </AnimatePresence>
+                                </motion.div>
                             );
                         })}
                     </div>
@@ -615,6 +900,17 @@ export default function PanelAyuda() {
         }
         .cta-button-secondary:focus {
            --tw-ring-color: #d8ecff;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background-color: #d8ecff;
+          border-radius: 20px;
         }
 
         @keyframes fadeIn {
