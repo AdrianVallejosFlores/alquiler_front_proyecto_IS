@@ -300,9 +300,13 @@ export function AppointmentModal({
         method = "PUT";
       }
 
+      const token = typeof window !== 'undefined' ? localStorage.getItem('googleAccessToken') : null;
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+
       const res = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify(payload),
       });
 

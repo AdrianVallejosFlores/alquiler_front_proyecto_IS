@@ -8,10 +8,10 @@ export const CURRENT_USER_CONFIG = {
   // ID del cliente actual (usuario logueado)
   // TODO: Reemplazar con contexto de autenticación una vez que login epic esté lista
   clienteId: "6927e784567c50dddae45310", // Johan - tiene 6 citas en la DB
-  
+
   // Nombre del usuario (para mostrar en UI)
   userName: "Johan",
-  
+
   // Información adicional del usuario
   email: "johan@example.com",
   telefono: "+34600000000",
@@ -22,6 +22,14 @@ export const CURRENT_USER_CONFIG = {
  * Útil para testing y migración futura al contexto de autenticación
  */
 export const useCurrentClienteId = () => {
+  try {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("auth_clienteId");
+      if (stored) return stored;
+    }
+  } catch (e) {
+    // ignore
+  }
   return CURRENT_USER_CONFIG.clienteId;
 };
 
