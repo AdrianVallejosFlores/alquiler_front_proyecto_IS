@@ -6,37 +6,46 @@ import { useWallet } from "./hooks/useWallet";
 import WalletAlert from "./components/walletAlert";
 import BalanceCard from "./components/BalanceCard";
 import TransactionList from "./components/TransactionList";
-import { ChevronLeft, BarChart3, Wallet, Settings } from "lucide-react"; // Usamos lucide-react para limpieza
+// 1. Importamos el nuevo componente
+import WalletRestrictionModal from "./components/WalletRestrictionModal";
+import { ChevronLeft, BarChart3, Wallet, Settings } from "lucide-react";
 
 function WalletLogic() {
   const router = useRouter();
   const searchParams = useSearchParams();
-
-  // LEEMOS EL FIXER ID
   const fixerId = searchParams.get("fixer_id");
 
   const { balanceData, transactions, loading, error, reload } = useWallet(fixerId);
   const [showSaldo, setShowSaldo] = useState(true);
 
-  // Handlers para las acciones
+  // 2. Estado para controlar la visibilidad del modal de restricción
+  const [showRestriction, setShowRestriction] = useState(false);
+
   const handleRecargar = () => {
     if (fixerId) router.push(`/bitcrew/pagosQR?fixer_id=${fixerId}`);
   };
 
   const handleGrafico = () => {
-    // Aquí puedes añadir la navegación al gráfico cuando exista la ruta
     console.log("Navegar a Gráfico de Ingresos");
   };
 
   const handleAjustes = () => {
-    console.log("Abrir Ajustes");
+    // 3. CAMBIO: Ahora el botón de ajustes activa la vista de restricción (simulación)
+    setShowRestriction(true);
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen">
-      <div className="max-w-4xl mx-auto px-4 md:px-8 pt-4 md:pt-6 pb-4 md:pb-8">
+    <div className="bg-gray-50 w-full min-h-[calc(100vh-64px)] overflow-hidden relative">
 
-        {/* ================= HEADER ================= */}
+      {/* 4. Renderizamos el Modal condicionalmente */}
+      <WalletRestrictionModal
+        isOpen={showRestriction}
+        onClose={() => setShowRestriction(false)}
+      />
+
+      <div className="max-w-4xl mx-auto px-4 md:px-8 pt-4 md:pt-6 pb-4 md:pb-8 h-full">
+
+        {/* HEADER */}
         <header className="flex justify-between items-center mb-6">
           <div className="flex items-center space-x-2">
             <button onClick={() => router.back()} className="text-gray-500 hover:text-gray-800 p-2" title="Volver">
@@ -48,7 +57,7 @@ function WalletLogic() {
             </div>
           </div>
 
-          {/* --- BOTONES DESKTOP (Alineados a la derecha) --- */}
+          {/* BOTONES DESKTOP */}
           <div className="hidden md:flex items-center space-x-3">
             <button
               onClick={handleGrafico}
@@ -67,13 +76,13 @@ function WalletLogic() {
               <span>Recargar Saldo</span>
             </button>
 
-            {/* Botón de Ajustes (Tuerca) */}
+            {/* El botón de ajustes ahora dispara el modal */}
             <button onClick={handleAjustes} className="p-2 text-gray-500 hover:text-[#11255A] transition rounded-full hover:bg-gray-100">
               <Settings className="w-6 h-6" />
             </button>
           </div>
 
-          {/* --- BOTÓN AJUSTES MOBILE (Solo la tuerca en el header) --- */}
+          {/* BOTÓN AJUSTES MOBILE */}
           <div className="md:hidden">
             <button onClick={handleAjustes} className="p-2 text-gray-500 hover:text-[#11255A]">
               <Settings className="w-6 h-6" />
@@ -90,7 +99,6 @@ function WalletLogic() {
             <>
               <WalletAlert balance={balanceData.saldo} estado={balanceData.estado} />
 
-              {/* TARJETA DE SALDO */}
               <BalanceCard
                 saldo={balanceData.saldo}
                 moneda={balanceData.moneda || "Bs"}
@@ -101,7 +109,7 @@ function WalletLogic() {
                 walletId={balanceData._id}
               />
 
-              {/* --- BOTONES MOBILE (Reubicados debajo de la tarjeta) --- */}
+              {/* BOTONES MOBILE */}
               <div className="flex flex-col gap-3 mt-4 mb-6 md:hidden">
                 <button
                   onClick={handleRecargar}
@@ -121,8 +129,7 @@ function WalletLogic() {
                 </button>
               </div>
 
-              {/* LISTA DE TRANSACCIONES */}
-              <div className="mt-8">
+              <div className="mt-8 pb-10">
                 <TransactionList transactions={transactions} />
               </div>
             </>
