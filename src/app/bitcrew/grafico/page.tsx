@@ -3,6 +3,7 @@
 import {
   BarChart,
   Bar,
+  Cell,
   XAxis,
   YAxis,
   Tooltip,
@@ -92,53 +93,22 @@ export default function GraficoIngresosPage() {
       <div className="flex flex-col md:flex-row gap-10">
         {/* ===== Gráfico ===== */}
         <div className="w-full md:w-[70%] h-[350px]">
-          <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data}>
-              <CartesianGrid vertical={false} opacity={0.3} />
+                <CartesianGrid vertical={false} opacity={0.3} />
 
-              <XAxis
-                dataKey="name"
-                tick={{ fontSize: 14, fontWeight: "bold" }}
-              />
+                <XAxis dataKey="name" tick={{ fontSize: 14, fontWeight: "bold" }} />
+                <YAxis domain={[0, yMax]} tick={{ fontSize: 14 }} tickFormatter={(val) => `${val} bs`} />
+                <Tooltip formatter={(value: number) => [`${value.toFixed(2)} bs`, ""]} />
 
-              <YAxis
-                domain={[0, yMax]}
-                tick={{ fontSize: 14 }}
-                tickFormatter={(val) => `${val} bs`}
-              />
-
-              <Tooltip
-                formatter={(value: number | string) => {
-                 const v = Number(value);
-                 return [`${v.toFixed(2)} bs`, ""];
-               }}
-              />
-
-
-              {/* Barras → Colores predefinidos (#316) */}
-              {data.map((entry: IngresoData, index: number) => (
-                <Bar
-                  key={index}
-                  dataKey="value"
-                  fill={entry.color}
-                  radius={[6, 6, 0, 0]}
-                >
-                  {/* Valor cero: mostrar barra mínima (#317) */}
-                  {entry.value === 0 && (
-                    <text
-                      x={0}
-                      y={0}
-                      dy={-10}
-                      fill="#555"
-                      fontSize={12}
-                    >
-                      0 bs
-                    </text>
-                  )}
+                {/* Barra única con colores según categoría usando Cell */}
+                <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                {data.map((entry, index) => (
+                    <Cell key={index} fill={entry.color} />
+                ))}
                 </Bar>
-              ))}
             </BarChart>
-          </ResponsiveContainer>
+            </ResponsiveContainer>
         </div>
 
         {/* ===== Recuadro Totales (#318, #319) ===== */}
