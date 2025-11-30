@@ -1,7 +1,7 @@
 ﻿'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { HelpCircle, BookOpen, Headphones, Phone, X } from 'lucide-react';
+import { HelpCircle, BookOpen, Headphones, Phone, X, Bot } from 'lucide-react';
 import HCaptcha from '@hcaptcha/react-hcaptcha';
 
 const BLOCK_TIME = 15 * 60 * 1000; // 15 minutos en milisegundos
@@ -73,6 +73,19 @@ export default function HelpButton() {
       const res = await fetch('/api/check-click');
       const data = await res.json();
 
+      if (!res.ok || data.error) {
+        console.error('Error de configuración:', data.error);
+        alert('⚠️ Configuración de seguridad no disponible.\n\n' + 
+              'El administrador debe configurar las variables de entorno de hCaptcha.\n' +
+              'Por favor, contacte al equipo de desarrollo.');
+        return;
+      }
+
+      if (!data.siteKey || data.siteKey === 'tu-site-key-aqui') {
+        alert('⚠️ Las claves de hCaptcha no están configuradas correctamente.\n\n' +
+              'Si eres desarrollador, consulta README_CAPTCHA.md para instrucciones.');
+        return;
+      }
    
       setCaptchaRequired(true);
       setSiteKey(data.siteKey);
@@ -143,6 +156,11 @@ export default function HelpButton() {
     setIsMenuOpen(false);
   };
 
+  const handleAIAssistant = () => {
+    window.location.href = '/asistente-ia'; // Esta es la ruta que creamos antes
+    setIsMenuOpen(false);
+  };
+
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
@@ -170,6 +188,7 @@ export default function HelpButton() {
       {isMenuOpen && (
         <div className="bg-white rounded-xl shadow-xl overflow-hidden w-60 animate-in slide-in-from-bottom-5 fade-in duration-200 border border-gray-100">
           <div className="py-1">
+
             <button
               onClick={handleFAQ}
               className="w-full px-4 py-2.5 flex items-center gap-3 hover:bg-orange-50 transition-all text-left group"
@@ -198,6 +217,21 @@ export default function HelpButton() {
           </div>
         </div>
       )}
+
+      {/* Botón acerca del asistente */}
+      <button
+        onClick={handleAIAssistant}
+        className="group flex items-center rounded-full transition-all duration-300 ease-in-out hover:bg-purple-50 hover:pr-4 border-b border-transparent hover:border-gray-100"
+      >
+        <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full shadow-lg z-10 flex-shrink-0 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+          <Bot className="text-white" size={24} strokeWidth={2} />
+        </div>
+
+        <div className="max-w-0 opacity-0 group-hover:max-w-[200px] group-hover:opacity-100 group-hover:pl-3 overflow-hidden transition-all duration-500 ease-in-out whitespace-nowrap text-left">
+          <p className="font-semibold text-gray-800 text-sm">Asistente Servineo</p>
+          <p className="text-xs text-purple-600 font-medium">¡Nuevo! Descubre qué hace</p>
+        </div>
+      </button>
 
       {/* Botón de soporte - azul de la app */}
       <button 
@@ -254,13 +288,15 @@ export default function HelpButton() {
 
           {/* hCaptcha Component */}
           <div className="flex justify-center mb-4">
-            <HCaptcha
-              sitekey={siteKey}
-              onVerify={onVerifyCaptcha}
-              ref={captchaRef}
-              size="normal"
-              theme="light"
-            />
+            {siteKey && (
+              <HCaptcha
+                sitekey={siteKey}
+                onVerify={onVerifyCaptcha}
+                ref={captchaRef}
+                size="normal"
+                theme="light"
+              />
+            )}
           </div>
 
           {/* Contador de intentos */}
