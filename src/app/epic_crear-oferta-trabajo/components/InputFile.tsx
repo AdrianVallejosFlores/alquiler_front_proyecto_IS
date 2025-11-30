@@ -15,19 +15,19 @@ export default function InputFile({ id, label, multiple, maxFiles = 5, onSelect 
   const [preview, setPreview] = useState<string | null>(null);
   const [previews, setPreviews] = useState<string[]>([]); // Para manejar múltiples imágenes
   const [errorMessage, setErrorMessage] = useState<string | null>(null); // Para manejar los errores
+  const [isModalOpen, setIsModalOpen] = useState(false); // Estado para la modal de imagen ampliada
+  const [selectedImage, setSelectedImage] = useState<string | null>(null); // Imagen seleccionada para mostrar en grande
 
   const openFile = () => document.getElementById(id)?.click();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
-      // Limitar el número de fotos
       if (files.length > maxFiles) {
         alert(`Solo puedes cargar hasta ${maxFiles} archivos.`);
         return;
       }
 
-      // Comprobar que el archivo sea una imagen
       const validImageTypes = ["image/jpeg", "image/png", "image/jpg"];
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
@@ -37,16 +37,13 @@ export default function InputFile({ id, label, multiple, maxFiles = 5, onSelect 
         }
       }
 
-      setErrorMessage(null); // Si no hay error, limpiar el mensaje de error
+      setErrorMessage(null); 
       onSelect(files);
 
-      // Si solo es un archivo, hacer una sola previsualización
       if (multiple) {
         const fileArray = Array.from(files);
         const newPreviews = fileArray.map(file => URL.createObjectURL(file));
-
-        // No reemplazar, agregar las nuevas previsualizaciones a las antiguas
-        setPreviews(prev => [...prev, ...newPreviews].slice(0, maxFiles)); // Limita a 5 fotos
+        setPreviews(prev => [...prev, ...newPreviews].slice(0, maxFiles));
       } else {
         const reader = new FileReader();
         reader.onloadend = () => setPreview(reader.result as string);
@@ -63,6 +60,16 @@ export default function InputFile({ id, label, multiple, maxFiles = 5, onSelect 
     } else {
       setPreview(null);
     }
+  };
+
+  const openModal = (image: string) => {
+    setSelectedImage(image);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedImage(null);
   };
 
   return (
@@ -93,15 +100,16 @@ export default function InputFile({ id, label, multiple, maxFiles = 5, onSelect 
             <Image 
               src={preview} 
               alt="Preview" 
-              className="max-w-[150px] max-h-[150px] rounded-md"
+              className="max-w-[150px] max-h-[150px] rounded-md cursor-pointer"
               width={150} 
               height={150} 
+              onClick={() => openModal(preview)} // Al hacer clic, abrir la imagen en grande
             />
             <button
               onClick={() => handleRemove(0)}
-              className="absolute top-0 right-0 text-white bg-black rounded-full p-1"
+              className="absolute top-0 right-0 text-white bg-[#F1F1F1] rounded-full p-2 hover:bg-[#E0E0E0] transition-all"
             >
-              X
+              <span className="text-black">X</span> {/* Aquí cambiamos el color de la X a negro */}
             </button>
           </div>
         )}
@@ -114,15 +122,16 @@ export default function InputFile({ id, label, multiple, maxFiles = 5, onSelect 
                 <Image 
                   src={preview} 
                   alt="Preview" 
-                  className="max-w-[150px] max-h-[150px] rounded-md"
+                  className="max-w-[150px] max-h-[150px] rounded-md cursor-pointer"
                   width={150} 
                   height={150} 
+                  onClick={() => openModal(preview)} // Al hacer clic, abrir la imagen en grande
                 />
                 <button
                   onClick={() => handleRemove(index)}
-                  className="absolute top-0 right-0 text-white bg-black rounded-full p-1"
+                  className="absolute top-0 right-0 text-white bg-[#F1F1F1] rounded-full p-2 hover:bg-[#E0E0E0] transition-all"
                 >
-                  X
+                  <span className="text-black">X</span> {/* Cambié el color de la X a negro */}
                 </button>
               </div>
             ))}
@@ -134,6 +143,27 @@ export default function InputFile({ id, label, multiple, maxFiles = 5, onSelect 
       {errorMessage && (
         <div className="mt-6 border px-4 py-3 rounded-md text-center text-[16px] bg-[#FFE3E3] text-[#FF4D4D]">
           {errorMessage}
+        </div>
+      )}
+
+      {/* Modal para ver la imagen en grande */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-4 rounded-md">
+            <Image
+              src={selectedImage!}
+              alt="Full-screen preview"
+              width={500}
+              height={500}
+              className="max-w-full max-h-full object-contain"
+            />
+            <button
+              onClick={closeModal}
+              className="absolute top-2 right-2 text-white bg-black rounded-full p-2"
+            >
+              <span className="text-black">X</span> {/* Cambié el color de la X a negro */}
+            </button>
+          </div>
         </div>
       )}
     </div>
