@@ -84,9 +84,11 @@ export default function GraficoIngresosPage() {
   return (
     <div className="p-6 w-full">
       {/* Sticky al hacer scroll (#324) */}
-      <div className="sticky top-0 bg-white py-4 z-20 shadow-sm">
-        <h1 className="text-center text-4xl font-bold">Gráfico de barras</h1>
-      </div>
+        <div className="w-full bg-gradient-to-r from-[#11255A] via-[#5A7ACD] to-[#8DC0FF] py-6 text-center">
+        <h1 className="text-white text-4xl font-bold">
+            Gráfico de barras
+        </h1>
+        </div>
 
       <h2 className="text-3xl font-bold mt-8 mb-6">Fixer ingresos</h2>
 
