@@ -267,13 +267,15 @@ export default function HelpButton() {
 
           {/* hCaptcha Component */}
           <div className="flex justify-center mb-4">
-            <HCaptcha
-              sitekey={siteKey}
-              onVerify={onVerifyCaptcha}
-              ref={captchaRef}
-              size="normal"
-              theme="light"
-            />
+            {siteKey && (
+              <HCaptcha
+                sitekey={siteKey}
+                onVerify={onVerifyCaptcha}
+                ref={captchaRef}
+                size="normal"
+                theme="light"
+              />
+            )}
           </div>
 
           {/* Contador de intentos */}
