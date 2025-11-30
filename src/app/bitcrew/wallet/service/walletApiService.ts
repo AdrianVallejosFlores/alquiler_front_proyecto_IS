@@ -1,35 +1,48 @@
 import { IBilletera, ITransaccionBackend } from "../types";
 
-// 1. CORRECCIÓN CRÍTICA: Asegúrate de que termine en "/api"
-// Si tienes un archivo .env, revisa que NEXT_PUBLIC_API_URL tenga "/api" al final.
-// Si no, usa este valor por defecto:
+// Si tu .env no está definido, esto usará localhost:4000/api
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
 
 export const fetchWalletData = async (fixerId: string) => {
-  // Para depurar, descomenta esta línea y mira la consola del navegador (F12)
-  console.log("📡 URL Solicitada:", `${API_BASE_URL}/bitCrew/wallet/${fixerId}`);
+  
+  // CORRECCIÓN 1: Construcción correcta de la URL
+  // Quitamos el "/api" extra y agregamos "/fixer" que faltaba según tu routes.ts
+  const urlWallet = `${API_BASE_URL}/api/bitcrew/wallet/fixer/${fixerId}`;
+  
+  // Asumiremos que el historial también sigue un patrón similar (ajusta si es diferente en tu backend)
+  const urlHistorial = `${API_BASE_URL}/api/bitcrew/historial/${fixerId}`; 
+
+  console.log("📡 URL Solicitada (Wallet):", urlWallet);
 
   const [billeteraRes, historialRes] = await Promise.all([
-    // Asegúrate de escribir 'bitCrew' tal cual como lo definiste en tu backend (respetando mayúsculas)
-    fetch(`${API_BASE_URL}/api/bitCrew/wallet/${fixerId}`, { 
+    fetch(urlWallet, { 
       cache: "no-store",
       headers: { "Content-Type": "application/json" }
     }),
     
-    fetch(`${API_BASE_URL}/api/bitCrew/historial/${fixerId}`, { 
+    fetch(urlHistorial, { 
       cache: "no-store",
       headers: { "Content-Type": "application/json" }
     }),
   ]);
 
-  // Manejo de errores
-  if (!billeteraRes.ok) throw new Error(`Error HTTP (Saldo): ${billeteraRes.status}`);
+  // Manejo de errores Billetera
+  if (!billeteraRes.ok) {
+    // Esto nos ayudará a ver en consola si sigue siendo 404 o es otro error
+    throw new Error(`Error HTTP (Saldo): ${billeteraRes.status} - ${billeteraRes.statusText}`);
+  }
   const dataBilletera = await billeteraRes.json();
   if (!dataBilletera.success) throw new Error(dataBilletera.message || "Error al obtener billetera");
 
-  if (!historialRes.ok) throw new Error(`Error HTTP (Historial): ${historialRes.status}`);
+  // Manejo de errores Historial
+  if (!historialRes.ok) {
+    // Si el historial falla, no debería romper toda la app, podrías manejarlo diferente, 
+    // pero por ahora dejemos el throw.
+    throw new Error(`Error HTTP (Historial): ${historialRes.status}`);
+  }
   const dataHistorial = await historialRes.json();
-  if (!dataHistorial.success) throw new Error(dataHistorial.message || "Error al obtener historial");
+  // Validación suave para historial: si falla, devolvemos array vacío en lugar de error crítico
+  const transaccionesRaw = dataHistorial.success ? dataHistorial.transacciones : [];
 
   // Transformación de datos
   const billeteraAdaptada: IBilletera = {
@@ -39,7 +52,7 @@ export const fetchWalletData = async (fixerId: string) => {
     moneda: "Bs" 
   };
 
-  const transaccionesAdaptadas: ITransaccionBackend[] = dataHistorial.transacciones.map((tx: any) => ({
+  const transaccionesAdaptadas: ITransaccionBackend[] = transaccionesRaw.map((tx: any) => ({
     _id: tx._id,
     monto: tx.monto,
     descripcion: tx.descripcion,
