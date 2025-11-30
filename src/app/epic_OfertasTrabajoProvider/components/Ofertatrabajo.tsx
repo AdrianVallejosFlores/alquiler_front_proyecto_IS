@@ -1,3 +1,7 @@
+//http://localhost:3000/epic_OfertasTrabajoProvider
+//link para acceder ala vista de esta hu
+
+
 import React, { useState, useEffect } from 'react';
 
 // Interfaces
@@ -17,56 +21,56 @@ interface Promocion {
 }
 
 const OfertasTrabajoProvider: React.FC = () => {
-  // Estado inicial con datos de ejemplo e imágenes EXACTAS del mockup
+  // Estado inicial con datos de ejemplo e imágenes embebidas
   const [ofertas, setOfertas] = useState<Oferta[]>([
     {
       id: 1,
       titulo: 'Instalación de Enchufes',
       descripcion: 'Cableado seguro para puntos de energía',
       estado: 'Activo',
-      imagen: 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=200&h=200&fit=crop&q=80'
-    },
+      imagen: 'https://i.imgur.com/8zFv3GR.png'
+      },
     {
       id: 2,
       titulo: 'Colocación de Pisos',
       descripcion: 'Instalación de cerámica',
       estado: 'No activo',
-      imagen: 'https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?w=200&h=200&fit=crop&q=80'
+      imagen: 'https://i.imgur.com/PbuzTcn.png'
     },
     {
       id: 3,
       titulo: 'Reparación de Grifos',
       descripcion: 'Detección y arreglo de goteras',
       estado: 'Activo',
-      imagen: 'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=200&h=200&fit=crop&q=80'
+      imagen: 'https://i.imgur.com/njQo1dL.png'
     },
     {
       id: 4,
       titulo: 'Instalación Eléctrica',
       descripcion: 'Cableado y conexiones eléctricas',
       estado: 'Activo',
-      imagen: 'https://images.unsplash.com/photo-1513828583688-c52646db42da?w=200&h=200&fit=crop&q=80'
+      imagen: 'https://images.pexels.com/photos/5691608/pexels-photo-5691608.jpeg?auto=compress&cs=tinysrgb&w=200&h=200'
     },
     {
       id: 5,
       titulo: 'Pintura de Interiores',
       descripcion: 'Acabados profesionales para espacios',
       estado: 'Activo',
-      imagen: 'https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=200&h=200&fit=crop&q=80'
+      imagen: 'https://images.pexels.com/photos/1669754/pexels-photo-1669754.jpeg?auto=compress&cs=tinysrgb&w=200&h=200'
     },
     {
       id: 6,
       titulo: 'Reparación de Techos',
       descripcion: 'Arreglo y mantenimiento de techos',
       estado: 'No activo',
-      imagen: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=200&h=200&fit=crop&q=80'
+      imagen: 'https://images.pexels.com/photos/8961391/pexels-photo-8961391.jpeg?auto=compress&cs=tinysrgb&w=200&h=200'
     },
     {
       id: 7,
       titulo: 'Instalación de Ventanas',
       descripcion: 'Colocación de ventanas y marcos',
       estado: 'Activo',
-      imagen: 'https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=200&h=200&fit=crop&q=80'
+      imagen: 'https://images.pexels.com/photos/8961728/pexels-photo-8961728.jpeg?auto=compress&cs=tinysrgb&w=200&h=200'
     }
   ]);
 
@@ -88,7 +92,7 @@ const OfertasTrabajoProvider: React.FC = () => {
   const ofertasPorPagina = 3;
   const totalPaginas = Math.ceil(ofertas.length / ofertasPorPagina);
 
-  // Simular carga inicial (< 2 segundos como requiere el criterio 11)
+  // Simular carga inicial
   useEffect(() => {
     setTimeout(() => setIsLoading(false), 500);
   }, []);
@@ -121,7 +125,7 @@ const OfertasTrabajoProvider: React.FC = () => {
     setOfertaSeleccionada(null);
     setCambiosPendientes(true);
     
-    // Ajustar página si es necesario (criterio 8)
+    // Ajustar página si es necesario
     if (ofertasActuales.length === 1 && paginaActual > 1) {
       setPaginaActual(paginaActual - 1);
     }
@@ -215,16 +219,12 @@ const OfertasTrabajoProvider: React.FC = () => {
               <div className="flex gap-4">
                 {/* Imagen con borde */}
                 <div className="shrink-0">
-                  <div className="w-24 h-24 border-2 border-blue-600 rounded overflow-hidden bg-gray-100">
+                  <div className="w-24 h-24 border-2 border-blue-600 rounded overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={oferta.imagen}
                       alt={oferta.titulo}
                       className="w-full h-full object-cover"
-                      loading="eager"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = `https://via.placeholder.com/200x200/3b82f6/ffffff?text=${encodeURIComponent(oferta.titulo.substring(0, 15))}`;
-                      }}
                     />
                   </div>
                 </div>
@@ -306,7 +306,7 @@ const OfertasTrabajoProvider: React.FC = () => {
           </div>
         )}
 
-        {/* Botones de navegación inferior - GUARDAR SIEMPRE EN AZUL */}
+        {/* Botones de navegación inferior */}
         <div className="mt-6 flex justify-between gap-4">
           <button
             onClick={handleAtras}
@@ -317,7 +317,12 @@ const OfertasTrabajoProvider: React.FC = () => {
 
           <button
             onClick={handleGuardar}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-12 py-3 rounded-lg font-semibold transition-colors"
+            disabled={!cambiosPendientes}
+            className={`px-12 py-3 rounded-lg font-semibold transition-colors ${
+              cambiosPendientes
+                ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            }`}
           >
             Guardar
           </button>
