@@ -200,3 +200,7 @@ const [showSaldo, setShowSaldo] = useState(true);
 // Estado para controlar la visibilidad del modal de restricción
 const [showRestriction, setShowRestriction] = useState(false);
 
+const handleAjustes = () => {
+  // Al hacer clic en ajustes, mostramos el modal de restricción (simulación)
+  setShowRestriction(true);
+};
