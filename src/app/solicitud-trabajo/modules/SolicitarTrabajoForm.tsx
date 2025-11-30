@@ -7,17 +7,21 @@ import { IFranjaDisponible } from "../interfaces/Solicitud.interface";
 
 type Props = {
   franjas: IFranjaDisponible[];
-  date: string;
+  date: string; // Asegúrate de que date sea pasado correctamente a este componente
   providerId: string;
 };
 
 export default function SolicitarTrabajoForm({ franjas, date, providerId }: Props) {
   const [horaInicio, setHoraInicio] = useState(""); // "" = sin seleccionar
   const [horaFin, setHoraFin] = useState("");
+  const [descripcion, setDescripcion] = useState(""); // Nuevo campo Descripción
+  const [costo, setCosto] = useState(""); // Nuevo campo Costo
 
   // Errores por campo (mensajes personalizados)
   const [errorInicio, setErrorInicio] = useState("");
   const [errorFin, setErrorFin] = useState("");
+  const [errorDescripcion, setErrorDescripcion] = useState(""); // Error de Descripción
+  const [errorCosto, setErrorCosto] = useState(""); // Error de Costo
   const [errorGeneral, setErrorGeneral] = useState(""); // nuevo mensaje general
 
   const { loading, mensaje, setMensaje, enviar } = useSolicitudTrabajo(
@@ -32,6 +36,8 @@ export default function SolicitarTrabajoForm({ franjas, date, providerId }: Prop
     // limpiar errores previos
     setErrorInicio("");
     setErrorFin("");
+    setErrorDescripcion(""); // Limpiar error de descripción
+    setErrorCosto(""); // Limpiar error de costo
     setErrorGeneral("");
 
     // 🟡 Nueva validación: ambos campos vacíos
@@ -51,7 +57,30 @@ export default function SolicitarTrabajoForm({ franjas, date, providerId }: Prop
       return;
     }
 
-    await enviar({ horaInicio, horaFin });
+    if (!descripcion) {
+      setErrorDescripcion("Debe ingresar una descripción para el trabajo");
+      return;
+    }
+
+    // Verificar que la descripción no contenga números ni caracteres especiales
+    if (/\d/.test(descripcion)) {
+      setErrorDescripcion("La descripción no debe contener números");
+      return;
+    }
+
+    // Verificar que la descripción no exceda los 200 caracteres
+    if (descripcion.length > 200) {
+      setErrorDescripcion("La descripción no debe exceder los 200 caracteres");
+      return;
+    }
+
+    if (!costo || isNaN(Number(costo))) {
+      setErrorCosto("Debe ingresar un costo válido en Bs");
+      return;
+    }
+
+    // Enviar el payload, incluyendo 'date'
+    await enviar({ horaInicio, horaFin, descripcion, costo: Number(costo), date });
   };
 
   // 🎨 Estilos dinámicos del mensaje inferior según su contenido
@@ -123,6 +152,34 @@ export default function SolicitarTrabajoForm({ franjas, date, providerId }: Prop
         />
         {errorFin && (
           <p className="text-red-500 text-sm mt-1 text-center">{errorFin}</p>
+        )}
+      </div>
+
+      {/* Descripción */}
+      <div className="flex flex-col">
+        <label className="text-gray-700 text-sm Poppins">Descripción del trabajo</label>
+        <textarea
+          value={descripcion}
+          onChange={(e) => setDescripcion(e.target.value)}
+          className="w-full border border-gray-300 rounded-lg px-3 mt-1 h-12 sm:h-11 text-base sm:text-[15px] focus:ring-2 focus:ring-blue-600 outline-none text-black bg-white"
+          maxLength={200} // Limitar a 200 caracteres
+        />
+        {errorDescripcion && (
+          <p className="text-red-500 text-sm mt-1 text-center">{errorDescripcion}</p>
+        )}
+      </div>
+
+      {/* Costo */}
+      <div className="flex flex-col">
+        <label className="text-gray-700 text-sm Poppins">Costo (Bs)</label>
+        <input
+          type="number"
+          value={costo}
+          onChange={(e) => setCosto(e.target.value)}
+          className="w-full border border-gray-300 rounded-lg px-3 mt-1 h-12 sm:h-11 text-base sm:text-[15px] focus:ring-2 focus:ring-blue-600 outline-none text-black bg-white"
+        />
+        {errorCosto && (
+          <p className="text-red-500 text-sm mt-1 text-center">{errorCosto}</p>
         )}
       </div>
 

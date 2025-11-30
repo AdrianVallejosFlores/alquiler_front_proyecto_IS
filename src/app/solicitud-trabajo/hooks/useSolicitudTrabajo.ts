@@ -38,11 +38,11 @@ export function useSolicitudTrabajo(
   const [enviado, setEnviado] = useState(false);
   const [mensaje, setMensaje] = useState("");
 
-  const enviar = async (data: Pick<ISolicitud, "horaInicio" | "horaFin">) => {
+  const enviar = async (data: ISolicitud) => {
     setMensaje("");
     setEnviado(false);
 
-    const { horaInicio, horaFin } = data;
+    const { horaInicio, horaFin, descripcion, costo } = data;
 
     // 0) Validaciones de presencia (con mensajes específicos)
     if (!horaInicio && !horaFin) {
@@ -92,6 +92,8 @@ export function useSolicitudTrabajo(
       date,
       horaInicio,
       horaFin,
+      descripcion,
+      costo,
     };
 
     setLoading(true);
@@ -101,8 +103,7 @@ export function useSolicitudTrabajo(
 
       // Normalizamos un status para decidir el copy del frontend
       const status: Status =
-        (resp?.status as Status) ??
-        (resp && resp.ok === false ? "error" : "ok");
+        (resp?.status as Status) ?? (resp && resp.ok === false ? "error" : "ok");
 
       setEnviado(status === "ok");
       setMensaje(COPY[status]); // 💡 priorizamos SIEMPRE el mensaje del front
