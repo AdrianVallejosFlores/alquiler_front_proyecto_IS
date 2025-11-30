@@ -15,10 +15,12 @@ export async function POST(request: NextRequest) {
     const SECRET_KEY = process.env.HCAPTCHA_SECRET_KEY;
 
     if (!SECRET_KEY) {
-      console.error('HCAPTCHA_SECRET_KEY no está definida en las variables de entorno');
+      console.error('❌ HCAPTCHA_SECRET_KEY no está definida en las variables de entorno');
+      console.error('📝 Por favor, agrega HCAPTCHA_SECRET_KEY en tu archivo .env.local');
+      console.error('📖 Lee README_CAPTCHA.md para obtener instrucciones detalladas.');
       return NextResponse.json({ 
         success: false, 
-        error: 'Configuración del servidor incorrecta' 
+        error: 'Configuración del servidor incorrecta. Las variables de entorno de hCaptcha no están configuradas.' 
       }, { status: 500 });
     }
 

@@ -73,6 +73,19 @@ export default function HelpButton() {
       const res = await fetch('/api/check-click');
       const data = await res.json();
 
+      if (!res.ok || data.error) {
+        console.error('Error de configuración:', data.error);
+        alert('⚠️ Configuración de seguridad no disponible.\n\n' + 
+              'El administrador debe configurar las variables de entorno de hCaptcha.\n' +
+              'Por favor, contacte al equipo de desarrollo.');
+        return;
+      }
+
+      if (!data.siteKey || data.siteKey === 'tu-site-key-aqui') {
+        alert('⚠️ Las claves de hCaptcha no están configuradas correctamente.\n\n' +
+              'Si eres desarrollador, consulta README_CAPTCHA.md para instrucciones.');
+        return;
+      }
    
       setCaptchaRequired(true);
       setSiteKey(data.siteKey);
@@ -275,13 +288,15 @@ export default function HelpButton() {
 
           {/* hCaptcha Component */}
           <div className="flex justify-center mb-4">
-            <HCaptcha
-              sitekey={siteKey}
-              onVerify={onVerifyCaptcha}
-              ref={captchaRef}
-              size="normal"
-              theme="light"
-            />
+            {siteKey && (
+              <HCaptcha
+                sitekey={siteKey}
+                onVerify={onVerifyCaptcha}
+                ref={captchaRef}
+                size="normal"
+                theme="light"
+              />
+            )}
           </div>
 
           {/* Contador de intentos */}
