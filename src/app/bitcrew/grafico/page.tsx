@@ -9,57 +9,152 @@ import {
   CartesianGrid,
   ResponsiveContainer,
 } from "recharts";
+import { useEffect, useState } from "react";
+
+interface IngresoData {
+  name: string;
+  value: number;
+  color: string;
+}
 
 export default function GraficoIngresosPage() {
-  const data = [
-    { name: "Ingresos", value: 75.2, color: "#55a663" },
-    { name: "Recargas", value: 65.1, color: "#6fa3ff" },
-    { name: "Retiros", value: 25.0, color: "#e64b4b" },
-  ];
+  //const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<IngresoData[]>([]);
+  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const totalIngresos = 75.2;
-  const totalRecargas = 65.1;
-  const totalRetiros = 25.0;
+  // ---------------------------------------
+  // 🚀 Simulación de API (reemplaza por fetch real)
+  // ---------------------------------------
+  useEffect(() => {
+    setTimeout(() => {
+      try {
+        const apiData = [
+          { name: "Ingresos", value: 75.2, color: "#55a663" },
+          { name: "Recargas", value: 65.1, color: "#6fa3ff" },
+          { name: "Retiros", value: 25.0, color: "#e64b4b" },
+        ];
+
+        setData(apiData);
+        setLoading(false);
+      } catch (err) {
+        setError(true);
+        setLoading(false);
+      }
+    }, 800); // Menor a 2 segundos (#322)
+  }, []);
+
+  // ---------------------------------------
+  // 🟡 Estados especiales (#320 y #321)
+  // ---------------------------------------
+  if (loading) {
+    return (
+      <div className="text-center mt-10 text-xl font-semibold">
+        Cargando tus ingresos…
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center mt-10 text-red-600 text-xl font-bold">
+        Error al cargar tus ingresos. Intenta nuevamente.
+      </div>
+    );
+  }
+
+  if (data.length === 0) {
+    return (
+      <div className="text-center mt-10 text-gray-600 text-xl font-semibold">
+        No tienes ingresos recientes para mostrar
+      </div>
+    );
+  }
+
+  // Totales
+  const totalIngresos = data[0].value;
+  const totalRecargas = data[1].value;
+  const totalRetiros = data[2].value;
+
+  // Auto escala dinámica Y (#314)
+  const maxValue = Math.max(...data.map((d) => d.value));
+  const yMax = Math.ceil(maxValue + maxValue * 0.2);
 
   return (
-    <div className="w-full p-10">
-
-      {/* Título principal */}
-      <div className="text-center text-4xl font-bold mb-10">
-        Gráfico de barras
+    <div className="p-6 w-full">
+      {/* Sticky al hacer scroll (#324) */}
+      <div className="sticky top-0 bg-white py-4 z-20 shadow-sm">
+        <h1 className="text-center text-4xl font-bold">Gráfico de barras</h1>
       </div>
 
-      {/* Subtítulo */}
-      <div className="text-3xl font-bold mb-4">Fixer ingresos</div>
+      <h2 className="text-3xl font-bold mt-8 mb-6">Fixer ingresos</h2>
 
-      <div className="flex gap-10">
-        
-        {/* === Gráfico === */}
-        <div className="w-[70%] h-[350px]">
+      <div className="flex flex-col md:flex-row gap-10">
+        {/* ===== Gráfico ===== */}
+        <div className="w-full md:w-[70%] h-[350px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data}>
-              <CartesianGrid vertical={false} />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              {data.map((entry, index) => (
+              <CartesianGrid vertical={false} opacity={0.3} />
+
+              <XAxis
+                dataKey="name"
+                tick={{ fontSize: 14, fontWeight: "bold" }}
+              />
+
+              <YAxis
+                domain={[0, yMax]}
+                tick={{ fontSize: 14 }}
+                tickFormatter={(val) => `${val} bs`}
+              />
+
+              <Tooltip
+                formatter={(value: number | string) => {
+                 const v = Number(value);
+                 return [`${v.toFixed(2)} bs`, ""];
+               }}
+              />
+
+
+              {/* Barras → Colores predefinidos (#316) */}
+              {data.map((entry: IngresoData, index: number) => (
                 <Bar
                   key={index}
                   dataKey="value"
                   fill={entry.color}
-                />
+                  radius={[6, 6, 0, 0]}
+                >
+                  {/* Valor cero: mostrar barra mínima (#317) */}
+                  {entry.value === 0 && (
+                    <text
+                      x={0}
+                      y={0}
+                      dy={-10}
+                      fill="#555"
+                      fontSize={12}
+                    >
+                      0 bs
+                    </text>
+                  )}
+                </Bar>
               ))}
             </BarChart>
           </ResponsiveContainer>
         </div>
 
-        {/* === Recuadro Totales === */}
-        <div className="border-2 border-black rounded-xl p-4 w-[200px] h-[120px]">
-          <p>Ingresos : {totalIngresos.toFixed(2)} bs</p>
-          <p>Recargas : {totalRecargas.toFixed(2)} bs</p>
-          <p>Retiros : {totalRetiros.toFixed(2)} bs</p>
+        {/* ===== Recuadro Totales (#318, #319) ===== */}
+        <div className="border-2 border-black rounded-xl p-4 w-[230px] h-fit shadow-lg">
+          <p className="font-semibold text-lg">
+            Ingresos: {totalIngresos.toFixed(2)} bs
+          </p>
+          <p className="font-semibold text-lg">
+            Recargas: {totalRecargas.toFixed(2)} bs
+          </p>
+          <p className="font-semibold text-lg">
+            Retiros: {totalRetiros.toFixed(2)} bs
+          </p>
         </div>
       </div>
     </div>
   );
 }
+
