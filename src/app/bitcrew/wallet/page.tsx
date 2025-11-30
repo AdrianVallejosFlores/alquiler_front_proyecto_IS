@@ -13,25 +13,30 @@ import { ChevronLeft, BarChart3, Wallet, Settings } from "lucide-react";
 import Recaptcha from "../captcha/components/Recaptcha";
 import { validarCaptcha } from "../captcha/service/captcha.service";
 
+import TransactionList from "./components/TransactionList";
+// Importamos el componente recién creado
+import WalletRestrictionModal from "./components/WalletRestrictionModal";
+import { ChevronLeft, BarChart3, Wallet, Settings } from "lucide-react";
+
 
 
 function WalletLogic() {
 
- const [captchaValido, setCaptchaValido] = useState(false);
- const [captchaCargando, setCaptchaCargando] = useState(false);
+  const [captchaValido, setCaptchaValido] = useState(false);
+  const [captchaCargando, setCaptchaCargando] = useState(false);
 
-const onCaptchaVerify = async (token: string | null) => {
-  if (!token) {
-    setCaptchaValido(false);
-    return;
-  }
+  const onCaptchaVerify = async (token: string | null) => {
+    if (!token) {
+      setCaptchaValido(false);
+      return;
+    }
 
-  setCaptchaCargando(true);
-  const result = await validarCaptcha(token);
-  setCaptchaCargando(false);
+    setCaptchaCargando(true);
+    const result = await validarCaptcha(token);
+    setCaptchaCargando(false);
 
-  setCaptchaValido(result.success);
-};
+    setCaptchaValido(result.success);
+  };
 
 
   const router = useRouter();
@@ -81,103 +86,103 @@ const onCaptchaVerify = async (token: string | null) => {
           </div>
 
 <<<<<<< HEAD
-          {/* BOTONES DESKTOP */}
+  {/* BOTONES DESKTOP */ }
 =======
-         
+
 
 
           {/* --- BOTONES DESKTOP (Alineados a la derecha) --- */}
 >>>>>>> refs/remotes/origin/dev/bitcrew-sprint3-saldo
-          <div className="hidden md:flex items-center space-x-3">
-            <button
-              onClick={handleGrafico}
-              className="flex items-center space-x-2 bg-[#11255A] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-md hover:bg-[#0B1A40] transition-colors"
-            >
-              <BarChart3 className="w-5 h-5" />
-              <span>Gráfico de Ingresos</span>
-            </button>
+  <div className="hidden md:flex items-center space-x-3">
+    <button
+      onClick={handleGrafico}
+      className="flex items-center space-x-2 bg-[#11255A] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-md hover:bg-[#0B1A40] transition-colors"
+    >
+      <BarChart3 className="w-5 h-5" />
+      <span>Gráfico de Ingresos</span>
+    </button>
 
+    <button
+      onClick={handleRecargar}
+      disabled={loading || !fixerId || !captchaValido}
+      className="flex items-center space-x-2 bg-[#11255A] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-md hover:bg-[#0B1A40] transition-colors disabled:opacity-50"
+    >
+      <Wallet className="w-5 h-5" />
+      <span>Recargar Saldo</span>
+    </button>
+
+    {/* El botón de ajustes ahora dispara el modal */}
+    <button onClick={handleAjustes} className="p-2 text-gray-500 hover:text-[#11255A] transition rounded-full hover:bg-gray-100">
+      <Settings className="w-6 h-6" />
+    </button>
+  </div>
+
+  {/* BOTÓN AJUSTES MOBILE */ }
+  <div className="md:hidden">
+    <button onClick={handleAjustes} className="p-2 text-gray-500 hover:text-[#11255A]">
+      <Settings className="w-6 h-6" />
+    </button>
+  </div>
+        </header >
+
+    {/* CAPTCHA para validar recarga (Desktop y Mobile) */ }
+    < div className = "mt-4 mb-6" >
+      <Recaptcha onVerify={onCaptchaVerify} />
+  { captchaCargando && <p className="text-sm text-gray-500">Validando...</p> }
+        </div >
+
+
+    <main>
+      {error && <div className="text-red-500 bg-red-50 p-3 rounded mb-4">{error}</div>}
+
+      {loading && !balanceData && <p className="text-center py-10">Cargando...</p>}
+
+      {!loading && balanceData && (
+        <>
+          <WalletAlert balance={balanceData.saldo} estado={balanceData.estado} />
+
+          <BalanceCard
+            saldo={balanceData.saldo}
+            moneda={balanceData.moneda || "Bs"}
+            showSaldo={showSaldo}
+            onToggleShowSaldo={() => setShowSaldo(!showSaldo)}
+            onRefresh={reload}
+            loading={loading}
+            walletId={balanceData._id}
+          />
+
+          {/* BOTONES MOBILE */}
+          <div className="flex flex-col gap-3 mt-4 mb-6 md:hidden">
             <button
               onClick={handleRecargar}
               disabled={loading || !fixerId || !captchaValido}
-              className="flex items-center space-x-2 bg-[#11255A] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-md hover:bg-[#0B1A40] transition-colors disabled:opacity-50"
+              className="w-full flex items-center justify-center space-x-2 bg-[#11255A] text-white px-4 py-3 rounded-xl text-sm font-medium shadow-sm hover:bg-[#0B1A40] transition-colors disabled:opacity-50"
             >
               <Wallet className="w-5 h-5" />
               <span>Recargar Saldo</span>
             </button>
 
-            {/* El botón de ajustes ahora dispara el modal */}
-            <button onClick={handleAjustes} className="p-2 text-gray-500 hover:text-[#11255A] transition rounded-full hover:bg-gray-100">
-              <Settings className="w-6 h-6" />
+            <button
+              onClick={handleGrafico}
+              className="w-full flex items-center justify-center space-x-2 bg-[#11255A] text-white px-4 py-3 rounded-xl text-sm font-medium shadow-sm hover:bg-[#0B1A40] transition-colors"
+            >
+              <BarChart3 className="w-5 h-5" />
+              <span>Gráfico de Ingresos</span>
             </button>
           </div>
 
-          {/* BOTÓN AJUSTES MOBILE */}
-          <div className="md:hidden">
-            <button onClick={handleAjustes} className="p-2 text-gray-500 hover:text-[#11255A]">
-              <Settings className="w-6 h-6" />
-            </button>
+          <div className="mt-8 pb-10">
+            <TransactionList transactions={transactions} />
           </div>
-        </header>
+        </>
+      )}
 
-        {/* CAPTCHA para validar recarga (Desktop y Mobile) */}
-        <div className="mt-4 mb-6">
-          <Recaptcha onVerify={onCaptchaVerify} />
-          {captchaCargando && <p className="text-sm text-gray-500">Validando...</p>}
-        </div>
-
-
-        <main>
-          {error && <div className="text-red-500 bg-red-50 p-3 rounded mb-4">{error}</div>}
-
-          {loading && !balanceData && <p className="text-center py-10">Cargando...</p>}
-
-          {!loading && balanceData && (
-            <>
-              <WalletAlert balance={balanceData.saldo} estado={balanceData.estado} />
-
-              <BalanceCard
-                saldo={balanceData.saldo}
-                moneda={balanceData.moneda || "Bs"}
-                showSaldo={showSaldo}
-                onToggleShowSaldo={() => setShowSaldo(!showSaldo)}
-                onRefresh={reload}
-                loading={loading}
-                walletId={balanceData._id}
-              />
-
-              {/* BOTONES MOBILE */}
-              <div className="flex flex-col gap-3 mt-4 mb-6 md:hidden">
-                <button
-                  onClick={handleRecargar}
-                  disabled={loading || !fixerId || !captchaValido}
-                  className="w-full flex items-center justify-center space-x-2 bg-[#11255A] text-white px-4 py-3 rounded-xl text-sm font-medium shadow-sm hover:bg-[#0B1A40] transition-colors disabled:opacity-50"
-                >
-                  <Wallet className="w-5 h-5" />
-                  <span>Recargar Saldo</span>
-                </button>
-
-                <button
-                  onClick={handleGrafico}
-                  className="w-full flex items-center justify-center space-x-2 bg-[#11255A] text-white px-4 py-3 rounded-xl text-sm font-medium shadow-sm hover:bg-[#0B1A40] transition-colors"
-                >
-                  <BarChart3 className="w-5 h-5" />
-                  <span>Gráfico de Ingresos</span>
-                </button>
-              </div>
-
-              <div className="mt-8 pb-10">
-                <TransactionList transactions={transactions} />
-              </div>
-            </>
-          )}
-
-          {!fixerId && !loading && (
-            <p className="text-center text-gray-500 mt-10">No se detectó un ID de Fixer.</p>
-          )}
-        </main>
-      </div>
-    </div>
+      {!fixerId && !loading && (
+        <p className="text-center text-gray-500 mt-10">No se detectó un ID de Fixer.</p>
+      )}
+    </main>
+      </div >
+    </div >
   );
 }
 
@@ -188,3 +193,4 @@ export default function WalletPage() {
     </Suspense>
   );
 }
+
