@@ -174,7 +174,6 @@ export default function AsistentePage() {
             onClick={() => window.open('https://wa.me/59160379823?text=Hola%20quiero%20probar%20el%20asistente', '_blank')}
             className="bg-white text-green-700 px-8 py-3 rounded-full font-bold hover:bg-gray-100 transition-colors inline-flex items-center gap-2 shadow-sm"
           >
-            {/* Si quieres que el icono sea verde también, puedes añadirle className="text-green-600" */}
             <Bot size={20} />
             Iniciar Chat con Servineo
           </button>

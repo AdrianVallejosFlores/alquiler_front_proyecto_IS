@@ -28,7 +28,7 @@ const slides = [
   //  SLIDE DEL CHATBOT (imagen + texto azul + botón blanco)
   {
     type: "chatbot",
-    image: "/chatbot.jpg",
+    image: "/chatbot.jpeg",
     title: "¿Tienes dudas? Habla con nuestro Asistente Servineo",
     description:
       "Ahora contamos con un chatbot que responde tus preguntas sobre servicios y disponibilidad en tiempo real. Interactúa ahora mismo con nuestro asistente en WhatsApp..",
