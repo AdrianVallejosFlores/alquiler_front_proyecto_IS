@@ -161,7 +161,7 @@ export default function InputFile({ id, label, multiple, maxFiles = 5, onSelect 
               onClick={closeModal}
               className="absolute top-2 right-2 text-white bg-black rounded-full p-2"
             >
-              <span className="text-black">X</span> {/* Cambié el color de la X a negro */}
+              <span className="text-white">X</span> {/* Cambié el color de la X a negro */}
             </button>
           </div>
         </div>
