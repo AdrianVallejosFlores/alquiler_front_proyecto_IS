@@ -3,7 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { NotificationProvider } from "./context/NotificationContext";
-import { AuthProvider } from "../../context/AuthProvider";
 import GoogleSignInButton from "../../components/GoogleSignInButton";
 
 const geistSans = Geist({
@@ -28,15 +27,13 @@ export default function BookingLayout({
 }) {
   return (
     <NotificationProvider>
-      <AuthProvider>
-        {/* ⬇️ CONTENIDO */}
-        <div className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-          <div style={{ display: "flex", justifyContent: "flex-end", padding: 12 }}>
-            <GoogleSignInButton />
-          </div>
-          {children}
+      {/* ⬇️ CONTENIDO */}
+      <div className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <div style={{ display: "flex", justifyContent: "flex-end", padding: 12 }}>
+          <GoogleSignInButton />
         </div>
-      </AuthProvider>
+        {children}
+      </div>
     </NotificationProvider>
   );
 }

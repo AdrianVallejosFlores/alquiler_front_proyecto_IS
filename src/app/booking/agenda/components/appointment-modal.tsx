@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useAuth } from "@/context/AuthProvider";
 import { Calendar } from "./ui/calendar";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -60,8 +61,7 @@ export function AppointmentModal({
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<UISlot | null>(null);
   const [dateInput, setDateInput] = useState("");
-  const [confirmationTitle, setConfirmationTitle] = useState("");
-  const [confirmationMessage, setConfirmationMessage] = useState("");
+  
 
   // Disponibilidad
   const [availableSlots, setAvailableSlots] = useState<UISlot[]>([]);
@@ -74,7 +74,10 @@ export function AppointmentModal({
   const locationFormRef = useRef<HTMLDivElement | null>(null);
 
   // Confirmación
-  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+    const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+    const [confirmationTitle, setConfirmationTitle] = useState<string | undefined>(undefined);
+    const [confirmationMessage, setConfirmationMessage] = useState<string | undefined>(undefined);
+    const [confirmationSuccess, setConfirmationSuccess] = useState<boolean>(true);
   const [saving, setSaving] = useState(false);
 
   // Días feriados
@@ -302,9 +305,9 @@ export function AppointmentModal({
         method = "PUT";
       }
 
-      const token = typeof window !== 'undefined' ? localStorage.getItem('googleAccessToken') : null;
+      const googleToken = typeof window !== 'undefined' ? localStorage.getItem('googleAccessToken') : null;
       const headers: Record<string, string> = { "Content-Type": "application/json" };
-      if (token) headers["Authorization"] = `Bearer ${token}`;
+      if (googleToken) headers["Authorization"] = `Bearer ${googleToken}`;
 
       const res = await fetch(url, {
         method,
@@ -313,15 +316,44 @@ export function AppointmentModal({
       });
 
       const body = await res.json().catch(() => ({}));
-      
+
       if (!res.ok) {
         if (res.status === 409) return alert(body?.message || "Horario no disponible.");
         return alert(body?.message || `Error HTTP ${res.status}`);
       }
 
+      // Mostrar mensaje de Google Calendar SOLO para usuarios logueados con Google
+      // Manejar el resultado de sincronización con Google Calendar (si se intentó)
+      let extraMessage = "";
+      let isSuccess = true;
+      const googleSync = body?.googleSync;
+      if (googleSync?.attempted && googleToken) {
+        if (googleSync.success) {
+          extraMessage = "\nSe actualizó correctamente en Google Calendar.";
+        } else {
+          const errMsg = googleSync.error || (googleSync.details && JSON.stringify(googleSync.details)) || 'Error desconocido';
+          extraMessage = `\nError sincronizando con Google Calendar:\n${errMsg}`;
+          isSuccess = false;
+        }
+      }
+
+      console.log("DEBUG: googleToken:", googleToken);
+      console.log("DEBUG: googleSync:", googleSync);
+      console.log("DEBUG: extraMessage:", extraMessage);
+      console.log("DEBUG: isSuccess (local):", isSuccess);
+      
+      const finalConfirmationTitle = isEditing ? "Cita actualizada" : "Cita creada";
+      const finalConfirmationMessage = (isEditing ? "La cita se actualizó correctamente." : "Tu cita se ha creado correctamente.") + extraMessage;
+      const finalConfirmationSuccess = isSuccess;
+
+      console.log("DEBUG: finalConfirmationTitle:", finalConfirmationTitle);
+      console.log("DEBUG: finalConfirmationMessage:", finalConfirmationMessage);
+      console.log("DEBUG: finalConfirmationSuccess:", finalConfirmationSuccess);
+
+      setConfirmationTitle(finalConfirmationTitle);
+      setConfirmationMessage(finalConfirmationMessage);
+      setConfirmationSuccess(finalConfirmationSuccess);
       setShowConfirmationModal(true);
-      setConfirmationTitle("Cita creada");
-      setConfirmationMessage("Tu cita se ha creado correctamente.");
 
       onOpenChange(false);
       setSelectedTime(null);
@@ -584,7 +616,7 @@ export function AppointmentModal({
         onClose={() => setShowConfirmationModal(false)}
         title={confirmationTitle}
         message={confirmationMessage}
-        success={true}
+        success={confirmationSuccess}
       />
 
     </Dialog>

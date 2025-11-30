@@ -35,6 +35,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (t) setToken(t);
         if (cid || name || email || picture) {
           setUser({ clienteId: cid ?? undefined, name: name ?? undefined, email: email ?? undefined, picture: picture ?? undefined });
+          // Refrescar token si está disponible
+          if (cid) {
+            getCurrentToken(cid).catch(e => console.error("Error auto-refreshing token on load:", e));
+          }
         }
       }
     } catch (e) {
@@ -63,41 +67,58 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const res = await fetch(`http://localhost:5000/api/devcode/auth/current-token?clienteId=${clienteId}`);
       const data = await res.json();
+      
       if (data.accessToken) {
         setToken(data.accessToken);
         localStorage.setItem("googleAccessToken", data.accessToken);
+        if (data.refreshed) {
+          console.log("✅ Token auto-refreshed successfully");
+        }
         return data.accessToken;
+      } else if (res.status === 401) {
+        // Token expirado sin refresh token - usuario debe volver a loguearse
+        console.warn("⚠️ Token expirado - requiere re-autenticación");
+        await signOut();
+        return null;
       }
     } catch (e) {
-      console.error("Error getting current token:", e);
+      console.error("❌ Error getting current token:", e);
     }
     return null;
   };
 
   const signOut = async () => {
+    setIsLoading(true);
     try {
       const clienteId = localStorage.getItem("auth_clienteId");
       if (clienteId) {
-        await fetch("http://localhost:5000/api/devcode/auth/sign-out", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ clienteId }),
-        });
+        try {
+          await fetch("http://localhost:5000/api/devcode/auth/sign-out", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ clienteId }),
+          });
+        } catch (e) {
+          console.error("Error calling backend sign-out:", e);
+          // Continuar con logout local incluso si el backend falla
+        }
       }
     } catch (e) {
-      console.error("Error signing out:", e);
+      console.error("Error in signOut:", e);
+    } finally {
+      setUser(null);
+      setToken(null);
+      try {
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("googleAccessToken");
+          localStorage.removeItem("auth_clienteId");
+          localStorage.removeItem("auth_name");
+          localStorage.removeItem("auth_email");
+          localStorage.removeItem("auth_picture");
+        }
+      } catch (e) {}
+      setIsLoading(false);
     }
-    setUser(null);
-    setToken(null);
-    try {
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("googleAccessToken");
-        localStorage.removeItem("auth_clienteId");
-        localStorage.removeItem("auth_name");
-        localStorage.removeItem("auth_email");
-        localStorage.removeItem("auth_picture");
-      }
-    } catch (e) {}
   };
 
   return (

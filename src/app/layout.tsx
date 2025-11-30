@@ -7,6 +7,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { NotificationProvider } from '@/context/NotificationContext';
+import { AuthProvider } from "@/context/AuthProvider";
 
 import Header from "./components/Header/Header";
 
@@ -57,25 +58,27 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning={true}
       >
-        {/* 5. Banner de "Sin Conexión" */}
-        {!isOnline && (
-          <div className="fixed top-0 left-0 w-full bg-red-600 text-white text-center p-2 z-50 shadow-lg animate-pulse">
-            <p className="font-semibold">
-              Estás sin conexión
-            </p>
-            <p className="text-sm">
-              Comprueba tu conexión a internet.
-            </p>
+        <AuthProvider>
+          {/* 5. Banner de "Sin Conexión" */}
+          {!isOnline && (
+            <div className="fixed top-0 left-0 w-full bg-red-600 text-white text-center p-2 z-50 shadow-lg animate-pulse">
+              <p className="font-semibold">
+                Estás sin conexión
+              </p>
+              <p className="text-sm">
+                Comprueba tu conexión a internet.
+              </p>
+            </div>
+          )}
+
+          <Header />
+
+          {/* SOLUCIÓN: Cambiar el padding para que funcione en todos los dispositivos */}
+          <div className="pt-16 sm:pt-20">
+            {/* Aumenté el padding-top */}
+            {children}
           </div>
-        )}
-
-        <Header />
-
-        {/* SOLUCIÓN: Cambiar el padding para que funcione en todos los dispositivos */}
-        <div className="pt-16 sm:pt-20">
-          {/* Aumenté el padding-top */}
-          {children}
-        </div>
+        </AuthProvider>
       </body>
     </html>
   );
