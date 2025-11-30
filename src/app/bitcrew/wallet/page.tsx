@@ -194,3 +194,9 @@ export default function WalletPage() {
   );
 }
 
+const { balanceData, transactions, loading, error, reload } = useWallet(fixerId);
+const [showSaldo, setShowSaldo] = useState(true);
+
+// Estado para controlar la visibilidad del modal de restricción
+const [showRestriction, setShowRestriction] = useState(false);
+
