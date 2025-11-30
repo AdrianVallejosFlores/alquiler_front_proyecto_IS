@@ -66,7 +66,7 @@ export default function AsistentePage() {
             </div>
           </div>
 
-          {/* 2. NOTAS DE VOZ */}
+          {/* 2. NOTAS DE VOZ*/}
           <div className="flex flex-col items-center">
             <div className="text-center max-w-2xl mb-8">
               <div className="bg-blue-100 w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4">
