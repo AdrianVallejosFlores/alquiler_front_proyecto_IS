@@ -15,10 +15,42 @@ export default function CrearOfertaTrabajo() {
     activa: true,
   });
 
+  const [errorTitulo, setErrorTitulo] = useState(""); // Error de Título
+  const [errorDescripcion, setErrorDescripcion] = useState(""); // Error de Descripción
+
   const cambiar = (campo: keyof OfertaTrabajo, valor: string | boolean | File | File[]) =>
     setData((prev) => ({ ...prev, [campo]: valor }));
 
+  const validarTitulo = (titulo: string) => {
+    if (/\d|[^a-zA-Z0-9\s]/.test(titulo)) {
+      setErrorTitulo("El título no debe contener números ni caracteres especiales.");
+      return false;
+    }
+    if (titulo.length > 100) {
+      setErrorTitulo("El título no debe exceder los 100 caracteres.");
+      return false;
+    }
+    setErrorTitulo(""); 
+    return true;
+  };
+
+  const validarDescripcion = (descripcion: string) => {
+    if (/\d|[^a-zA-Z0-9\s]/.test(descripcion)) {
+      setErrorDescripcion("La descripción no debe contener números ni caracteres especiales.");
+      return false;
+    }
+    if (descripcion.length > 200) {
+      setErrorDescripcion("La descripción no debe exceder los 200 caracteres.");
+      return false;
+    }
+    setErrorDescripcion(""); 
+    return true;
+  };
+
   const enviar = async () => {
+    if (!validarTitulo(data.titulo) || !validarDescripcion(data.descripcion)) {
+      return;
+    }
     setMensaje(null);
     await enviarOferta(data);
   };
@@ -32,23 +64,36 @@ export default function CrearOfertaTrabajo() {
 
       {/* FORMULARIO */}
       <div className="text-[17px] sm:text-[19px] Poppins leading-8">
-        
         {/* Titulo */}
-        <label className="font-bold">Titulo</label>
+        <label className="font-bold">Título</label>
         <input
           type="text"
           className="w-full border rounded-md p-3 mt-1"
           value={data.titulo}
-          onChange={(e) => cambiar("titulo", e.target.value)}
+          onChange={(e) => {
+            const valor = e.target.value;
+            cambiar("titulo", valor);
+            validarTitulo(valor);
+          }}
         />
+        {errorTitulo && (
+          <p className="text-red-500 text-sm mt-1 text-center w-full">{errorTitulo}</p>
+        )}
 
         {/* Descripción */}
         <label className="font-bold mt-6 block">Descripción</label>
         <textarea
           className="w-full border rounded-md p-3 mt-1 h-32 resize-none"
           value={data.descripcion}
-          onChange={(e) => cambiar("descripcion", e.target.value)}
+          onChange={(e) => {
+            const valor = e.target.value;
+            cambiar("descripcion", valor);
+            validarDescripcion(valor);
+          }}
         />
+        {errorDescripcion && (
+          <p className="text-red-500 text-sm mt-1 text-center w-full">{errorDescripcion}</p>
+        )}
 
         {/* Foto Portada */}
         <InputFile
@@ -70,7 +115,6 @@ export default function CrearOfertaTrabajo() {
         {/* Activa */}
         <div className="flex items-center justify-between mt-6">
           <label className="font-bold text-[17px]">¿Activa?</label>
-
           <div className="flex gap-6">
             <label className="flex items-center gap-2">
               <input
@@ -78,7 +122,7 @@ export default function CrearOfertaTrabajo() {
                 checked={data.activa === true}
                 onChange={() => cambiar("activa", true)}
               />
-              Si
+              Sí
             </label>
 
             <label className="flex items-center gap-2">
@@ -96,9 +140,9 @@ export default function CrearOfertaTrabajo() {
         {mensaje && (
           <div
             className={`mt-6 border px-4 py-3 rounded-md text-center text-[16px] ${
-              mensaje.includes("Oferta creada correctamente") 
-                ? "bg-[#DFFFE3] text-[#3DD45E]"  // Mensaje de éxito en verde
-                : "bg-[#FFE3E3] text-[#FF4D4D]"  // Mensaje de error en rojo
+              mensaje.includes("Oferta creada correctamente")
+                ? "bg-[#DFFFE3] text-[#3DD45E]" // Mensaje de éxito en verde
+                : "bg-[#FFE3E3] text-[#FF4D4D]" // Mensaje de error en rojo
             }`}
           >
             {mensaje}
