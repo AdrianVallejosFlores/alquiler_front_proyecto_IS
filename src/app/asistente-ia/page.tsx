@@ -164,7 +164,7 @@ export default function AsistentePage() {
 
         </div>
 
-        {/* Sección Final */}
+        {/* Sección Final*/}
         <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl p-8 text-center text-white shadow-xl">
           <h2 className="text-2xl font-bold mb-4">¿Listo para probarlo?</h2>
           <p className="mb-6 text-green-100">
