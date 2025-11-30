@@ -11,6 +11,8 @@ import ModalCancelar from "./components/ModalCancelar";
 import BotonesAccion from "./components/BotonesAccion";
 import { useSearchParams,useRouter  } from "next/navigation";
 
+
+const CancelarTrabajoContent: React.FC = () => {
 const CancelarTrabajoPageContent: React.FC = () => {
     const sp = useSearchParams();
     const router = useRouter(); 
@@ -132,13 +134,23 @@ useEffect(() => {
   );
 };
 
+
+export default function CancelarTrabajoPage() {
+
 const CancelarTrabajoPage: React.FC = () => {
+
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <p className="text-gray-600">Cargando...</p>
       </div>
     }>
+
+      <CancelarTrabajoContent />
+    </Suspense>
+  );
+}
+
       <CancelarTrabajoPageContent />
     </Suspense>
   );
