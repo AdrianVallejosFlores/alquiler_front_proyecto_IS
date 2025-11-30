@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Trash2, Tag, Plus, X } from 'lucide-react';
 
 // Interfaces
 interface Oferta {
@@ -18,35 +17,56 @@ interface Promocion {
 }
 
 const OfertasTrabajoProvider: React.FC = () => {
-  // Estado inicial con datos de ejemplo
+  // Estado inicial con datos de ejemplo e imágenes EXACTAS del mockup
   const [ofertas, setOfertas] = useState<Oferta[]>([
     {
       id: 1,
       titulo: 'Instalación de Enchufes',
       descripcion: 'Cableado seguro para puntos de energía',
       estado: 'Activo',
-      imagen: '/images/ofertas/electricidad.jpg'
+      imagen: 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=200&h=200&fit=crop&q=80'
     },
     {
       id: 2,
       titulo: 'Colocación de Pisos',
       descripcion: 'Instalación de cerámica',
       estado: 'No activo',
-      imagen: '/images/ofertas/pisos.jpg'
+      imagen: 'https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?w=200&h=200&fit=crop&q=80'
     },
     {
       id: 3,
       titulo: 'Reparación de Grifos',
       descripcion: 'Detección y arreglo de goteras',
       estado: 'Activo',
-      imagen: '/images/ofertas/griferia.jpg'
+      imagen: 'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=200&h=200&fit=crop&q=80'
     },
     {
       id: 4,
+      titulo: 'Instalación Eléctrica',
+      descripcion: 'Cableado y conexiones eléctricas',
+      estado: 'Activo',
+      imagen: 'https://images.unsplash.com/photo-1513828583688-c52646db42da?w=200&h=200&fit=crop&q=80'
+    },
+    {
+      id: 5,
       titulo: 'Pintura de Interiores',
       descripcion: 'Acabados profesionales para espacios',
       estado: 'Activo',
-      imagen: '/images/ofertas/pintura.jpg'
+      imagen: 'https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=200&h=200&fit=crop&q=80'
+    },
+    {
+      id: 6,
+      titulo: 'Reparación de Techos',
+      descripcion: 'Arreglo y mantenimiento de techos',
+      estado: 'No activo',
+      imagen: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=200&h=200&fit=crop&q=80'
+    },
+    {
+      id: 7,
+      titulo: 'Instalación de Ventanas',
+      descripcion: 'Colocación de ventanas y marcos',
+      estado: 'Activo',
+      imagen: 'https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=200&h=200&fit=crop&q=80'
     }
   ]);
 
@@ -56,7 +76,6 @@ const OfertasTrabajoProvider: React.FC = () => {
   const [ofertaSeleccionada, setOfertaSeleccionada] = useState<Oferta | null>(null);
   const [cambiosPendientes, setCambiosPendientes] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [imageErrors, setImageErrors] = useState<Set<number>>(new Set());
   
   // Datos para promoción
   const [nuevaPromocion, setNuevaPromocion] = useState<Promocion>({
@@ -69,7 +88,7 @@ const OfertasTrabajoProvider: React.FC = () => {
   const ofertasPorPagina = 3;
   const totalPaginas = Math.ceil(ofertas.length / ofertasPorPagina);
 
-  // Simular carga inicial
+  // Simular carga inicial (< 2 segundos como requiere el criterio 11)
   useEffect(() => {
     setTimeout(() => setIsLoading(false), 500);
   }, []);
@@ -78,10 +97,6 @@ const OfertasTrabajoProvider: React.FC = () => {
   const indiceInicio = (paginaActual - 1) * ofertasPorPagina;
   const indiceFin = indiceInicio + ofertasPorPagina;
   const ofertasActuales = ofertas.slice(indiceInicio, indiceFin);
-
-  const handleImageError = (id: number) => {
-    setImageErrors(prev => new Set(prev).add(id));
-  };
 
   const handleEditar = (oferta: Oferta) => {
     console.log('Editando oferta:', oferta.id);
@@ -106,7 +121,7 @@ const OfertasTrabajoProvider: React.FC = () => {
     setOfertaSeleccionada(null);
     setCambiosPendientes(true);
     
-    // Ajustar página si es necesario
+    // Ajustar página si es necesario (criterio 8)
     if (ofertasActuales.length === 1 && paginaActual > 1) {
       setPaginaActual(paginaActual - 1);
     }
@@ -177,16 +192,15 @@ const OfertasTrabajoProvider: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-white p-4 sm:p-6 lg:p-8">
+      <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-blue-600">Ofertas de Trabajo</h1>
           <button
             onClick={handleNuevaOferta}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-semibold flex items-center gap-2 transition-colors"
           >
-            <Plus size={20} />
             Nueva Oferta
           </button>
         </div>
@@ -196,71 +210,62 @@ const OfertasTrabajoProvider: React.FC = () => {
           {ofertasActuales.map((oferta: Oferta) => (
             <div
               key={oferta.id}
-              className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow"
+              className="border-4 border-blue-600 rounded-lg p-4 bg-white"
             >
-              <div className="flex flex-col sm:flex-row">
-                {/* Imagen */}
-                <div className="w-full sm:w-48 h-48 sm:h-auto shrink-0 relative bg-gray-200">
-                  {imageErrors.has(oferta.id) ? (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400">
-                      <span className="text-sm">Imagen no disponible</span>
-                    </div>
-                  ) : (
-                    // eslint-disable-next-line @next/next/no-img-element
+              <div className="flex gap-4">
+                {/* Imagen con borde */}
+                <div className="shrink-0">
+                  <div className="w-24 h-24 border-2 border-blue-600 rounded overflow-hidden bg-gray-100">
                     <img
                       src={oferta.imagen}
                       alt={oferta.titulo}
                       className="w-full h-full object-cover"
-                      onError={() => handleImageError(oferta.id)}
+                      loading="eager"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = `https://via.placeholder.com/200x200/3b82f6/ffffff?text=${encodeURIComponent(oferta.titulo.substring(0, 15))}`;
+                      }}
                     />
-                  )}
+                  </div>
                 </div>
 
                 {/* Contenido */}
-                <div className="flex-1 p-6">
-                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <h2 className="text-xl font-bold text-gray-800 mb-2">
-                        Título: <span className="font-semibold">{oferta.titulo}</span>
-                      </h2>
-                      <p className="text-gray-700 mb-3">
-                        <span className="font-bold">Descripción:</span> {oferta.descripcion}
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-gray-800">Estado:</span>
-                        <span
-                          className={`px-3 py-1 rounded-full text-sm font-medium ${
-                            oferta.estado === 'Activo'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-gray-100 text-gray-800'
-                          }`}
-                        >
-                          {oferta.estado}
-                        </span>
-                      </div>
+                <div className="flex-1 flex justify-between items-center">
+                  <div>
+                    <div className="mb-1">
+                      <span className="font-bold text-black">Título: </span>
+                      <span className="text-black">{oferta.titulo}</span>
                     </div>
+                    <div className="mb-1">
+                      <span className="font-bold text-black">Descripción: </span>
+                      <span className="text-black">{oferta.descripcion}</span>
+                    </div>
+                    <div>
+                      <span className="font-bold text-black">Estado: </span>
+                      <span className="text-black">{oferta.estado}</span>
+                    </div>
+                  </div>
 
-                    {/* Botones de acción */}
-                    <div className="flex sm:flex-col gap-2">
-                      <button
-                        onClick={() => handleEditar(oferta)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors flex-1 sm:flex-none"
-                      >
-                        Editar
-                      </button>
-                      <button
-                        onClick={() => handlePromociones(oferta)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors flex-1 sm:flex-none"
-                      >
-                        Promociones
-                      </button>
-                      <button
-                        onClick={() => handleEliminarClick(oferta)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors flex-1 sm:flex-none"
-                      >
-                        Eliminar
-                      </button>
-                    </div>
+                  {/* Botones */}
+                  <div className="flex flex-col gap-2">
+                    <button
+                      onClick={() => handleEditar(oferta)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-1.5 rounded-md font-semibold text-sm transition-colors"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      onClick={() => handlePromociones(oferta)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-1.5 rounded-md font-semibold text-sm transition-colors"
+                    >
+                      Promociones
+                    </button>
+                    <button
+                      onClick={() => handleEliminarClick(oferta)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-1.5 rounded-md font-semibold text-sm transition-colors"
+                    >
+                      Eliminar
+                    </button>
                   </div>
                 </div>
               </div>
@@ -270,56 +275,49 @@ const OfertasTrabajoProvider: React.FC = () => {
 
         {/* Paginación */}
         {totalPaginas > 1 && (
-          <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="mt-6 flex items-center justify-end gap-4">
             <button
               onClick={handleAnterior}
               disabled={paginaActual === 1}
-              className={`px-6 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors ${
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 paginaActual === 1
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  : 'text-blue-600 hover:bg-blue-50'
               }`}
             >
-              <ChevronLeft size={20} />
               Anterior
             </button>
 
-            <span className="text-gray-700 font-medium">
+            <span className="text-blue-600 font-medium">
               Página {paginaActual} de {totalPaginas}
             </span>
 
             <button
               onClick={handleSiguiente}
               disabled={paginaActual === totalPaginas}
-              className={`px-6 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors ${
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 paginaActual === totalPaginas
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  : 'text-blue-600 hover:bg-blue-50'
               }`}
             >
               Siguiente
-              <ChevronRight size={20} />
             </button>
           </div>
         )}
 
-        {/* Botones de navegación inferior */}
-        <div className="mt-8 flex flex-col sm:flex-row justify-between gap-4">
+        {/* Botones de navegación inferior - GUARDAR SIEMPRE EN AZUL */}
+        <div className="mt-6 flex justify-between gap-4">
           <button
             onClick={handleAtras}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-12 py-3 rounded-lg font-semibold transition-colors"
           >
             Atrás
           </button>
 
           <button
             onClick={handleGuardar}
-            disabled={!cambiosPendientes}
-            className={`px-8 py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors ${
-              cambiosPendientes
-                ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-            }`}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-12 py-3 rounded-lg font-semibold transition-colors"
           >
             Guardar
           </button>
@@ -330,14 +328,9 @@ const OfertasTrabajoProvider: React.FC = () => {
       {mostrarEliminar && ofertaSeleccionada && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="bg-red-100 p-3 rounded-full">
-                <Trash2 className="text-red-600" size={24} />
-              </div>
-              <h3 className="text-xl font-bold text-gray-800">Confirmar Eliminación</h3>
-            </div>
+            <h3 className="text-xl font-bold text-gray-800 mb-4">Confirmar Eliminación</h3>
             
-            <p className="text-gray-700 mb-6">
+            <p className="text-gray-700 mb-2">
               ¿Deseas eliminar esta oferta permanentemente?
             </p>
             <p className="text-gray-900 font-semibold mb-6">
@@ -347,13 +340,13 @@ const OfertasTrabajoProvider: React.FC = () => {
             <div className="flex gap-3">
               <button
                 onClick={() => setMostrarEliminar(false)}
-                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-medium transition-colors"
+                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold transition-colors"
               >
                 Cancelar
               </button>
               <button
                 onClick={confirmarEliminacion}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
               >
                 Eliminar
               </button>
@@ -367,18 +360,7 @@ const OfertasTrabajoProvider: React.FC = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
           <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-6 my-8">
             <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="bg-purple-100 p-3 rounded-full">
-                  <Tag className="text-purple-600" size={24} />
-                </div>
-                <h3 className="text-xl font-bold text-gray-800">Nueva Promoción</h3>
-              </div>
-              <button
-                onClick={() => setMostrarPromociones(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <X size={24} />
-              </button>
+              <h3 className="text-xl font-bold text-gray-800">Nueva Promoción</h3>
             </div>
 
             <p className="text-gray-700 mb-4">
@@ -396,7 +378,7 @@ const OfertasTrabajoProvider: React.FC = () => {
                   max="100"
                   value={nuevaPromocion.descuento}
                   onChange={(e) => setNuevaPromocion({...nuevaPromocion, descuento: e.target.value})}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Ej: 20"
                 />
               </div>
@@ -409,7 +391,7 @@ const OfertasTrabajoProvider: React.FC = () => {
                   type="date"
                   value={nuevaPromocion.fechaInicio}
                   onChange={(e) => setNuevaPromocion({...nuevaPromocion, fechaInicio: e.target.value})}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
 
@@ -421,7 +403,7 @@ const OfertasTrabajoProvider: React.FC = () => {
                   type="date"
                   value={nuevaPromocion.fechaFin}
                   onChange={(e) => setNuevaPromocion({...nuevaPromocion, fechaFin: e.target.value})}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
 
@@ -432,7 +414,7 @@ const OfertasTrabajoProvider: React.FC = () => {
                 <textarea
                   value={nuevaPromocion.descripcion}
                   onChange={(e) => setNuevaPromocion({...nuevaPromocion, descripcion: e.target.value})}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                   rows={3}
                   placeholder="Describe los términos de la promoción..."
                 />
@@ -442,13 +424,13 @@ const OfertasTrabajoProvider: React.FC = () => {
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => setMostrarPromociones(false)}
-                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-medium transition-colors"
+                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold transition-colors"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleCrearPromocion}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
               >
                 Crear Promoción
               </button>
