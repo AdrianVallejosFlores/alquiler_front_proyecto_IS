@@ -204,3 +204,14 @@ const handleAjustes = () => {
   // Al hacer clic en ajustes, mostramos el modal de restricción (simulación)
   setShowRestriction(true);
 };
+return (
+  <div className="bg-gray-50 w-full min-h-[calc(100vh-64px)] overflow-hidden relative">
+
+    {/* Modal de Restricción Condicional */}
+    <WalletRestrictionModal
+      isOpen={showRestriction}
+      onClose={() => setShowRestriction(false)}
+    />
+
+    <div className="max-w-4xl mx-auto px-4 md:px-8 pt-4 md:pt-6 pb-4 md:pb-8 h-full">
+      {/* ... resto del contenido ... */}
