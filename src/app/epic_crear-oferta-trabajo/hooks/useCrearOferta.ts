@@ -21,9 +21,9 @@ export function useCrearOferta() {
     await new Promise((res) => setTimeout(res, 1200)); // ⏳ Simulación API
 
     setLoading(false);
-    setMensaje("✅ Oferta creada correctamente (mock).");
+    setMensaje("Oferta creada correctamente");
 
-    return { success: true, message: "OK (mock)" };
+    return { success: true, message: "OK" };
   }
 
   return { loading, mensaje, setMensaje, enviarOferta };

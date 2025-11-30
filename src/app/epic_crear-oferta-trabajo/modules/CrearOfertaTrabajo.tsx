@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState } from "react";
 import InputFile from "../components/InputFile";
 import { useCrearOferta } from "../hooks/useCrearOferta";
@@ -16,7 +15,7 @@ export default function CrearOfertaTrabajo() {
     activa: true,
   });
 
-  const cambiar = (campo: keyof OfertaTrabajo, valor: any) =>
+  const cambiar = (campo: keyof OfertaTrabajo, valor: string | boolean | File | File[]) =>
     setData((prev) => ({ ...prev, [campo]: valor }));
 
   const enviar = async () => {
@@ -26,7 +25,6 @@ export default function CrearOfertaTrabajo() {
 
   return (
     <div className="w-full max-w-3xl mx-auto bg-white p-6 sm:p-8 md:p-10">
-
       {/* TÍTULO */}
       <h1 className="text-[#0C4FE9] Poppins text-3xl sm:text-4xl font-bold text-center mb-8">
         Crear nueva oferta de trabajo
@@ -56,6 +54,7 @@ export default function CrearOfertaTrabajo() {
         <InputFile
           id="portada"
           label="Foto portada"
+          maxFiles={1} // Limita a una sola imagen
           onSelect={(files) => cambiar("fotoPortada", files[0])}
         />
 
@@ -64,35 +63,44 @@ export default function CrearOfertaTrabajo() {
           id="fotosExtra"
           label="Más fotos"
           multiple
+          maxFiles={5} // Limita a 5 imágenes
           onSelect={(files) => cambiar("fotosExtra", Array.from(files))}
         />
 
         {/* Activa */}
-        <label className="font-bold mt-6 block">¿Activa?</label>
+        <div className="flex items-center justify-between mt-6">
+          <label className="font-bold text-[17px]">¿Activa?</label>
 
-        <div className="flex gap-6 mt-2 text-[17px]">
-          <label className="flex items-center gap-2">
-            <input
-              type="radio"
-              checked={data.activa === true}
-              onChange={() => cambiar("activa", true)}
-            />
-            Si
-          </label>
+          <div className="flex gap-6">
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                checked={data.activa === true}
+                onChange={() => cambiar("activa", true)}
+              />
+              Si
+            </label>
 
-          <label className="flex items-center gap-2">
-            <input
-              type="radio"
-              checked={data.activa === false}
-              onChange={() => cambiar("activa", false)}
-            />
-            No
-          </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                checked={data.activa === false}
+                onChange={() => cambiar("activa", false)}
+              />
+              No
+            </label>
+          </div>
         </div>
 
         {/* Mensaje */}
         {mensaje && (
-          <div className="mt-6 border px-4 py-3 rounded-md text-center text-[16px] bg-blue-50 text-blue-700">
+          <div
+            className={`mt-6 border px-4 py-3 rounded-md text-center text-[16px] ${
+              mensaje.includes("Oferta creada correctamente") 
+                ? "bg-[#DFFFE3] text-[#3DD45E]"  // Mensaje de éxito en verde
+                : "bg-[#FFE3E3] text-[#FF4D4D]"  // Mensaje de error en rojo
+            }`}
+          >
             {mensaje}
           </div>
         )}
