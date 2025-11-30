@@ -8,7 +8,30 @@ import BalanceCard from "./components/BalanceCard";
 import TransactionList from "./components/TransactionList";
 import { ChevronLeft, BarChart3, Wallet, Settings } from "lucide-react"; // Usamos lucide-react para limpieza
 
+import Recaptcha from "../captcha/components/Recaptcha";
+import { validarCaptcha } from "../captcha/service/captcha.service";
+
+
+
 function WalletLogic() {
+
+ const [captchaValido, setCaptchaValido] = useState(false);
+ const [captchaCargando, setCaptchaCargando] = useState(false);
+
+const onCaptchaVerify = async (token: string | null) => {
+  if (!token) {
+    setCaptchaValido(false);
+    return;
+  }
+
+  setCaptchaCargando(true);
+  const result = await validarCaptcha(token);
+  setCaptchaCargando(false);
+
+  setCaptchaValido(result.success);
+};
+
+
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -48,6 +71,9 @@ function WalletLogic() {
             </div>
           </div>
 
+         
+
+
           {/* --- BOTONES DESKTOP (Alineados a la derecha) --- */}
           <div className="hidden md:flex items-center space-x-3">
             <button
@@ -60,7 +86,7 @@ function WalletLogic() {
 
             <button
               onClick={handleRecargar}
-              disabled={loading || !fixerId}
+              disabled={loading || !fixerId || !captchaValido}
               className="flex items-center space-x-2 bg-[#11255A] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-md hover:bg-[#0B1A40] transition-colors disabled:opacity-50"
             >
               <Wallet className="w-5 h-5" />
@@ -80,6 +106,13 @@ function WalletLogic() {
             </button>
           </div>
         </header>
+
+        {/* CAPTCHA para validar recarga (Desktop y Mobile) */}
+        <div className="mt-4 mb-6">
+          <Recaptcha onVerify={onCaptchaVerify} />
+          {captchaCargando && <p className="text-sm text-gray-500">Validando...</p>}
+        </div>
+
 
         <main>
           {error && <div className="text-red-500 bg-red-50 p-3 rounded mb-4">{error}</div>}
@@ -105,7 +138,7 @@ function WalletLogic() {
               <div className="flex flex-col gap-3 mt-4 mb-6 md:hidden">
                 <button
                   onClick={handleRecargar}
-                  disabled={loading || !fixerId}
+                  disabled={loading || !fixerId || !captchaValido}
                   className="w-full flex items-center justify-center space-x-2 bg-[#11255A] text-white px-4 py-3 rounded-xl text-sm font-medium shadow-sm hover:bg-[#0B1A40] transition-colors disabled:opacity-50"
                 >
                   <Wallet className="w-5 h-5" />
