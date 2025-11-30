@@ -2,13 +2,15 @@
 
 import React from 'react';
 import type { Offer } from '../services/offersService';
+import { useBalance } from '../context/BalanceContext'; // Importamos el hook
+import { useRouter } from 'next/navigation';
+import { getStoredUser } from '@/lib/auth/session';
 
 type Props = {
   offer: Offer;
   onOpen: (offer: Offer) => void;
 };
 
-// Utilidad segura: maneja null/undefined y corta a 100 chars
 const clamp = (text: string | undefined | null, max = 100) => {
   const t = (text ?? '').trim();
   return t.length > max ? t.slice(0, max - 1) + '…' : t;
@@ -16,6 +18,32 @@ const clamp = (text: string | undefined | null, max = 100) => {
 
 export default function OfferCard({ offer, onOpen }: Props) {
   const isInactive = offer.status === 'inactive';
+  
+  // 1. Usamos el contexto para saber si tiene saldo
+  const { hasBalance, isLoading } = useBalance();
+  const router = useRouter();
+
+  // Función para redirigir a recargar si no hay saldo
+  const handleNoBalanceClick = () => {
+    const user = getStoredUser();
+    if (user?.fixerId) {
+       // Redirige a tu vista de billetera/recarga
+       router.push(`/bitcrew/wallet?fixer_id=${user.fixerId}`);
+    } else {
+       console.error("No fixer ID found");
+    }
+  };
+
+  // Helper para ocultar datos sensibles
+  const renderSensitiveInfo = (label: string, value: string | undefined) => {
+    if (!value) return null;
+    return (
+      <span>
+        <strong style={{ color: '#1366fd' }}>{label}: </strong>
+        {isLoading ? '...' : hasBalance ? value : '🔒 Recarga para ver'}
+      </span>
+    );
+  };
 
   return (
     <div
@@ -32,6 +60,7 @@ export default function OfferCard({ offer, onOpen }: Props) {
         background: '#fff',
         boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
         opacity: isInactive ? 0.7 : 1,
+        position: 'relative'
       }}
     >
       <div style={{ display: 'grid', gap: 4 }}>
@@ -50,30 +79,13 @@ export default function OfferCard({ offer, onOpen }: Props) {
             {offer.title}
           </h3>
           {isInactive && (
-            <span
-              style={{
-                marginLeft: 8,
-                fontSize: 12,
-                padding: '2px 8px',
-                borderRadius: 999,
-                background: '#DBDEE5',
-                color: '#616E8A',
-              }}
-            >
+            <span style={{ marginLeft: 8, fontSize: 12, padding: '2px 8px', borderRadius: 999, background: '#DBDEE5', color: '#616E8A' }}>
               Inactiva
             </span>
           )}
         </div>
 
-        <p
-          style={{
-            margin: 0,
-            color: '#2a87ff',
-            fontSize: 14,
-            lineHeight: 1.35,
-            fontFamily: 'Inter, system-ui, sans-serif',
-          }}
-        >
+        <p style={{ margin: 0, color: '#2a87ff', fontSize: 14, lineHeight: 1.35, fontFamily: 'Inter, system-ui, sans-serif' }}>
           {clamp(offer.description, 100)}
         </p>
 
@@ -82,45 +94,53 @@ export default function OfferCard({ offer, onOpen }: Props) {
             <strong style={{ color: '#1366fd' }}>Categoría: </strong>
             {offer.category}
           </span>
-          {offer.contact?.whatsapp && (
-            <span>
-              <strong style={{ color: '#1366fd' }}>WhatsApp: </strong>
-              {offer.contact.whatsapp}
-            </span>
-          )}
-          {offer.contact?.phone && (
-            <span>
-              <strong style={{ color: '#1366fd' }}>Teléfono: </strong>
-              {offer.contact.phone}
-            </span>
-          )}
-          {offer.contact?.email && (
-            <span>
-              <strong style={{ color: '#1366fd' }}>Email: </strong>
-              {offer.contact.email}
-            </span>
-          )}
+          
+          {/* INFORMACIÓN PROTEGIDA POR SALDO */}
+          {renderSensitiveInfo('WhatsApp', offer.contact?.whatsapp)}
+          {renderSensitiveInfo('Teléfono', offer.contact?.phone)}
+          {renderSensitiveInfo('Email', offer.contact?.email)}
         </div>
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center' }}>
-        <button
-          type="button"
-          onClick={() => onOpen(offer)}
-          className="btn-outline"
-          style={{
-            cursor: 'pointer',
-            padding: '8px 12px',
-            borderRadius: 8,
-            border: '1px solid #DBDEE5',
-            background: '#F0F2F5',
-            color: '#0c4fe9',
-            fontWeight: 600,
-          }}
-          aria-label={`Ver oferta ${offer.title}`}
-        >
-          Ver oferta
-        </button>
+        {hasBalance ? (
+          // CASO 1: TIENE SALDO -> Botón Normal
+          <button
+            type="button"
+            onClick={() => onOpen(offer)}
+            className="btn-outline"
+            style={{
+              cursor: 'pointer',
+              padding: '8px 12px',
+              borderRadius: 8,
+              border: '1px solid #DBDEE5',
+              background: '#F0F2F5',
+              color: '#0c4fe9',
+              fontWeight: 600,
+            }}
+          >
+            Ver oferta
+          </button>
+        ) : (
+          // CASO 2: NO TIENE SALDO -> Botón de Recarga
+          <button
+            type="button"
+            onClick={handleNoBalanceClick}
+            style={{
+              cursor: 'pointer',
+              padding: '8px 12px',
+              borderRadius: 8,
+              border: '1px solid #fee2e2',
+              background: '#fef2f2',
+              color: '#dc2626',
+              fontWeight: 600,
+              fontSize: '13px'
+            }}
+            title="Necesitas saldo positivo para ver los detalles"
+          >
+            {isLoading ? 'Verificando...' : 'Saldo Insuficiente'}
+          </button>
+        )}
       </div>
     </div>
   );
