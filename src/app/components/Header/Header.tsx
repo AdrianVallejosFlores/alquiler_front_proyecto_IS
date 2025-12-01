@@ -18,10 +18,16 @@ export default function Header() {
   const [areButtonsVisible, setAreButtonsVisible] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<StoredUser | null>(null);
+  
+  // --- NUEVO ESTADO PARA CARGA ---
+  const [loadingWallet, setLoadingWallet] = useState(false);
 
   const lastScrollY = useRef(0);
   const router = useRouter();
   const pathname = usePathname();
+
+  // URL del Backend (Asegúrate de que coincida con tu .env o puerto local)
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 
   const syncSession = useCallback(() => {
     setIsLoggedIn(Boolean(getToken()));
@@ -88,10 +94,50 @@ export default function Header() {
       ? rawName.split(/\s+/)[0]
       : currentUser?.correo ?? 'Usuario';
 
-  // --- NUEVA LÓGICA: URL basada en fixer_id ---
-  const walletHref = fixerId 
-    ? `/bitcrew/wallet?fixer_id=${fixerId}` 
-    : '#';
+  // --- NUEVA FUNCIÓN: VALIDAR/CREAR BILLETERA ---
+  const handleWalletAccess = async () => {
+    if (loadingWallet) return;
+
+    // 1. Validar que sea Fixer
+    if (!fixerId) {
+      router.push('/convertirse-fixer');
+      return;
+    }
+
+    setLoadingWallet(true);
+
+    try {
+      const token = getToken();
+      if (!token) {
+        router.push('/login');
+        return;
+      }
+
+      // 2. Llamar al Backend para buscar o crear la billetera
+      // Ruta: /api/wallet/fixer/:id
+      const response = await fetch(`${API_URL}/api/bitcrew/wallet/fixer/${fixerId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Éxito: Redirigir a la vista de billetera
+        // Cambia '/billetera' si tu ruta frontend es diferente (ej: '/bitcrew/wallet')
+        router.push(`/bitcrew/wallet?fixer_id=${fixerId}`);
+      } else {
+        console.error("Error al obtener billetera:", data.message);
+      }
+    } catch (error) {
+      console.error("Error de conexión:", error);
+    } finally {
+      setLoadingWallet(false);
+    }
+  };
 
   if (!isClient) return null;
 
@@ -163,12 +209,14 @@ export default function Header() {
                     {/* DROPDOWN DESKTOP */}
                     <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
                       
-                      {/* BOTÓN MI BILLETERA */}
-                      <Link href={walletHref} className="block w-full">
-                        <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 font-medium">
-                          Mi Billetera
-                        </button>
-                      </Link>
+                      {/* BOTÓN MI BILLETERA (Modificado) */}
+                      <button 
+                        onClick={handleWalletAccess}
+                        disabled={loadingWallet}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 font-medium disabled:opacity-50"
+                      >
+                        {loadingWallet ? 'Cargando...' : 'Mi Billetera'}
+                      </button>
 
                       <button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                         Cerrar Sesion
@@ -222,12 +270,14 @@ export default function Header() {
                     {/* DROPDOWN MÓVIL */}
                     <div className="absolute right-0 top-full mt-2 w-32 bg-white rounded-md shadow-lg py-1 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
                       
-                      {/* BOTÓN MI BILLETERA */}
-                      <Link href={walletHref} className="block w-full">
-                         <button className="block w-full text-left px-3 py-1 text-xs text-gray-700 hover:bg-gray-100 font-medium">
-                           Mi Billetera
-                         </button>
-                      </Link>
+                      {/* BOTÓN MI BILLETERA (Móvil Modificado) */}
+                      <button 
+                        onClick={handleWalletAccess}
+                        disabled={loadingWallet}
+                        className="block w-full text-left px-3 py-1 text-xs text-gray-700 hover:bg-gray-100 font-medium disabled:opacity-50"
+                      >
+                        {loadingWallet ? 'Cargando...' : 'Mi Billetera'}
+                      </button>
 
                       <button onClick={handleLogout} className="block w-full text-left px-3 py-1 text-xs text-gray-700 hover:bg-gray-100">Cerrar Sesion</button>
                     </div>
