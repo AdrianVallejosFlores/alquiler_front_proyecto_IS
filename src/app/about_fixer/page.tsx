@@ -19,6 +19,7 @@ function AboutFixerPageContent() {
   const [fixer, setFixer] = useState<FixerDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [editMode, setEditMode] = useState(false);
 
   const fixerId = useMemo(() => queryFixerId || user?.fixerId || null, [queryFixerId, user?.fixerId]);
   const isOwner = fixerId && user?.fixerId === fixerId;
@@ -36,7 +37,6 @@ function AboutFixerPageContent() {
         const response = await getFixer(fixerId);
         setFixer(response.data);
       } catch (err: any) {
-        // Intentar por userId si falla el fixerId directo
         try {
           if (user?.id) {
             const byUser = await getFixerByUser(user.id);
@@ -56,6 +56,17 @@ function AboutFixerPageContent() {
 
     if (ready) fetchData();
   }, [fixerId, ready, user?.id]);
+
+  useEffect(() => {
+    const handler = (event: Event) => {
+      const detail = (event as CustomEvent<{ open?: boolean }>).detail;
+      if (typeof detail?.open === "boolean") {
+        setEditMode(detail.open);
+      }
+    };
+    window.addEventListener("fixer-edit-mode", handler as EventListener);
+    return () => window.removeEventListener("fixer-edit-mode", handler as EventListener);
+  }, []);
 
   const renderAvatar = () => {
     const url = fixer?.photoUrl;
@@ -156,9 +167,8 @@ function AboutFixerPageContent() {
               </div>
             </section>
 
-            {/* Portafolio visual + Work Experience */}
-            {fixerId && <VisualPortfolioSection fixerId={fixerId} isOwner={Boolean(isOwner)} />}
-            {fixerId && <WorkExperienceSection fixerId={fixerId} isOwner={Boolean(isOwner)} />}
+            <VisualPortfolioSection fixerId={fixerId!} isOwner={Boolean(isOwner)} showForms={Boolean(isOwner && editMode)} />
+            <WorkExperienceSection fixerId={fixerId!} isOwner={Boolean(isOwner)} showForms={Boolean(isOwner && editMode)} />
           </>
         )}
       </main>
