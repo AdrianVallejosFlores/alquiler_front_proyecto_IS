@@ -458,39 +458,40 @@ export default function VisualPortfolioSection({ fixerId, isOwner, showForms = t
   };
 
   return (
-    <section className="mt-10 space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-base font-semibold text-slate-900">Portafolio visual</p>
-          <p className="text-xs text-slate-500">
-            Comparte imagenes y videos de tus trabajos. Los cambios se guardan al instante.
-          </p>
-        </div>
-        {isOwner && (
-          <div className="flex items-center gap-2">
-            {editable && (
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-                Edicion habilitada
-              </span>
-            )}
-            <button
-              type="button"
-              onClick={() => setFormsOpen((prev) => !prev)}
-              className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:border-blue-400 hover:text-blue-600"
-            >
-              {formsOpen ? "Ocultar formularios" : "+ Añadir"}
-            </button>
+    <section className="mt-10">
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-base font-semibold text-slate-900">Portafolio visual</p>
+            <p className="text-xs text-slate-500">
+              Comparte imagenes y videos de tus trabajos. Los cambios se guardan al instante.
+            </p>
           </div>
-        )}
-      </div>
-
-      {editable && (
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-5">
-          <div className="flex items-center justify-between gap-3">
-            <h3 className="text-sm font-semibold text-slate-900">Agregar imagen</h3>
-            {imageForm.editingId && (
+          {isOwner && (
+            <div className="flex items-center gap-2">
+              {editable && (
+                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+                  Edicion habilitada
+                </span>
+              )}
               <button
                 type="button"
+                onClick={() => setFormsOpen((prev) => !prev)}
+                className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:border-blue-400 hover:text-blue-600"
+              >
+                {formsOpen ? "Ocultar formularios" : "+ Añadir"}
+              </button>
+            </div>
+          )}
+        </div>
+
+        {editable && (
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 shadow-sm space-y-5">
+            <div className="flex items-center justify-between gap-3">
+              <h3 className="text-sm font-semibold text-slate-900">Agregar imagen</h3>
+              {imageForm.editingId && (
+                <button
+                  type="button"
                 onClick={resetImageForm}
                 className="text-xs font-semibold text-blue-600 hover:underline"
               >
@@ -544,17 +545,17 @@ export default function VisualPortfolioSection({ fixerId, isOwner, showForms = t
             >
               {savingImage ? "Guardando..." : imageForm.editingId ? "Actualizar imagen" : "Guardar imagen"}
             </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {editable && (
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-5">
-          <div className="flex items-center justify-between gap-3">
-            <h3 className="text-sm font-semibold text-slate-900">Agregar video de YouTube</h3>
-            {videoForm.editingId && (
-              <button
-                type="button"
+        {editable && (
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 shadow-sm space-y-5">
+            <div className="flex items-center justify-between gap-3">
+              <h3 className="text-sm font-semibold text-slate-900">Agregar video de YouTube</h3>
+              {videoForm.editingId && (
+                <button
+                  type="button"
                 onClick={resetVideoForm}
                 className="text-xs font-semibold text-blue-600 hover:underline"
               >
@@ -616,23 +617,24 @@ export default function VisualPortfolioSection({ fixerId, isOwner, showForms = t
             >
               {savingVideo ? "Guardando..." : videoForm.editingId ? "Actualizar video" : "Guardar video"}
             </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {error && (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error}
-        </div>
-      )}
+        {error && (
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
 
-      {loading ? (
-        skeletonCards
-      ) : mediaList.length ? (
-        <div className="grid gap-4 md:grid-cols-3">{mediaList.map(renderMediaCard)}</div>
-      ) : (
-        emptyState
-      )}
+        {loading ? (
+          skeletonCards
+        ) : mediaList.length ? (
+          <div className="grid gap-4 md:grid-cols-3">{mediaList.map(renderMediaCard)}</div>
+        ) : (
+          emptyState
+        )}
+      </div>
     </section>
   );
 }
