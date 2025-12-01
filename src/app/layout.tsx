@@ -29,6 +29,25 @@ export default function RootLayout({
   const [isOnline, setIsOnline] = useState(true);
 
   useEffect(() => {
+    // Si ya se ejecutó antes en esta pestaña, no volver a correr
+    if (sessionStorage.getItem("appLoadedOnce")) return;
+
+    const now = new Date().toISOString();
+    localStorage.setItem("appLoadedAt", now);
+
+    // 🔹 Reiniciar la condición de días cada vez que se carga desde cero
+    localStorage.setItem("condicion_envio", "1");
+    localStorage.setItem("lista_nuevos_servicios", "0");
+
+    
+    const now_hour = new Date().toISOString();
+    localStorage.setItem("hora_local_actual", now_hour);
+
+    // Marcar que ya se ejecutó
+    sessionStorage.setItem("appLoadedOnce", "1");
+  }, []);
+
+  useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
 

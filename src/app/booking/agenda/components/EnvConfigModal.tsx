@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "./ui/input";
 import { rechargeWalletSimple } from "@/lib/updateWalletSaldo";
 import { useCrearServicio } from "@/lib/useCrearServicio";
+import { verificarCondicionDias } from "@/lib/checkNewServices";
 
 interface UserData {
   request: {
@@ -34,30 +35,25 @@ export default function VentanaPrueba() {
 
   const [montoRecarga, setMontoRecarga] = useState("");
   const [nombreServicio, setNombreServicio] = useState("");
+  const [days, setDays] = useState("");
 
   const { crearServicio, loading: loadingServicio, error: errorServicio } =
     useCrearServicio();
 
+  // Load localStorage data only in client
   useEffect(() => {
-    const stored = localStorage.getItem("env_prueba");
-    if (stored) {
-      try {
-        setData(JSON.parse(stored));
-      } catch (err) {
-        console.error("Error al leer env_prueba:", err);
-      }
-    }
+    if (typeof window === "undefined") return;
 
-    const storedMonto = localStorage.getItem("wallet_saldo_prueba");
-    if (storedMonto) {
-      setMontoRecarga("");
-    }
+    const stored = localStorage.getItem("env_prueba");
+    if (stored) setData(JSON.parse(stored));
+
+    const savedDays = localStorage.getItem("appLoadedAt");
+    if (savedDays) setDays(savedDays);
   }, []);
 
   const handleSave = () => {
     localStorage.setItem("env_prueba", JSON.stringify(data, null, 2));
-    alert("✅ Datos guardados en env_prueba");
-    setOpen(false);
+    alert("✅ Datos guardados correctamente");
   };
 
   const handleChange = (
@@ -67,39 +63,90 @@ export default function VentanaPrueba() {
   ) => {
     setData((prev) => ({
       ...prev,
-      [section]: {
-        ...prev[section],
-        [field]: value,
-      },
+      [section]: { ...prev[section], [field]: value },
     }));
+  };
+
+
+  const handleDaysSave = () => {
+    const base = localStorage.getItem("appLoadedAt");
+
+    if (!base) {
+      alert("⚠️ No existe appLoadedAt en localStorage. Recarga la app.");
+      return;
+    }
+
+    const fecha = new Date(base);
+    if (isNaN(fecha.getTime())) {
+      alert("❌ appLoadedAt no es una fecha válida.");
+      return;
+    }
+
+    const n = Number(days);
+    if (isNaN(n)) {
+      alert("❌ Ingresa un número válido.");
+      return;
+    }
+
+    // ➕ Sumamos días
+    fecha.setDate(fecha.getDate() + n);
+
+    // Guardamos en ISO
+    const nuevaFechaISO = fecha.toISOString();
+    localStorage.setItem("appLoadedAt", nuevaFechaISO);
+
+    // 🔄 LEER OTRA VEZ DEL LOCALSTORAGE
+    const verificadoISO = localStorage.getItem("appLoadedAt");
+    const fechaVerificada = verificadoISO ? new Date(verificadoISO) : null;
+
+    // 🟢 Formato bonito dd/mm/yyyy HH:MM
+    const formatDate = (d: Date) => {
+      const pad = (x: number) => String(x).padStart(2, "0");
+      return (
+        pad(d.getDate()) +
+        "/" +
+        pad(d.getMonth() + 1) +
+        "/" +
+        d.getFullYear() +
+        " " +
+        pad(d.getHours()) +
+        ":" +
+        pad(d.getMinutes())
+      );
+    };
+
+    const formateado = fechaVerificada ? formatDate(fechaVerificada) : verificadoISO;
+
+    alert("🔎 Inactividad actualizado:\n" + formateado);
+
+    verificarCondicionDias();
   };
 
   const handleRecharge = async () => {
     const monto = Number(montoRecarga);
     if (isNaN(monto)) {
-      alert("❌ El monto debe ser un número válido.");
+      alert("❌ Ingresa un número válido.");
       return;
     }
 
     const res = await rechargeWalletSimple(monto);
     if (res.ok) {
-      alert(`✅ Saldo establecido: Bs. ${res.saldo}`);
+      alert(`💰 Nuevo saldo: Bs. ${res.saldo}`);
       setMontoRecarga("");
     } else {
-      alert(`❌ Error: ${res.message}`);
+      alert("❌ Error al recargar");
     }
   };
 
   const handleCrearServicio = async () => {
     if (!nombreServicio.trim()) {
-      alert("❌ El nombre del servicio no puede estar vacío.");
+      alert("❌ Nombre vacío");
       return;
     }
 
     const servicio = await crearServicio(nombreServicio);
-
     if (servicio) {
-      alert("✅ Servicio creado correctamente");
+      alert("🆕 Servicio creado correctamente");
       setNombreServicio("");
     } else {
       alert("❌ Error al crear servicio");
@@ -108,7 +155,6 @@ export default function VentanaPrueba() {
 
   return (
     <>
-      {/* Botón flotante */}
       <Button
         id="btn-open-config"
         className="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-4 shadow-lg"
@@ -117,144 +163,143 @@ export default function VentanaPrueba() {
         ⚙️
       </Button>
 
-      {/* Ventana modal */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-lg rounded-xl">
+        {/* 🎯 Modal compacto */}
+        <DialogContent className="w-[650px] max-h-[85vh] overflow-y-auto rounded-xl p-6">
           <DialogHeader>
-            <DialogTitle>Configuración RECODE</DialogTitle>
+            <DialogTitle className="text-xl">Configuración RECODE</DialogTitle>
             <DialogDescription>
-              Datos del Requester, Fixer, Wallet y creación de servicios
-            </DialogDescription>
-            <DialogDescription>
-              (Debe poner los datos correctos, sino los envios podrian tener fallos, el numero de celular debe ser puesto asi 5917777777)
+              Ajustes rápidos de Requester, Fixer, Wallet y Servicios.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-6 mt-4">
-            {/* 🟣 Request */}
-            <div className="border rounded-lg p-4 bg-gray-50">
-              <h3 className="text-md font-semibold mb-2 text-blue-600">
-                Datos del Request
+          {/* 🎯 GRID de dos columnas */}
+          <div className="grid grid-cols-2 gap-4 mt-6">
+
+            {/* =============== DÍAS EXTRA =============== */}
+            <div className="p-4 rounded-xl border bg-gray-50">
+              <h3 className="font-semibold text-indigo-600">
+                Añadir dias Inactividad
               </h3>
 
+              <label className="text-sm text-gray-500 mt-2 block">
+                Cantidad de días:
+              </label>
               <Input
-                placeholder="Nombre"
-                value={data.request.nombre}
-                onChange={(e) =>
-                  handleChange("request", "nombre", e.target.value)
-                }
-                className="mb-2"
+                type="number"
+                value={days}
+                onChange={(e) => setDays(e.target.value)}
+                className="mb-3"
               />
 
-              <Input
-                placeholder="Correo"
-                value={data.request.correo}
-                onChange={(e) =>
-                  handleChange("request", "correo", e.target.value)
-                }
-                className="mb-2"
-              />
-
-              <Input
-                placeholder="Número (WhatsApp)"
-                value={data.request.numero}
-                onChange={(e) =>
-                  handleChange("request", "numero", e.target.value)
-                }
-              />
+              <Button
+                onClick={handleDaysSave}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white w-full"
+              >
+                Guardar días
+              </Button>
             </div>
 
-            {/* 🟡 Fixer */}
-            <div className="border rounded-lg p-4 bg-gray-50">
-              <h3 className="text-md font-semibold mb-2 text-green-600">
-                Datos del Fixer
+            {/* =============== WALLET =============== */}
+            <div className="p-4 rounded-xl border bg-gray-50">
+              <h3 className="font-semibold text-purple-600">
+                Recargar Wallet del Fixer
               </h3>
 
+              <label className="text-sm text-gray-500">Monto:</label>
               <Input
-                placeholder="Nombre"
-                value={data.fixer.nombre}
-                onChange={(e) => handleChange("fixer", "nombre", e.target.value)}
-                className="mb-2"
-              />
-
-              <Input
-                placeholder="Correo"
-                value={data.fixer.correo}
-                onChange={(e) => handleChange("fixer", "correo", e.target.value)}
-                className="mb-2"
-              />
-
-              <Input
-                placeholder="Número"
-                value={data.fixer.numero}
-                onChange={(e) => handleChange("fixer", "numero", e.target.value)}
-              />
-            </div>
-
-            {/* 💸 Recarga Wallet */}
-            <div className="border rounded-lg p-4 bg-white">
-              <h3 className="text-md font-semibold mb-2 text-purple-600">
-                Recargar o Actualizar Billetera (para fixer)
-              </h3>
-
-              <Input
-                placeholder="Monto de recarga"
                 type="number"
                 value={montoRecarga}
                 onChange={(e) => setMontoRecarga(e.target.value)}
-                className="mb-2"
+                className="mb-3"
               />
+
+              <Button
+                onClick={handleRecharge}
+                className="bg-purple-600 hover:bg-purple-700 text-white w-full"
+              >
+                Recargar
+              </Button>
             </div>
 
-            {/* 🆕 Crear Servicio */}
-            <div className="border rounded-lg p-4 bg-white">
-              <h3 className="text-md font-semibold mb-2 text-orange-600">
-                Crear Servicio de Prueba
+            {/* =============== REQUESTER =============== */}
+            <div className="p-4 rounded-xl border bg-white">
+              <h3 className="font-semibold text-blue-600">Datos del Requester</h3>
+
+              {["nombre", "correo", "numero"].map((field) => (
+                <div key={field} className="mb-3">
+                  <label className="text-sm text-gray-500 capitalize">
+                    {field}:
+                  </label>
+                  <Input
+                    value={data.request[field as keyof UserData["request"]]}
+                    onChange={(e) =>
+                      handleChange("request", field as any, e.target.value)
+                    }
+                  />
+                </div>
+              ))}
+
+              <Button
+                onClick={handleSave}
+                className="bg-blue-600 hover:bg-blue-700 text-white w-full"
+              >
+                Guardar Request
+              </Button>
+            </div>
+
+            {/* =============== FIXER =============== */}
+            <div className="p-4 rounded-xl border bg-white">
+              <h3 className="font-semibold text-green-600">Datos del Fixer</h3>
+
+              {["nombre", "correo", "numero"].map((field) => (
+                <div key={field} className="mb-3">
+                  <label className="text-sm text-gray-500 capitalize">
+                    {field}:
+                  </label>
+                  <Input
+                    value={data.fixer[field as keyof UserData["fixer"]]}
+                    onChange={(e) =>
+                      handleChange("fixer", field as any, e.target.value)
+                    }
+                  />
+                </div>
+              ))}
+
+              <Button
+                onClick={handleSave}
+                className="bg-green-600 hover:bg-green-700 text-white w-full"
+              >
+                Guardar Fixer
+              </Button>
+            </div>
+
+            {/* =============== SERVICIO (OCUPA LAS 2 COLUMNAS) =============== */}
+            <div className="p-4 rounded-xl border bg-white col-span-2">
+              <h3 className="font-semibold text-orange-600">
+                Crear Servicio
               </h3>
 
+              <label className="text-sm text-gray-500">Nombre:</label>
               <Input
-                placeholder="Nombre del servicio"
                 value={nombreServicio}
                 onChange={(e) => setNombreServicio(e.target.value)}
                 className="mb-3"
               />
 
               {errorServicio && (
-                <p className="text-red-500 text-sm mt-2">{errorServicio}</p>
+                <p className="text-red-500 text-sm mb-3">{errorServicio}</p>
               )}
-            </div>
-
-            {/* Botones */}
-            <div className="flex justify-end gap-3 mt-4">
 
               <Button
                 onClick={handleCrearServicio}
                 disabled={loadingServicio}
-                className="bg-orange-600 hover:bg-orange-700 text-white"
+                className="bg-orange-600 hover:bg-orange-700 text-white w-full"
               >
                 {loadingServicio ? "Creando..." : "Crear Servicio"}
               </Button>
-
-              <Button variant="ghost" onClick={() => setOpen(false)}>
-                Cancelar
-              </Button>
-
-              <Button
-                id="btn-guardar-config"
-                onClick={handleSave}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                Guardar
-              </Button>
-
-              <Button
-                id="btn-recharge"
-                onClick={handleRecharge}
-                className="bg-green-600 hover:bg-green-700 text-white"
-              >
-                Recargar Wallet
-              </Button>
             </div>
+
           </div>
         </DialogContent>
       </Dialog>
