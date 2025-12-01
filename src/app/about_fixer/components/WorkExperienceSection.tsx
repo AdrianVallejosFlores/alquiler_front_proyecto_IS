@@ -63,6 +63,53 @@ const emptyCert: CertFormState = {
   previewUrl: null,
 };
 
+const MIN_VALID_YEAR = 1900;
+const MAX_VALID_YEAR = 2100;
+const MIN_VALID_DATE = `${MIN_VALID_YEAR}-01-01`;
+const MAX_VALID_DATE = `${MAX_VALID_YEAR}-12-31`;
+
+const isDateWithinRange = (value: string) => {
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return false;
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  if (Number.isNaN(year) || Number.isNaN(month) || Number.isNaN(day)) return false;
+  if (year < MIN_VALID_YEAR || year > MAX_VALID_YEAR) return false;
+
+  const date = new Date(value);
+  return (
+    !Number.isNaN(date.getTime()) &&
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() + 1 === month &&
+    date.getUTCDate() === day
+  );
+};
+
+const validateDateRange = (value: string, label: string) => {
+  if (!isDateWithinRange(value)) {
+    return `${label} debe tener un año entre ${MIN_VALID_YEAR} y ${MAX_VALID_YEAR}.`;
+  }
+  return null;
+};
+
+const normalizeDateInput = (value: string) => {
+  if (!value) return { value: "", error: null };
+  // Permite escritura parcial o años fuera de rango mientras se tipea; validamos al hacer blur o guardar.
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return { value, error: null };
+  }
+  const year = Number(value.slice(0, 4));
+  if (year < MIN_VALID_YEAR || year > MAX_VALID_YEAR) {
+    return { value, error: null };
+  }
+  if (!isDateWithinRange(value)) {
+    return { value, error: null };
+  }
+  return { value, error: null };
+};
+
 const formatDate = (value?: string) => {
   if (!value) return "—";
   const date = new Date(value);
@@ -127,11 +174,43 @@ export default function WorkExperienceSection({ fixerId, isOwner, showForms = tr
     setCertError(null);
   };
 
+  const handleJobDateChange = (key: "startDate" | "endDate", value: string) => {
+    const { value: normalized } = normalizeDateInput(value);
+    setJobForm((prev) => ({ ...prev, [key]: normalized }));
+    if (jobError) setJobError(null);
+  };
+
+  const handleCertDateChange = (key: "issueDate" | "expirationDate", value: string) => {
+    const { value: normalized } = normalizeDateInput(value);
+    setCertForm((prev) => ({ ...prev, [key]: normalized }));
+    if (certError) setCertError(null);
+  };
+
+  const handleJobDateBlur = (key: "startDate" | "endDate") => {
+    const value = jobForm[key];
+    if (!value) return;
+    const label = key === "startDate" ? "La fecha de inicio" : "La fecha de fin";
+    const error = validateDateRange(value, label);
+    if (error) setJobError(error);
+  };
+
+  const handleCertDateBlur = (key: "issueDate" | "expirationDate") => {
+    const value = certForm[key];
+    if (!value) return;
+    const label = key === "issueDate" ? "La fecha de expedición" : "La fecha de expiración";
+    const error = validateDateRange(value, label);
+    if (error) setCertError(error);
+  };
+
   const validateJobForm = (form: JobFormState) => {
     if (!form.positionName.trim()) return "El nombre del puesto es obligatorio.";
     if (!form.journeyType.trim()) return "El tipo de jornada es obligatorio.";
     if (!form.startDate) return "La fecha de inicio es obligatoria.";
+    const startDateRangeError = validateDateRange(form.startDate, "La fecha de inicio");
+    if (startDateRangeError) return startDateRangeError;
     if (!form.isCurrent && !form.endDate) return "Indica la fecha de finalización o marca como trabajo actual.";
+    const endDateRangeError = !form.isCurrent && form.endDate ? validateDateRange(form.endDate, "La fecha de fin") : null;
+    if (endDateRangeError) return endDateRangeError;
     const start = new Date(form.startDate);
     const end = form.endDate ? new Date(form.endDate) : null;
     if (end && end.getTime() < start.getTime()) return "La fecha de fin no puede ser anterior a la fecha de inicio.";
@@ -142,6 +221,8 @@ export default function WorkExperienceSection({ fixerId, isOwner, showForms = tr
     if (!form.name.trim()) return "El nombre de la certificación es obligatorio.";
     if (!form.issuer.trim()) return "La institución emisora es obligatoria.";
     if (!form.issueDate) return "La fecha de expedición es obligatoria.";
+    const issueDateRangeError = validateDateRange(form.issueDate, "La fecha de expedición");
+    if (issueDateRangeError) return issueDateRangeError;
     if (!isEditing && !form.file) return "Debes adjuntar la imagen de la certificación.";
 
     if (form.file && !["image/jpeg", "image/png", "image/webp"].includes(form.file.type)) {
@@ -149,6 +230,8 @@ export default function WorkExperienceSection({ fixerId, isOwner, showForms = tr
     }
 
     if (form.expirationDate) {
+      const expirationDateRangeError = validateDateRange(form.expirationDate, "La fecha de expiración");
+      if (expirationDateRangeError) return expirationDateRangeError;
       const issue = new Date(form.issueDate);
       const expiration = new Date(form.expirationDate);
       if (expiration.getTime() < issue.getTime()) {
@@ -420,8 +503,11 @@ export default function WorkExperienceSection({ fixerId, isOwner, showForms = tr
                 <div className="grid gap-3 sm:grid-cols-2">
                   <input
                     type="date"
+                    min={MIN_VALID_DATE}
+                    max={MAX_VALID_DATE}
                     value={jobForm.startDate}
-                    onChange={(e) => setJobForm((prev) => ({ ...prev, startDate: e.target.value }))}
+                    onChange={(e) => handleJobDateChange("startDate", e.target.value)}
+                    onBlur={() => handleJobDateBlur("startDate")}
                     className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                   />
                   {jobForm.isCurrent ? (
@@ -431,8 +517,11 @@ export default function WorkExperienceSection({ fixerId, isOwner, showForms = tr
                   ) : (
                     <input
                       type="date"
+                      min={MIN_VALID_DATE}
+                      max={MAX_VALID_DATE}
                       value={jobForm.endDate}
-                      onChange={(e) => setJobForm((prev) => ({ ...prev, endDate: e.target.value }))}
+                      onChange={(e) => handleJobDateChange("endDate", e.target.value)}
+                      onBlur={() => handleJobDateBlur("endDate")}
                       className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                     />
                   )}
@@ -562,8 +651,11 @@ export default function WorkExperienceSection({ fixerId, isOwner, showForms = tr
                 <label className="text-xs font-semibold text-slate-700">Fecha de expedición *</label>
                 <input
                   type="date"
+                  min={MIN_VALID_DATE}
+                  max={MAX_VALID_DATE}
                   value={certForm.issueDate}
-                  onChange={(e) => setCertForm((prev) => ({ ...prev, issueDate: e.target.value }))}
+                  onChange={(e) => handleCertDateChange("issueDate", e.target.value)}
+                  onBlur={() => handleCertDateBlur("issueDate")}
                   className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 />
               </div>
@@ -571,8 +663,11 @@ export default function WorkExperienceSection({ fixerId, isOwner, showForms = tr
                 <label className="text-xs font-semibold text-slate-700">Fecha de expiración (opcional)</label>
                 <input
                   type="date"
+                  min={MIN_VALID_DATE}
+                  max={MAX_VALID_DATE}
                   value={certForm.expirationDate}
-                  onChange={(e) => setCertForm((prev) => ({ ...prev, expirationDate: e.target.value }))}
+                  onChange={(e) => handleCertDateChange("expirationDate", e.target.value)}
+                  onBlur={() => handleCertDateBlur("expirationDate")}
                   className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 />
               </div>
