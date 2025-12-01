@@ -26,10 +26,15 @@ export default function PromocionesPage() {
         
         {/* Encabezado */}
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-blue-700">Promociones</h1>
+          <h1 className="text-3xl font-bold text-blue-700">Promociones</h1>  
+
+          
           <button className="bg-blue-600 text-white font-bold py-2 px-6 rounded hover:bg-blue-700 transition shadow-md">
             Nueva Promoción
           </button>
+                 
+          
+
         </div>
 
         {/* Lista de Promociones */}
