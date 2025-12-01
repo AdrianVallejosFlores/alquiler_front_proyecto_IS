@@ -15,9 +15,6 @@ import {
   User,
   Settings,
   BookOpen,
-  MapPin,
-  MessageCircle,
-  Video
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from "framer-motion";
@@ -43,17 +40,21 @@ type PageData = {
   title: string;
   accordions: AccordionItem[];
 };
+// 1. Definición nueva
+type CategoryItem = {
+  id: string;
+  title: string;
+  pageData: PageData;
+};
 
+// 2. Actualización de Category
 type Category = {
   title: string;
   icon: React.ReactNode;
   directPageData?: PageData; 
-  items?: {
-    id: string;
-    title: string;
-    pageData: PageData;
-  }[];
+  items?: CategoryItem[];
 };
+
 
 // --- DATOS DEL MANUAL ---
 const DATA_MANUAL: Record<string, Category> = {
@@ -586,7 +587,7 @@ export default function PanelAyuda() {
   };
 
   // Manejador de clicks en el Sidebar
-  const handleSidebarClick = (catKey: string, subItem?: any) => {
+  const handleSidebarClick = (catKey: string, subItem?: CategoryItem) => {
     setActiveCategory(catKey);
 
     if (subItem) {
