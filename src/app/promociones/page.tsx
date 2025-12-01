@@ -1,8 +1,9 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
+import ModalEditar from "./ModalEditar"; // Asegúrate de que la ruta sea correcta
 
-// Datos de prueba para simular la interfaz
+// Datos de prueba
 const datosIniciales = [
   { id: 1, descripcion: "¡ 10% de descuento para clientes nuevos !", estado: "Activo" },
   { id: 2, descripcion: "Cotización en obra gratis", estado: "Activo" },
@@ -12,7 +13,26 @@ const datosIniciales = [
 export default function PromocionesPage() {
   const [promociones, setPromociones] = useState(datosIniciales);
 
-  // Función simple para simular borrar (solo visualmente por ahora)
+  // --- ESTADOS PARA EL MODAL ---
+  const [modalAbierto, setModalAbierto] = useState(false);
+  const [promoSeleccionada, setPromoSeleccionada] = useState<{id: number, descripcion: string} | null>(null);
+
+  // 1. Función para ABRIR el modal al dar click al lápiz
+  const abrirModalEdicion = (promo: { id: number; descripcion: string }) => {
+    setPromoSeleccionada(promo);
+    setModalAbierto(true);
+  };
+
+  // 2. Función para GUARDAR los cambios que vienen del modal
+  const guardarCambios = (id: number, nuevaDescripcion: string) => {
+    const promocionesActualizadas = promociones.map((p) =>
+      p.id === id ? { ...p, descripcion: nuevaDescripcion } : p
+    );
+    setPromociones(promocionesActualizadas);
+    setModalAbierto(false); // Cerramos el modal
+  };
+
+  // Función de eliminar (la que ya tenías)
   const eliminarPromocion = (id: number) => {
     const confirm = window.confirm("¿Estás seguro de eliminar esta promoción?");
     if (confirm) {
@@ -54,12 +74,16 @@ export default function PromocionesPage() {
                 </div>
               </div>
 
-              {/* Botones de Acción (Editar y Eliminar) */}
+              {/* Botones de Acción */}
               <div className="flex flex-col gap-3 ml-4">
-                {/* Botón Editar */}
-                <button className="w-12 h-12 border-2 border-blue-500 rounded flex items-center justify-center hover:bg-blue-50 transition">
+                {/* Botón Editar - AHORA CONECTADO */}
+                <button 
+                  onClick={() => abrirModalEdicion(promo)}
+                  className="w-12 h-12 border-2 border-blue-500 rounded flex items-center justify-center hover:bg-blue-50 transition"
+                >
                   <span className="text-2xl">✏️</span>
                 </button>
+
                 {/* Botón Eliminar */}
                 <button 
                   onClick={() => eliminarPromocion(promo.id)}
@@ -72,31 +96,35 @@ export default function PromocionesPage() {
           ))}
         </div>
 
-        {/* Paginación */}
+        {/* ... (Paginación y botones inferiores siguen igual) ... */}
+        
         <div className="flex justify-end mb-8 items-center gap-4">
-            <button className="px-4 py-2 border border-gray-300 rounded text-blue-600 font-semibold hover:bg-gray-100">
-              Anterior
-            </button>
+            <button className="px-4 py-2 border border-gray-300 rounded text-blue-600 font-semibold hover:bg-gray-100">Anterior</button>
             <span className="text-blue-600 font-semibold">Página 1 de 3</span>
-            <button className="px-4 py-2 border border-gray-300 rounded text-blue-600 font-semibold hover:bg-gray-100">
-              Siguiente
-            </button>
+            <button className="px-4 py-2 border border-gray-300 rounded text-blue-600 font-semibold hover:bg-gray-100">Siguiente</button>
         </div>
 
-        {/* Botones Inferiores (Atrás y Guardar) */}
         <div className="flex justify-between items-center mt-10">
           <Link href="/">
             <button className="bg-blue-600 text-white font-bold py-3 px-10 rounded-lg hover:bg-blue-700 transition shadow-lg">
               Atrás
             </button>
           </Link>
-          
           <button className="bg-blue-600 text-white font-bold py-3 px-10 rounded-lg hover:bg-blue-700 transition shadow-lg">
             Guardar
           </button>
         </div>
 
       </div>
+
+      {/* AQUÍ INSERTAMOS EL COMPONENTE MODAL */}
+      <ModalEditar 
+        isOpen={modalAbierto}
+        onClose={() => setModalAbierto(false)}
+        onSave={guardarCambios}
+        promocionActual={promoSeleccionada}
+      />
+
     </div>
   );
 }
