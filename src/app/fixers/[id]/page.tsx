@@ -3,6 +3,7 @@ import Link from "next/link";
 import FixerOwnerActions from "../components/FixerOwnerActions";
 import FixerSkillsList from "../components/FixerSkillsList";
 import WorkExperienceBridge from "../../fixers/components/WorkExperienceBridge";
+import VisualPortfolioBridge from "../../fixers/components/VisualPortfolioBridge";
 
 type PageProps = { params: Promise<{ id: string }> };
 
@@ -261,6 +262,7 @@ export default async function FixerDetailPage({ params }: PageProps) {
 
       {/* ✅ Bug 1.1.1 RESUELTO: Componente de edición para el propietario */}
       <div className="mt-8">
+        <VisualPortfolioBridge fixerId={id} />
         <WorkExperienceBridge fixerId={id} />
       </div>
 

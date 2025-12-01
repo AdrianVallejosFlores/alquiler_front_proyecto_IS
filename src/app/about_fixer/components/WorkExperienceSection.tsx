@@ -124,7 +124,7 @@ export default function WorkExperienceSection({ fixerId, isOwner }: Props) {
     if (!form.isCurrent && !form.endDate) return "Indica la fecha de finalización o marca como trabajo actual.";
     const start = new Date(form.startDate);
     const end = form.endDate ? new Date(form.endDate) : null;
-    if (end && end.getTime() < start.getTime()) return "La fecha de fin no puede ser anterior a la de inicio.";
+    if (end && end.getTime() < start.getTime()) return "La fecha de fin no puede ser anterior a la fecha de inicio.";
     return null;
   };
 
@@ -586,7 +586,8 @@ export default function WorkExperienceSection({ fixerId, isOwner }: Props) {
                   <img
                     src={certForm.previewUrl}
                     alt="Vista previa"
-                    className="h-40 w-full object-cover"
+                    className="h-40 w-full object-contain bg-white"
+                    loading="lazy"
                   />
                 </div>
               )}
@@ -628,7 +629,12 @@ export default function WorkExperienceSection({ fixerId, isOwner }: Props) {
               <article key={cert.id} className="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 shadow-sm">
                 <div className="relative aspect-video bg-slate-100">
                   {cert.imageUrl ? (
-                    <img src={cert.imageUrl} alt={cert.name} className="h-full w-full object-cover" />
+                    <img
+                      src={cert.imageUrl}
+                      alt={cert.name}
+                      loading="lazy"
+                      className="h-full w-full object-contain bg-white"
+                    />
                   ) : (
                     <div className="flex h-full items-center justify-center text-slate-400">
                       <ImageIcon className="h-8 w-8" />
