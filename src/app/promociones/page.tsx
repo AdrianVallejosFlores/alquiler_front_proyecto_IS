@@ -25,7 +25,7 @@ const datosIniciales: Promocion[] = [
   { id: 12, descripcion: "Pack de reparación de muebles de madera", estado: "Inactivo" },
 ];
 
-// --- COMPONENTE MODAL (Ventana Emergente) ---
+// --- COMPONENTE MODAL (DISEÑO ACTUALIZADO SEGÚN IMAGEN) ---
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -53,7 +53,6 @@ const ModalPromocion: React.FC<ModalProps> = ({ isOpen, onClose, onSave, promoEd
   const handleSubmit = () => {
     if (!descripcion.trim()) return alert("La descripción es obligatoria");
     
-    // Si promoEditar existe usamos su ID, si no, generamos uno temporal (Date.now)
     const nuevaPromo: Promocion = {
       id: promoEditar ? promoEditar.id : Date.now(),
       descripcion,
@@ -64,41 +63,82 @@ const ModalPromocion: React.FC<ModalProps> = ({ isOpen, onClose, onSave, promoEd
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">
-          {promoEditar ? "Editar Promoción" : "Nueva Promoción"}
+      {/* Contenedor del Modal */}
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg p-8 relative">
+        
+        {/* Título: Azul y Grande */}
+        <h2 className="text-3xl font-extrabold text-blue-600 mb-6">
+          {promoEditar ? "Editar promoción." : "Crear nueva promoción."}
         </h2>
         
-        <div className="space-y-4">
+        <div className="space-y-6">
+          {/* Campo Descripción */}
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1">Descripción</label>
-            <input
-              type="text"
-              className="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-blue-500"
+            <label className="block text-xl font-bold text-black mb-2">
+              Descripción promoción:
+            </label>
+            <textarea
+              className="w-full border border-gray-300 rounded-lg p-3 text-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none h-32"
               value={descripcion}
               onChange={(e) => setDescripcion(e.target.value)}
-              placeholder="Ej: 10% de descuento..."
             />
           </div>
           
-          <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1">Estado</label>
-            <select
-              className="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-blue-500"
-              value={estado}
-              onChange={(e) => setEstado(e.target.value as "Activo" | "Inactivo")}
-            >
-              <option value="Activo">Activo</option>
-              <option value="Inactivo">Inactivo</option>
-            </select>
+          {/* Radio Buttons para ¿Activa? */}
+          <div className="flex items-center gap-6">
+            <label className="text-xl font-bold text-black">¿Activa?</label>
+            
+            <div className="flex items-center gap-6">
+              {/* Opción SI */}
+              <label className="flex items-center gap-2 cursor-pointer">
+                <div className="relative flex items-center">
+                  <input 
+                    type="radio" 
+                    name="estadoPromocion" 
+                    className="w-6 h-6 border-2 border-black rounded-full checked:bg-black appearance-none cursor-pointer"
+                    checked={estado === "Activo"}
+                    onChange={() => setEstado("Activo")}
+                  />
+                  {/* Pequeño punto interior para simular radio nativo customizado si se desea, o usar default */}
+                  {estado === "Activo" && (
+                    <div className="absolute inset-0 m-auto w-3 h-3 bg-black rounded-full pointer-events-none"></div>
+                  )}
+                </div>
+                <span className="text-xl text-black">Si</span>
+              </label>
+
+              {/* Opción NO */}
+              <label className="flex items-center gap-2 cursor-pointer">
+                <div className="relative flex items-center">
+                  <input 
+                    type="radio" 
+                    name="estadoPromocion" 
+                    className="w-6 h-6 border-2 border-black rounded-full appearance-none cursor-pointer"
+                    checked={estado === "Inactivo"}
+                    onChange={() => setEstado("Inactivo")}
+                  />
+                  {estado === "Inactivo" && (
+                     <div className="absolute inset-0 m-auto w-3 h-3 bg-black rounded-full pointer-events-none"></div>
+                  )}
+                </div>
+                <span className="text-xl text-black">No</span>
+              </label>
+            </div>
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 mt-8">
-          <button onClick={onClose} className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 font-bold">
-            Cancelar
+        {/* Botones de Acción (Atrás y Guardar) */}
+        <div className="flex justify-between gap-4 mt-8">
+          <button 
+            onClick={onClose} 
+            className="w-1/2 py-3 bg-blue-600 text-white rounded-lg text-xl font-bold hover:bg-blue-700 transition shadow"
+          >
+            Atrás
           </button>
-          <button onClick={handleSubmit} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-bold">
+          <button 
+            onClick={handleSubmit} 
+            className="w-1/2 py-3 bg-blue-600 text-white rounded-lg text-xl font-bold hover:bg-blue-700 transition shadow"
+          >
             Guardar
           </button>
         </div>
@@ -107,56 +147,42 @@ const ModalPromocion: React.FC<ModalProps> = ({ isOpen, onClose, onSave, promoEd
   );
 };
 
-// --- PÁGINA PRINCIPAL ---
+// --- PÁGINA PRINCIPAL (Sin cambios mayores, solo integración) ---
 export default function PromocionesPage() {
   const [promociones, setPromociones] = useState<Promocion[]>(datosIniciales);
-  
-  // Estados para el Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [promoAEditar, setPromoAEditar] = useState<Promocion | null>(null);
-
-  // Estados de Paginación
   const [paginaActual, setPaginaActual] = useState(1);
   const itemsPorPagina = 3;
 
-  // Lógica de Paginación
   const indiceUltimoItem = paginaActual * itemsPorPagina;
   const indicePrimerItem = indiceUltimoItem - itemsPorPagina;
   const itemsActuales = promociones.slice(indicePrimerItem, indiceUltimoItem);
   const totalPaginas = Math.ceil(promociones.length / itemsPorPagina);
 
-  // --- HANDLERS ---
-
-  // Abrir modal para crear
   const abrirModalNueva = () => {
     setPromoAEditar(null);
     setIsModalOpen(true);
   };
 
-  // Abrir modal para editar (AQUÍ ESTABA EL FALTANTE)
   const abrirModalEditar = (promo: Promocion) => {
     setPromoAEditar(promo);
     setIsModalOpen(true);
   };
 
-  // Guardar cambios del modal
   const guardarDesdeModal = (promoGuardada: Promocion) => {
     if (promoAEditar) {
-      // Editar existente
       setPromociones(promociones.map(p => p.id === promoGuardada.id ? promoGuardada : p));
     } else {
-      // Crear nueva (al principio de la lista)
       setPromociones([promoGuardada, ...promociones]);
     }
     setIsModalOpen(false);
   };
 
-  // Eliminar
   const eliminarPromocion = (id: number) => {
     if (window.confirm("¿Estás seguro de eliminar esta promoción?")) {
       const nuevasPromociones = promociones.filter((p) => p.id !== id);
       setPromociones(nuevasPromociones);
-      
       const nuevoTotalPaginas = Math.ceil(nuevasPromociones.length / itemsPorPagina);
       if (paginaActual > nuevoTotalPaginas && nuevoTotalPaginas > 0) {
         setPaginaActual(nuevoTotalPaginas);
@@ -167,8 +193,6 @@ export default function PromocionesPage() {
   return (
     <div className="min-h-screen bg-white p-6 md:p-10 font-sans">
       <div className="max-w-4xl mx-auto">
-        
-        {/* Encabezado */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-blue-700">Promociones</h1>
           <button 
@@ -177,41 +201,26 @@ export default function PromocionesPage() {
           >
             Nueva Promoción
           </button>
-                 
-          
-
         </div>
 
-        {/* Lista de Promociones */}
         <div className="space-y-4 mb-8 min-h-[300px]">
           {itemsActuales.length > 0 ? (
             itemsActuales.map((promo) => (
-              <div
-                key={promo.id}
-                className="border-2 border-blue-600 rounded-lg p-4 flex justify-between items-center bg-white shadow-sm"
-              >
+              <div key={promo.id} className="border-2 border-blue-600 rounded-lg p-4 flex justify-between items-center bg-white shadow-sm">
                 <div className="flex-1">
                   <div className="mb-2">
                     <span className="font-bold text-black text-lg">Descripción:</span>
                     <p className="text-gray-800 text-lg mt-1">{promo.descripcion}</p>
                   </div>
                   <div className="font-bold text-black text-lg">
-                    Estado: <span className={`font-normal ${promo.estado === 'Activo' ? 'text-green-600' : 'text-red-600'}`}>{promo.estado}</span>
+                    Estado: <span className={`font-normal ${promo.estado === 'Activo' ? 'text-black' : 'text-black'}`}>{promo.estado}</span>
                   </div>
                 </div>
-
-                {/* Botones de Acción */}
                 <div className="flex flex-col gap-3 ml-4">
-                  <button 
-                    onClick={() => abrirModalEditar(promo)} // <--- AHORA SÍ TIENE EL ONCLICK
-                    className="w-12 h-12 border-2 border-blue-500 rounded flex items-center justify-center hover:bg-blue-50 transition"
-                  >
+                  <button onClick={() => abrirModalEditar(promo)} className="w-12 h-12 border-2 border-blue-500 rounded flex items-center justify-center hover:bg-blue-50 transition">
                     <span className="text-2xl">✏️</span>
                   </button>
-                  <button 
-                    onClick={() => eliminarPromocion(promo.id)}
-                    className="w-12 h-12 border-2 border-blue-500 rounded flex items-center justify-center hover:bg-red-50 transition"
-                  >
+                  <button onClick={() => eliminarPromocion(promo.id)} className="w-12 h-12 border-2 border-blue-500 rounded flex items-center justify-center hover:bg-red-50 transition">
                     <span className="text-2xl">🗑️</span>
                   </button>
                 </div>
@@ -222,53 +231,28 @@ export default function PromocionesPage() {
           )}
         </div>
 
-        {/* Paginación */}
         <div className="flex justify-end mb-8 items-center gap-4">
-            <button 
-              onClick={() => setPaginaActual(p => Math.max(1, p - 1))}
-              disabled={paginaActual === 1}
-              className={`px-4 py-2 border rounded font-semibold transition ${
-                paginaActual === 1 ? "border-gray-200 text-gray-400 cursor-not-allowed" : "border-gray-300 text-blue-600 hover:bg-gray-100"
-              }`}
-            >
+            <button onClick={() => setPaginaActual(p => Math.max(1, p - 1))} disabled={paginaActual === 1} className={`px-4 py-2 border rounded font-semibold transition ${paginaActual === 1 ? "border-gray-200 text-gray-400 cursor-not-allowed" : "border-gray-300 text-blue-600 hover:bg-gray-100"}`}>
               Anterior
             </button>
-            <span className="text-blue-600 font-semibold">
-              Página {paginaActual} de {totalPaginas || 1}
-            </span>
-            <button 
-              onClick={() => setPaginaActual(p => Math.min(totalPaginas, p + 1))}
-              disabled={paginaActual === totalPaginas || totalPaginas === 0}
-              className={`px-4 py-2 border rounded font-semibold transition ${
-                paginaActual === totalPaginas || totalPaginas === 0 ? "border-gray-200 text-gray-400 cursor-not-allowed" : "border-gray-300 text-blue-600 hover:bg-gray-100"
-              }`}
-            >
+            <span className="text-blue-600 font-semibold">Página {paginaActual} de {totalPaginas || 1}</span>
+            <button onClick={() => setPaginaActual(p => Math.min(totalPaginas, p + 1))} disabled={paginaActual === totalPaginas || totalPaginas === 0} className={`px-4 py-2 border rounded font-semibold transition ${paginaActual === totalPaginas || totalPaginas === 0 ? "border-gray-200 text-gray-400 cursor-not-allowed" : "border-gray-300 text-blue-600 hover:bg-gray-100"}`}>
               Siguiente
             </button>
         </div>
 
-        {/* Botones Inferiores */}
         <div className="flex justify-between items-center mt-10">
           <Link href="/">
             <button className="bg-blue-600 text-white font-bold py-3 px-10 rounded-lg hover:bg-blue-700 transition shadow-lg">
               Atrás
             </button>
           </Link>
-          <button 
-            onClick={() => alert("Aquí conectaríamos con el backend para guardar todo.")}
-            className="bg-blue-600 text-white font-bold py-3 px-10 rounded-lg hover:bg-blue-700 transition shadow-lg"
-          >
+          <button onClick={() => alert("Guardado global simulado")} className="bg-blue-600 text-white font-bold py-3 px-10 rounded-lg hover:bg-blue-700 transition shadow-lg">
             Guardar
           </button>
         </div>
 
-        {/* Modal Renderizado */}
-        <ModalPromocion 
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onSave={guardarDesdeModal}
-          promoEditar={promoAEditar}
-        />
+        <ModalPromocion isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={guardarDesdeModal} promoEditar={promoAEditar} />
       </div>
     </div>
   );
