@@ -19,7 +19,6 @@ export const fetchWalletData = async (fixerId: string) => {
       cache: "no-store",
       headers: { "Content-Type": "application/json" }
     }),
-    
     fetch(urlHistorial, { 
       cache: "no-store",
       headers: { "Content-Type": "application/json" }
@@ -32,7 +31,8 @@ export const fetchWalletData = async (fixerId: string) => {
     throw new Error(`Error HTTP (Saldo): ${billeteraRes.status} - ${billeteraRes.statusText}`);
   }
   const dataBilletera = await billeteraRes.json();
-  if (!dataBilletera.success) throw new Error(dataBilletera.message || "Error al obtener billetera");
+  // Validación extra: a veces el success viene dentro de data o directo
+  if (dataBilletera.success === false) throw new Error(dataBilletera.message || "Error al obtener billetera");
 
   // Manejo de errores Historial
   if (!historialRes.ok) {
@@ -41,23 +41,27 @@ export const fetchWalletData = async (fixerId: string) => {
     throw new Error(`Error HTTP (Historial): ${historialRes.status}`);
   }
   const dataHistorial = await historialRes.json();
+  if (dataHistorial.success === false) throw new Error(dataHistorial.message || "Error al obtener historial");
   // Validación suave para historial: si falla, devolvemos array vacío en lugar de error crítico
   const transaccionesRaw = dataHistorial.success ? dataHistorial.transacciones : [];
 
   // Transformación de datos
-  const billeteraAdaptada: IBilletera = {
-    _id: dataBilletera.billetera._id,
-    saldo: dataBilletera.billetera.saldo,
-    estado: dataBilletera.billetera.estado,
-    moneda: "Bs" 
-  };
+  // IMPORTANTE: Asegúrate de leer la propiedad correcta que devuelve tu backend (data o billetera)
+  const walletInfo = dataBilletera.data || dataBilletera.billetera || {}; 
 
-  const transaccionesAdaptadas: ITransaccionBackend[] = transaccionesRaw.map((tx: any) => ({
-    _id: tx._id,
+  const billeteraAdaptada: IBilletera = {
+    _id: walletInfo._id,
+    saldo: walletInfo.saldo,
+    estado: walletInfo.estado,
+  moneda: "Bs" 
+};
+
+const transaccionesAdaptadas: ITransaccionBackend[] = transaccionesRaw.map((tx: any) => ({
+  _id: tx._id,
     monto: tx.monto,
     descripcion: tx.descripcion,
     fecha: tx.fecha_pago || tx.createdAt || new Date().toISOString(),
-    tipo: (tx.tipo === 'ingreso') ? 'credito' : 'debito'
+    tipo: (tx.tipo === 'ingreso' || tx.tipo === 'credito') ? 'credito' : 'debito'
   }));
 
   return {
