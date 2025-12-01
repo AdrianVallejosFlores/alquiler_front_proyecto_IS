@@ -193,11 +193,11 @@ export async function notifyNewServicesAvailable() {
     // URL app
     const appURL = process.env.NEXT_PUBLIC_URL_DEPLOY + "/booking/agenda"; // 🔹 cámbiala cuando quieras
 
-    const hora = new Date().getHours();
+    const hora = localStorage.getItem("hora_sistema");
     let saludo = "Hola";
-    if (hora >= 5 && hora < 12) saludo = "Buenos días";
-    else if (hora >= 12 && hora < 19) saludo = "Buenas tardes";
-    else saludo = "Buenas noches";
+    if (hora === "mañana") saludo = "Buenos días";
+    else if (hora === "tarde") saludo = "Buenas tardes";
+    else if (hora === "noche") saludo = "Buenas noches";
 
     const subject = "Nuevos servicios disponibles";
 
@@ -257,12 +257,11 @@ export async function notifyNewPromotionsAvailable() {
     const appURL = process.env.NEXT_PUBLIC_URL_DEPLOY; // 🔹 cámbiala cuando quieras
 
     // 🔹 3️⃣ Determinar saludo según la hora
-    const hora = new Date().getHours();
+    const hora = localStorage.getItem("hora_sistema");
     let saludo = "Hola";
-
-    if (hora >= 5 && hora < 12) saludo = "Buenos días";
-    else if (hora >= 12 && hora < 19) saludo = "Buenas tardes";
-    else saludo = "Buenas noches";
+    if (hora === "mañana") saludo = "Buenos días";
+    else if (hora === "tarde") saludo = "Buenas tardes";
+    else if (hora === "noche") saludo = "Buenas noches";
 
     // 🔹 4️⃣ Crear mensaje
     const subject = "Nuevos promociones disponibles";

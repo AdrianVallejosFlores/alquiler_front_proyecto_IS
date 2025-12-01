@@ -147,13 +147,11 @@ export async function notifyNewServicesAvailableWhatsApp() {
 
     const appURL = process.env.NEXT_PUBLIC_URL_DEPLOY + "/booking/agenda";
 
-    const hora = new Date().getHours();
-    let saludo =
-      hora >= 5 && hora < 12
-        ? "Buenos días"
-        : hora >= 12 && hora < 19
-        ? "Buenas tardes"
-        : "Buenas noches";
+    const hora = localStorage.getItem("hora_sistema");
+    let saludo = "Hola";
+    if (hora === "mañana") saludo = "Buenos días";
+    else if (hora === "tarde") saludo = "Buenas tardes";
+    else if (hora === "noche") saludo = "Buenas noches";
 
     const message = [
       `*${saludo}, ${requestNombre}*`,
@@ -208,13 +206,11 @@ export async function notifyNewPromotionsAvailableWhatsApp() {
 
     const appURL = process.env.NEXT_PUBLIC_URL_DEPLOY;
 
-    const hora = new Date().getHours();
-    let saludo =
-      hora >= 5 && hora < 12
-        ? "Buenos días"
-        : hora >= 12 && hora < 19
-        ? "Buenas tardes"
-        : "Buenas noches";
+    const hora = localStorage.getItem("hora_sistema");
+    let saludo = "Hola";
+    if (hora === "mañana") saludo = "Buenos días";
+    else if (hora === "tarde") saludo = "Buenas tardes";
+    else if (hora === "noche") saludo = "Buenas noches";
 
     const message = [
       `✨ *${saludo}, ${requestNombre}* ✨`,

@@ -33,9 +33,11 @@ export default function VentanaPrueba() {
     fixer: { nombre: "", correo: "", numero: "" },
   });
 
+  const [horaSistema, setHoraSistema] = useState("");
   const [montoRecarga, setMontoRecarga] = useState("");
   const [nombreServicio, setNombreServicio] = useState("");
   const [days, setDays] = useState("");
+  
 
   const { crearServicio, loading: loadingServicio, error: errorServicio } =
     useCrearServicio();
@@ -49,6 +51,9 @@ export default function VentanaPrueba() {
 
     const savedDays = localStorage.getItem("appLoadedAt");
     if (savedDays) setDays(savedDays);
+
+    const savedHora = localStorage.getItem("hora_sistema");
+    if (savedHora) setHoraSistema(savedHora);
   }, []);
 
   const handleSave = () => {
@@ -169,12 +174,48 @@ export default function VentanaPrueba() {
           <DialogHeader>
             <DialogTitle className="text-xl">Configuración RECODE</DialogTitle>
             <DialogDescription>
-              Ajustes rápidos de Requester, Fixer, Wallet y Servicios.
+              Ajustes rápidos de Requester, Fixer, Wallet y Servicios. (el numero se debe poner asi: 59177777777)
             </DialogDescription>
           </DialogHeader>
 
           {/* 🎯 GRID de dos columnas */}
           <div className="grid grid-cols-2 gap-4 mt-6">
+            {/* =============== HORARIO DEL SISTEMA (OCUPA DOS COLUMNAS) =============== */}
+            <div className="p-4 rounded-xl border bg-white col-span-2">
+              <h3 className="font-semibold text-pink-500">
+                Horario del Sistema
+              </h3>
+
+              <label className="text-sm text-gray-500 mt-2 block">
+                Seleccione un horario:
+              </label>
+
+              <select
+                value={horaSistema}
+                onChange={(e) => setHoraSistema(e.target.value)}
+                className="w-full p-2 border rounded mb-3"
+              >
+                <option value="">-- Seleccionar --</option>
+                <option value="mañana">Mañana</option>
+                <option value="tarde">Tarde</option>
+                <option value="noche">Noche</option>
+              </select>
+
+              <Button
+                onClick={() => {
+                  if (!horaSistema) {
+                    alert("⚠️ Selecciona un horario primero");
+                    return;
+                  }
+                  localStorage.setItem("hora_sistema", horaSistema);
+                  setHoraSistema(horaSistema);
+                  alert("⏰ Horario guardado: " + horaSistema);
+                }}
+                className="bg-pink-500 hover:bg-pink-700 text-white w-full"
+              >
+                Guardar Horario
+              </Button>
+            </div>
 
             {/* =============== DÍAS EXTRA =============== */}
             <div className="p-4 rounded-xl border bg-gray-50">
