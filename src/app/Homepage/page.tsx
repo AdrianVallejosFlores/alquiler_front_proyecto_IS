@@ -1,9 +1,7 @@
-//src/app/HomePage/page.tsx
-
 import Mapa from "../components/mapa/MapaWrapper";
 import CarruselOfertas from "../components/CarruselOfertas/CarruselOfertas";
 import HomeFixer from "../components/ListaCategorias/HomeFixer";
-// import type { Categoria } from "./components/ListaCategorias/tipos"; // ← no se usa
+// import type { Categoria } from "./components/ListaCategorias/tipos"; 
 import Footer from "../components/Footer/Footer";
 import CarruselInspirador from "../components/CarruselInspirador/CarruselInspirador";
 import Link from "next/link";
@@ -36,7 +34,7 @@ export default function Home() {
         <CarruselOfertas />
       </section>
 
-      {/* Acciones rápidas (contenido que tenías en el segundo Home) */}
+      {/* Acciones rápidas */}
       <section className="my-10">
         <div className="min-h-0 flex items-center justify-center">
           <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
@@ -49,6 +47,15 @@ export default function Home() {
               >
                 Agregar Disponibilidad
               </Link>
+
+              {/* --- NUEVO BOTÓN AGREGADO --- */}
+              <Link
+                href="/promociones"
+                className="bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 transition-colors text-center font-bold"
+              >
+                Listar Promociones
+              </Link>
+              {/* --------------------------- */}
 
               <Link
                 href="/agenda_proveedor"
