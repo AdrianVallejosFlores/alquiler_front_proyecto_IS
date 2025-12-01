@@ -44,7 +44,7 @@ function WalletLogic() {
   };
 
   const handleGrafico = () => {
-    console.log("Navegar a Gráfico de Ingresos");
+    router.push("/bitcrew/grafico");
   };
 
   const handleAjustes = () => {
@@ -146,7 +146,7 @@ function WalletLogic() {
 
                 <button
                   onClick={handleGrafico}
-                  className="w-full flex items-center justify-center space-x-2 bg-[#11255A] text-white px-4 py-3 rounded-xl text-sm font-medium shadow-sm hover:bg-[#0B1A40] transition-colors"
+                  className="w-full flexGráfico de IngresosGráfico de Ingresos items-center justify-center space-x-2 bg-[#11255A] text-white px-4 py-3 rounded-xl text-sm font-medium shadow-sm hover:bg-[#0B1A40] transition-colors"
                 >
                   <BarChart3 className="w-5 h-5" />
                   <span>Gráfico de Ingresos</span>
