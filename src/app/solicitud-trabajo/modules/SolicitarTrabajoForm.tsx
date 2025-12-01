@@ -16,12 +16,14 @@ export default function SolicitarTrabajoForm({ franjas, date, providerId }: Prop
   const [horaFin, setHoraFin] = useState("");
   const [descripcion, setDescripcion] = useState(""); // Nuevo campo Descripción
   const [costo, setCosto] = useState(""); // Nuevo campo Costo
+  const [categoria, setCategoria] = useState(""); // Nuevo campo Categoría
 
   // Errores por campo (mensajes personalizados)
   const [errorInicio, setErrorInicio] = useState("");
   const [errorFin, setErrorFin] = useState("");
   const [errorDescripcion, setErrorDescripcion] = useState(""); // Error de Descripción
   const [errorCosto, setErrorCosto] = useState(""); // Error de Costo
+  const [errorCategoria, setErrorCategoria] = useState(""); // Error de Categoría
   const [errorGeneral, setErrorGeneral] = useState(""); // nuevo mensaje general
 
   const { loading, mensaje, setMensaje, enviar } = useSolicitudTrabajo(
@@ -33,11 +35,12 @@ export default function SolicitarTrabajoForm({ franjas, date, providerId }: Prop
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // limpiar errores previos
+    // Limpiar errores previos
     setErrorInicio("");
     setErrorFin("");
     setErrorDescripcion(""); // Limpiar error de descripción
     setErrorCosto(""); // Limpiar error de costo
+    setErrorCategoria(""); // Limpiar error de categoría
     setErrorGeneral("");
 
     // 🟡 Nueva validación: ambos campos vacíos
@@ -74,13 +77,32 @@ export default function SolicitarTrabajoForm({ franjas, date, providerId }: Prop
       return;
     }
 
+    // Validación de costo
     if (!costo || isNaN(Number(costo))) {
       setErrorCosto("Debe ingresar un costo válido en Bs");
       return;
     }
 
+    // Validación de categoría
+    if (!categoria) {
+      setErrorCategoria("Debe ingresar una categoría para el trabajo");
+      return;
+    }
+
+    // Verificar que la categoría no contenga números ni caracteres especiales
+    if (/\d/.test(categoria)) {
+      setErrorCategoria("La categoría no debe contener números");
+      return;
+    }
+
+    // Verificar que la categoría no exceda los 100 caracteres
+    if (categoria.length > 100) {
+      setErrorCategoria("La categoría no debe exceder los 100 caracteres");
+      return;
+    }
+
     // Enviar el payload, incluyendo 'date'
-    await enviar({ horaInicio, horaFin, descripcion, costo: Number(costo), date });
+    await enviar({ horaInicio, horaFin, descripcion, costo: Number(costo), categoria, date });
   };
 
   // 🎨 Estilos dinámicos del mensaje inferior según su contenido
@@ -180,6 +202,21 @@ export default function SolicitarTrabajoForm({ franjas, date, providerId }: Prop
         />
         {errorCosto && (
           <p className="text-red-500 text-sm mt-1 text-center">{errorCosto}</p>
+        )}
+      </div>
+
+      {/* Categoría */}
+      <div className="flex flex-col">
+        <label className="text-gray-700 text-sm Poppins">Categoría</label>
+        <input
+          type="text"
+          value={categoria}
+          onChange={(e) => setCategoria(e.target.value)}
+          className="w-full border border-gray-300 rounded-lg px-3 mt-1 h-12 sm:h-11 text-base sm:text-[15px] focus:ring-2 focus:ring-blue-600 outline-none text-black bg-white"
+          maxLength={100} // Limitar a 100 caracteres
+        />
+        {errorCategoria && (
+          <p className="text-red-500 text-sm mt-1 text-center">{errorCategoria}</p>
         )}
       </div>
 

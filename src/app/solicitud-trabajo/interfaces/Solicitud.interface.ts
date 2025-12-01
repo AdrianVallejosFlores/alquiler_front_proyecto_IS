@@ -4,6 +4,7 @@ export interface ISolicitud {
   date: string;       // "YYYY-MM-DD"
   descripcion: string; // Descripción del trabajo
   costo: number;      // Costo en Bs
+  categoria: string;  // categoría del trabajo
 }
 
 export interface IFranjaDisponible {
