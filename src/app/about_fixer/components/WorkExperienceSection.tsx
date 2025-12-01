@@ -321,24 +321,28 @@ export default function WorkExperienceSection({ fixerId, isOwner }: Props) {
 
   return (
     <section className="mt-10 space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-base font-semibold text-slate-900">Work Experience / Experiencia laboral</p>
-          <p className="text-xs text-slate-500">
-            Muestra tu trayectoria y certificaciones. Todo se actualiza al instante después de guardar.
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="space-y-2">
+          <p className="text-base font-semibold text-slate-900">Work experience (inspirado en LinkedIn)</p>
+          <p className="text-xs text-slate-600">
+            Cuenta tu trayectoria con cargos, empresas y fechas claras. Luego agrega las certificaciones que validen tu trabajo.
           </p>
         </div>
         {isOwner && (
-          <div className="flex flex-wrap gap-2 text-xs font-semibold text-slate-600">
+          <div className="flex flex-col items-end gap-1 text-xs font-semibold text-slate-600">
             <span className="rounded-full bg-slate-100 px-3 py-1">Edición habilitada</span>
+            <span className="text-[11px] font-normal text-slate-500">Guarda cada bloque antes de pasar al siguiente.</span>
           </div>
         )}
       </div>
 
       {/* Sección de posiciones laborales */}
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-slate-900">Posiciones laborales</h3>
+        <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
+          <div className="space-y-1">
+            <h3 className="text-sm font-semibold text-slate-900">Experiencia laboral</h3>
+            <p className="text-xs text-slate-500">Describe tus roles como en LinkedIn: cargo, jornada, empresa y fechas.</p>
+          </div>
           {isOwner && (
             <button
               type="button"
@@ -346,82 +350,93 @@ export default function WorkExperienceSection({ fixerId, isOwner }: Props) {
               onClick={() => resetJobForm()}
             >
               <Plus className="h-4 w-4" />
-              Añadir posición
+              Nueva posición
             </button>
           )}
         </div>
 
         {isOwner && (
-          <div className="mb-5 grid gap-3 md:grid-cols-2">
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-slate-700">Nombre del puesto *</label>
-              <input
-                type="text"
-                value={jobForm.positionName}
-                onChange={(e) => setJobForm((prev) => ({ ...prev, positionName: e.target.value }))}
-                className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                placeholder="Ej: Carpintero senior"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-slate-700">Tipo de jornada *</label>
-              <select
-                value={jobForm.journeyType}
-                onChange={(e) => setJobForm((prev) => ({ ...prev, journeyType: e.target.value }))}
-                className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-              >
-                <option value="">Selecciona</option>
-                {JOB_JOURNEY_TYPES.map((item) => (
-                  <option key={item} value={item}>
-                    {item}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-slate-700">Organización (opcional)</label>
-              <input
-                type="text"
-                value={jobForm.organization}
-                onChange={(e) => setJobForm((prev) => ({ ...prev, organization: e.target.value }))}
-                className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                placeholder="Empresa o proyecto"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <input
-                id="isCurrent"
-                type="checkbox"
-                checked={jobForm.isCurrent}
-                onChange={(e) => setJobForm((prev) => ({ ...prev, isCurrent: e.target.checked, endDate: "" }))}
-                className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-              />
-              <label htmlFor="isCurrent" className="text-xs font-semibold text-slate-700">
-                Trabajo actual
-              </label>
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-slate-700">Fecha de inicio *</label>
-              <input
-                type="date"
-                value={jobForm.startDate}
-                onChange={(e) => setJobForm((prev) => ({ ...prev, startDate: e.target.value }))}
-                className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-              />
-            </div>
-            {!jobForm.isCurrent && (
+          <div className="mb-5 rounded-xl border border-slate-100 bg-slate-50/60 p-4">
+            <div className="grid gap-3 md:grid-cols-2">
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-slate-700">Fecha de fin *</label>
+                <label className="text-xs font-semibold text-slate-700">
+                  Nombre del puesto <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={jobForm.positionName}
+                  onChange={(e) => setJobForm((prev) => ({ ...prev, positionName: e.target.value }))}
+                  className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  placeholder="Ej: Carpintero senior, Instalador eléctrico"
+                />
+                <p className="text-[11px] text-slate-500">Sé específico: cargo + especialidad.</p>
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-slate-700">Tipo de jornada *</label>
+                <select
+                  value={jobForm.journeyType}
+                  onChange={(e) => setJobForm((prev) => ({ ...prev, journeyType: e.target.value }))}
+                  className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                >
+                  <option value="">Selecciona</option>
+                  {JOB_JOURNEY_TYPES.map((item) => (
+                    <option key={item} value={item}>
+                      {item}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-slate-700">Organización (opcional)</label>
+                <input
+                  type="text"
+                  value={jobForm.organization}
+                  onChange={(e) => setJobForm((prev) => ({ ...prev, organization: e.target.value }))}
+                  className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  placeholder="Empresa o proyecto"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  id="isCurrent"
+                  type="checkbox"
+                  checked={jobForm.isCurrent}
+                  onChange={(e) => setJobForm((prev) => ({ ...prev, isCurrent: e.target.checked, endDate: "" }))}
+                  className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                />
+                <label htmlFor="isCurrent" className="text-xs font-semibold text-slate-700">
+                  Trabajo actual
+                </label>
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-slate-700">Fecha de inicio *</label>
                 <input
                   type="date"
-                  value={jobForm.endDate}
-                  onChange={(e) => setJobForm((prev) => ({ ...prev, endDate: e.target.value }))}
+                  value={jobForm.startDate}
+                  onChange={(e) => setJobForm((prev) => ({ ...prev, startDate: e.target.value }))}
                   className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 />
               </div>
-            )}
-            <div className="md:col-span-2 flex flex-wrap items-center justify-between gap-3">
-              {jobError ? <p className="text-xs font-semibold text-red-600">{jobError}</p> : <span className="text-xs text-slate-500">Los campos marcados con * son obligatorios.</span>}
+              {!jobForm.isCurrent && (
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-slate-700">Fecha de fin *</label>
+                  <input
+                    type="date"
+                    value={jobForm.endDate}
+                    onChange={(e) => setJobForm((prev) => ({ ...prev, endDate: e.target.value }))}
+                    className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  />
+                </div>
+              )}
+            </div>
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+              {jobError ? (
+                <p className="text-xs font-semibold text-red-600">{jobError}</p>
+              ) : (
+                <span className="text-xs text-slate-500">
+                  Incluye el cargo, jornada y fechas. Si es actual, marca la casilla.
+                </span>
+              )}
               <div className="flex gap-2">
                 {editingJobId && (
                   <button
@@ -450,7 +465,7 @@ export default function WorkExperienceSection({ fixerId, isOwner }: Props) {
             {experience?.jobPositions?.map((job) => (
               <article key={job.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                 <div className="flex items-start justify-between gap-2">
-                  <div>
+                  <div className="space-y-1">
                     <p className="text-sm font-semibold text-slate-900">{job.positionName}</p>
                     <p className="text-xs text-slate-600">{job.journeyType}</p>
                     {job.organization && <p className="text-xs text-slate-500 mt-1">{job.organization}</p>}
@@ -492,7 +507,10 @@ export default function WorkExperienceSection({ fixerId, isOwner }: Props) {
       {/* Sección de certificaciones */}
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-slate-900">Mis certificaciones</h3>
+          <div className="space-y-1">
+            <h3 className="text-sm font-semibold text-slate-900">Certificaciones y credenciales</h3>
+            <p className="text-xs text-slate-500">Adjunta diplomas, cursos o credenciales que respalden tu perfil.</p>
+          </div>
           {isOwner && (
             <button
               type="button"
@@ -506,7 +524,8 @@ export default function WorkExperienceSection({ fixerId, isOwner }: Props) {
         </div>
 
         {isOwner && (
-          <div className="mb-5 grid gap-3 md:grid-cols-2">
+          <div className="mb-5 rounded-xl border border-slate-100 bg-slate-50/60 p-4">
+            <div className="grid gap-3 md:grid-cols-2">
             <div className="space-y-2">
               <label className="text-xs font-semibold text-slate-700">Nombre de la certificación *</label>
               <input
@@ -619,6 +638,7 @@ export default function WorkExperienceSection({ fixerId, isOwner }: Props) {
                   {certSaving ? "Guardando..." : editingCertId ? "Actualizar certificación" : "Guardar certificación"}
                 </button>
               </div>
+            </div>
             </div>
           </div>
         )}
