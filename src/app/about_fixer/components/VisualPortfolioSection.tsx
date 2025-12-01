@@ -17,6 +17,7 @@ import {
 type Props = {
   fixerId: string;
   isOwner: boolean;
+  showForms?: boolean;
 };
 
 type ImageFormState = {
@@ -71,7 +72,7 @@ async function maybeCompressImage(file: File): Promise<File> {
   }
 }
 
-export default function VisualPortfolioSection({ fixerId, isOwner }: Props) {
+export default function VisualPortfolioSection({ fixerId, isOwner, showForms = true }: Props) {
   const [portfolio, setPortfolio] = useState<VisualPortfolioDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -94,6 +95,13 @@ export default function VisualPortfolioSection({ fixerId, isOwner }: Props) {
     previewId: null,
     editingId: null,
   });
+
+  const [formsOpen, setFormsOpen] = useState(showForms);
+  const editable = isOwner && formsOpen;
+
+  useEffect(() => {
+    setFormsOpen(showForms);
+  }, [showForms]);
 
   useEffect(() => {
     let active = true;
@@ -257,7 +265,7 @@ export default function VisualPortfolioSection({ fixerId, isOwner }: Props) {
   };
 
   const handleDelete = async (id: string) => {
-    if (!isOwner) return;
+    if (!editable) return;
     const confirmed = window.confirm("¿Eliminar este elemento del portafolio?");
     if (!confirmed) return;
     try {
@@ -272,7 +280,7 @@ export default function VisualPortfolioSection({ fixerId, isOwner }: Props) {
   };
 
   const moveItem = async (id: string, direction: "up" | "down") => {
-    if (!isOwner) return;
+    if (!editable) return;
     const current = normalizeMediaList(portfolio?.media);
     const index = current.findIndex((item) => item.id === id);
     const target = direction === "up" ? index - 1 : index + 1;
@@ -310,11 +318,11 @@ export default function VisualPortfolioSection({ fixerId, isOwner }: Props) {
     <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-600">
       <p className="font-semibold text-slate-800">Aún no hay material visual cargado.</p>
       <p className="mt-1 text-slate-600">
-        {isOwner
+        {editable
           ? "Agrega imagenes o videos de YouTube para mostrar tus trabajos."
           : "El fixer aun no publico imagenes o videos."}
       </p>
-      {isOwner && (
+      {editable && (
         <div className="mt-3 flex flex-wrap gap-2">
           <button
             type="button"
@@ -386,7 +394,7 @@ export default function VisualPortfolioSection({ fixerId, isOwner }: Props) {
             </div>
           )}
 
-          {isOwner && (
+          {editable && (
             <div className="absolute right-2 top-2 flex gap-2">
               <button
                 type="button"
@@ -412,7 +420,7 @@ export default function VisualPortfolioSection({ fixerId, isOwner }: Props) {
             <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-600">
               {isImage ? "Imagen" : "Video"}
             </span>
-            {isOwner && (
+            {editable && (
               <div className="flex items-center gap-2">
                 <button
                   type="button"
@@ -459,13 +467,24 @@ export default function VisualPortfolioSection({ fixerId, isOwner }: Props) {
           </p>
         </div>
         {isOwner && (
-          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-            Edicion habilitada
-          </span>
+          <div className="flex items-center gap-2">
+            {editable && (
+              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+                Edicion habilitada
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={() => setFormsOpen((prev) => !prev)}
+              className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:border-blue-400 hover:text-blue-600"
+            >
+              {formsOpen ? "Ocultar formularios" : "+ Añadir"}
+            </button>
+          </div>
         )}
       </div>
 
-      {isOwner && (
+      {editable && (
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-5">
           <div className="flex items-center justify-between gap-3">
             <h3 className="text-sm font-semibold text-slate-900">Agregar imagen</h3>
@@ -529,7 +548,7 @@ export default function VisualPortfolioSection({ fixerId, isOwner }: Props) {
         </div>
       )}
 
-      {isOwner && (
+      {editable && (
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-5">
           <div className="flex items-center justify-between gap-3">
             <h3 className="text-sm font-semibold text-slate-900">Agregar video de YouTube</h3>

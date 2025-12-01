@@ -20,6 +20,7 @@ import {
 type Props = {
   fixerId: string;
   isOwner: boolean;
+  showForms?: boolean;
 };
 
 type JobFormState = {
@@ -71,7 +72,7 @@ const formatDate = (value?: string) => {
 
 const JOB_JOURNEY_TYPES = ["Tiempo completo", "Medio tiempo", "Freelance", "Proyecto", "Prácticas"];
 
-export default function WorkExperienceSection({ fixerId, isOwner }: Props) {
+export default function WorkExperienceSection({ fixerId, isOwner, showForms = true }: Props) {
   const [experience, setExperience] = useState<WorkExperienceDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -85,6 +86,15 @@ export default function WorkExperienceSection({ fixerId, isOwner }: Props) {
   const [editingCertId, setEditingCertId] = useState<string | null>(null);
   const [certError, setCertError] = useState<string | null>(null);
   const [certSaving, setCertSaving] = useState(false);
+  const [jobFormOpen, setJobFormOpen] = useState(showForms);
+  const [certFormOpen, setCertFormOpen] = useState(showForms);
+  const editableJobs = isOwner && jobFormOpen;
+  const editableCerts = isOwner && certFormOpen;
+
+  useEffect(() => {
+    setJobFormOpen(showForms);
+    setCertFormOpen(showForms);
+  }, [showForms]);
 
   useEffect(() => {
     let mounted = true;
@@ -272,7 +282,7 @@ export default function WorkExperienceSection({ fixerId, isOwner }: Props) {
   };
 
   const handleDeleteJob = async (jobId: string) => {
-    if (!isOwner) return;
+    if (!editableJobs) return;
     const confirmDelete = window.confirm("¿Eliminar esta posición laboral?");
     if (!confirmDelete) return;
     try {
@@ -288,7 +298,7 @@ export default function WorkExperienceSection({ fixerId, isOwner }: Props) {
   };
 
   const handleDeleteCert = async (certId: string) => {
-    if (!isOwner) return;
+    if (!editableCerts) return;
     const confirmDelete = window.confirm("¿Eliminar esta certificación?");
     if (!confirmDelete) return;
     try {
@@ -328,11 +338,8 @@ export default function WorkExperienceSection({ fixerId, isOwner }: Props) {
             Cuenta tu trayectoria con cargos, empresas y fechas claras. Luego agrega las certificaciones que validen tu trabajo.
           </p>
         </div>
-        {isOwner && (
-          <div className="flex flex-col items-end gap-1 text-xs font-semibold text-slate-600">
-            <span className="rounded-full bg-slate-100 px-3 py-1">Edición habilitada</span>
-            <span className="text-[11px] font-normal text-slate-500">Guarda cada bloque antes de pasar al siguiente.</span>
-          </div>
+        {isOwner && (editableJobs || editableCerts) && (
+          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">Edición habilitada</span>
         )}
       </div>
 
@@ -346,16 +353,15 @@ export default function WorkExperienceSection({ fixerId, isOwner }: Props) {
           {isOwner && (
             <button
               type="button"
-              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-blue-500 disabled:opacity-60"
-              onClick={() => resetJobForm()}
+              onClick={() => setJobFormOpen((prev) => !prev)}
+              className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:border-blue-400 hover:text-blue-600"
             >
-              <Plus className="h-4 w-4" />
-              Nueva posición
+              {jobFormOpen ? "Ocultar formulario" : "+ Añadir posición"}
             </button>
           )}
         </div>
 
-        {isOwner && (
+        {editableJobs && (
           <div className="mb-4 rounded-xl border border-slate-100 bg-slate-50 p-4">
             <div className="grid gap-3 md:grid-cols-2">
               <div className="space-y-2">
@@ -479,7 +485,7 @@ export default function WorkExperienceSection({ fixerId, isOwner }: Props) {
                       {formatDate(job.startDate)} — {job.isCurrent ? "Actual" : formatDate(job.endDate)}
                     </p>
                   </div>
-                  {isOwner && (
+                  {editableJobs && (
                     <div className="flex gap-2">
                       <button
                         type="button"
@@ -505,14 +511,14 @@ export default function WorkExperienceSection({ fixerId, isOwner }: Props) {
           </div>
         ) : (
           <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-500">
-            Aún no hay posiciones registradas. {isOwner ? "Agrega tu primera posición para mostrar tu trayectoria." : ""}
+            Aún no hay posiciones registradas. {editableJobs ? "Agrega tu primera posición para mostrar tu trayectoria." : ""}
           </p>
         )}
       </div>
 
       {/* Sección de certificaciones */}
       <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div className="mb-3 flex items-center justify-between">
+          <div className="mb-3 flex items-center justify-between">
           <div className="space-y-1">
             <h3 className="text-sm font-semibold text-slate-900">Certificaciones y credenciales</h3>
             <p className="text-xs text-slate-500">Adjunta diplomas, cursos o credenciales que respalden tu perfil.</p>
@@ -521,15 +527,19 @@ export default function WorkExperienceSection({ fixerId, isOwner }: Props) {
             <button
               type="button"
               className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-blue-500 disabled:opacity-60"
-              onClick={() => resetCertForm()}
+              onClick={() => setCertFormOpen((prev) => !prev)}
             >
-              <Plus className="h-4 w-4" />
-              Añadir certificación
+              {certFormOpen ? "Ocultar formulario" : (
+                <>
+                  <Plus className="h-4 w-4" />
+                  Añadir certificación
+                </>
+              )}
             </button>
           )}
         </div>
 
-        {isOwner && (
+        {editableCerts && (
           <div className="mb-4 rounded-xl border border-slate-100 bg-slate-50 p-4">
             <div className="grid gap-3 md:grid-cols-2">
               <div className="space-y-2">
@@ -669,7 +679,7 @@ export default function WorkExperienceSection({ fixerId, isOwner }: Props) {
                       <ImageIcon className="h-8 w-8" />
                     </div>
                   )}
-                  {isOwner && (
+                  {editableCerts && (
                     <div className="absolute right-2 top-2 flex gap-2">
                       <button
                         type="button"
@@ -713,7 +723,7 @@ export default function WorkExperienceSection({ fixerId, isOwner }: Props) {
           </div>
         ) : (
           <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-500">
-            Aún no hay certificaciones registradas. {isOwner ? "Sube una imagen válida (JPG, PNG o WebP) para mostrarla aquí." : ""}
+            Aún no hay certificaciones registradas. {editableCerts ? "Sube una imagen válida (JPG, PNG o WebP) para mostrarla aquí." : ""}
           </p>
         )}
       </div>
