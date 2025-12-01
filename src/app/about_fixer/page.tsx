@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Header from "./components/Header";
 import WorkExperienceSection from "./components/WorkExperienceSection";
+import VisualPortfolioSection from "./components/VisualPortfolioSection";
 import { useClientSession } from "@/lib/auth/useSession";
 import { getFixer, getFixerByUser, type FixerDTO } from "@/lib/api/fixer";
 
@@ -155,7 +156,8 @@ function AboutFixerPageContent() {
               </div>
             </section>
 
-            {/* Sección Work Experience entre descripción y comentarios (no hay comentarios aún) */}
+            {/* Portafolio visual + Work Experience */}
+            {fixerId && <VisualPortfolioSection fixerId={fixerId} isOwner={Boolean(isOwner)} />}
             {fixerId && <WorkExperienceSection fixerId={fixerId} isOwner={Boolean(isOwner)} />}
           </>
         )}

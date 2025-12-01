@@ -59,6 +59,7 @@ export type FixerDTO = {
   ratingCount?: number;
   memberSince?: string;
   workExperience?: WorkExperienceDTO;
+  visualPortfolio?: VisualPortfolioDTO;
 };
 
 export type FixerWithCategoriesDTO = FixerDTO & {
@@ -102,6 +103,31 @@ export type WorkExperienceDTO = {
   updatedAt?: string;
 };
 
+export type PortfolioMediaDTO = {
+  id: string;
+  kind: "image" | "video";
+  description?: string;
+  order: number;
+  imageUrl?: string;
+  imageMeta?: {
+    mimeType: string;
+    size: number;
+    originalName?: string;
+    optimized?: boolean;
+  };
+  videoUrl?: string;
+  videoId?: string;
+  embedUrl?: string;
+  provider?: "youtube";
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type VisualPortfolioDTO = {
+  media: PortfolioMediaDTO[];
+  updatedAt?: string;
+};
+
 export type FixersByCategoryDTO = {
   category: CategoryDTO;
   total: number;
@@ -131,6 +157,16 @@ export type CertificationPayload = {
   credentialId?: string;
   credentialUrl?: string;
   file?: File;
+};
+
+export type PortfolioImagePayload = {
+  description?: string;
+  file: File;
+};
+
+export type PortfolioVideoPayload = {
+  description?: string;
+  videoUrl: string;
 };
 
 export async function checkCI(ci: string, excludeId?: string) {
@@ -309,4 +345,88 @@ export async function deleteCertification(fixerId: string, certificationId: stri
     { method: "DELETE" }
   );
   return true;
+}
+
+export async function getPortfolio(fixerId: string): Promise<VisualPortfolioDTO> {
+  const response = await request<ApiSuccess<VisualPortfolioDTO>>(`${FIXER_BASE}/${fixerId}/portfolio`, {
+    cache: "no-store",
+  });
+  return response.data;
+}
+
+function buildPortfolioImageFormData(payload: Partial<PortfolioImagePayload>) {
+  const form = new FormData();
+  if (payload.description) form.append("description", payload.description);
+  if (payload.file) form.append("file", payload.file);
+  return form;
+}
+
+export async function addPortfolioImage(fixerId: string, payload: PortfolioImagePayload) {
+  const response = await request<ApiSuccess<PortfolioMediaDTO>>(`${FIXER_BASE}/${fixerId}/portfolio/images`, {
+    method: "POST",
+    body: buildPortfolioImageFormData(payload),
+  });
+  return response.data;
+}
+
+export async function updatePortfolioImage(
+  fixerId: string,
+  mediaId: string,
+  payload: Partial<PortfolioImagePayload>
+) {
+  const response = await request<ApiSuccess<PortfolioMediaDTO>>(
+    `${FIXER_BASE}/${fixerId}/portfolio/images/${mediaId}`,
+    {
+      method: "PUT",
+      body: buildPortfolioImageFormData(payload),
+    }
+  );
+  return response.data;
+}
+
+export async function addPortfolioVideo(fixerId: string, payload: PortfolioVideoPayload) {
+  const response = await request<ApiSuccess<PortfolioMediaDTO>>(`${FIXER_BASE}/${fixerId}/portfolio/videos`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return response.data;
+}
+
+export async function updatePortfolioVideo(
+  fixerId: string,
+  mediaId: string,
+  payload: PortfolioVideoPayload
+) {
+  const response = await request<ApiSuccess<PortfolioMediaDTO>>(
+    `${FIXER_BASE}/${fixerId}/portfolio/videos/${mediaId}`,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    }
+  );
+  return response.data;
+}
+
+export async function deletePortfolioItem(fixerId: string, mediaId: string) {
+  await request<ApiSuccess<{ message: string }>>(`${FIXER_BASE}/${fixerId}/portfolio/${mediaId}`, {
+    method: "DELETE",
+  });
+  return true;
+}
+
+export async function reorderPortfolio(
+  fixerId: string,
+  items: { id: string; order: number }[]
+): Promise<VisualPortfolioDTO> {
+  const response = await request<ApiSuccess<VisualPortfolioDTO>>(
+    `${FIXER_BASE}/${fixerId}/portfolio/reorder`,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ items }),
+    }
+  );
+  return response.data;
 }
