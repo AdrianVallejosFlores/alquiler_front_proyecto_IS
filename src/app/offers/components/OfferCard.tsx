@@ -102,26 +102,48 @@ export default function OfferCard({ offer, onOpen }: Props) {
           )}
         </div>
       </div>
+           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+           <button
+           type="button"
+          onClick={() => {
+            console.log('Ver promociones de:', offer.title);
+           }}
+    className="btn-outline"
+    style={{
+      cursor: 'pointer',
+      padding: '8px 12px',
+      borderRadius: 8,
+      border: '1px solid #DBDEE5',
+      background: '#F0F2F5',
+      color: '#0c4fe9',
+      fontWeight: 600,
+      whiteSpace: 'nowrap',
+    }}
+    aria-label={`Ver promociones de ${offer.title}`}
+  >
+    Ver Promociones
+  </button>
 
-      <div style={{ display: 'flex', alignItems: 'center' }}>
-        <button
-          type="button"
-          onClick={() => onOpen(offer)}
-          className="btn-outline"
-          style={{
-            cursor: 'pointer',
-            padding: '8px 12px',
-            borderRadius: 8,
-            border: '1px solid #DBDEE5',
-            background: '#F0F2F5',
-            color: '#0c4fe9',
-            fontWeight: 600,
-          }}
-          aria-label={`Ver oferta ${offer.title}`}
-        >
-          Ver oferta
-        </button>
-      </div>
+  <button
+    type="button"
+    onClick={() => onOpen(offer)}
+    className="btn-outline"
+    style={{
+      cursor: 'pointer',
+      padding: '8px 12px',
+      borderRadius: 8,
+      border: '1px solid #DBDEE5',
+      background: '#F0F2F5',
+      color: '#0c4fe9',
+      fontWeight: 600,
+      whiteSpace: 'nowrap',
+    }}
+    aria-label={`Ver oferta ${offer.title}`}
+  >
+    Ver oferta
+  </button>
+
+ </div>
     </div>
   );
 }
