@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import {
   ISolicitud,
@@ -42,7 +40,7 @@ export function useSolicitudTrabajo(
     setMensaje("");
     setEnviado(false);
 
-    const { horaInicio, horaFin, descripcion, costo } = data;
+    const { horaInicio, horaFin, descripcion, costo, categoria } = data;
 
     // 0) Validaciones de presencia (con mensajes específicos)
     if (!horaInicio && !horaFin) {
@@ -87,13 +85,14 @@ export function useSolicitudTrabajo(
       return;
     }
 
-    // 4) Payload con el nuevo campo `date` (para backend)
+    // 4) Payload con el nuevo campo `categoria` y `date` (para backend)
     const payload: ISolicitud = {
       date,
       horaInicio,
       horaFin,
       descripcion,
       costo,
+      categoria, 
     };
 
     setLoading(true);
