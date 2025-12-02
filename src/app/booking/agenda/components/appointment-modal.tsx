@@ -325,7 +325,7 @@ export function AppointmentModal({
 
     } catch (err) {
       console.error(err);
-      alert("No se pudo crear la cita");
+      alert("Error al crear la cita");
     } finally {
       setSaving(false);
     }
