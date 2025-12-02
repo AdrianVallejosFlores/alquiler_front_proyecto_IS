@@ -1,6 +1,5 @@
 import DetalleTerminado from "../modules/DetalleTerminado";
 import { fetchTrabajoById } from "../services/TrabajoTerminados.service";
-import { headers } from "next/headers";
 
 export const metadata = { title: "Trabajo - Detalle" };
 export const dynamic = "force-dynamic";
@@ -8,13 +7,7 @@ export const dynamic = "force-dynamic";
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  // ← construimos el origin actual sin usar .env
-  const h = await headers();
-  const host = h.get("host") || "localhost:3000";
-  const proto = host.includes("localhost") ? "http" : "https";
-  const origin = `${proto}://${host}`;
-
-  const trabajo = await fetchTrabajoById(id, origin); // ← origin se pasa al servicio
+  const trabajo = await fetchTrabajoById(id);
 
   if (!trabajo) {
     return (
