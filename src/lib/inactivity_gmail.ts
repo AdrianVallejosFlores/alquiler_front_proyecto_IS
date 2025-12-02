@@ -42,9 +42,9 @@ const formatearFechaLarga = (iso: string) => {
 const safeStr = (v: any, fallback = "—") =>
   v === undefined || v === null || v === "" ? fallback : String(v);
 
-/* ===========================================================
-   📧 Función base: Gmail
-   =========================================================== */
+/* 
+    Función base: Gmail
+    */
 
 function isValidEmail(email?: string) {
   if (!email) return false;
@@ -159,9 +159,9 @@ export async function sendNotification(payload: {
   };
 }
 
-/* ===========================================================
-   📧 CREAR CITA — Requester + Fixer
-   =========================================================== */
+/* 
+    CREAR CITA — Requester + Fixer
+    */
 
 export async function notifyNewServicesAvailable() {
   try {
@@ -187,7 +187,7 @@ export async function notifyNewServicesAvailable() {
       return { ok: true, notified: false, message: "No hay nuevos servicios." };
     }
 
-    // ✔ Si supera 15 → "(+)"
+    // Si supera 15 → "(+)"
     const cantidadMostrar = nuevosServicios > 15 ? "(+15)" : String(nuevosServicios);
 
     // URL app
@@ -235,10 +235,9 @@ export async function notifyNewServicesAvailable() {
   }
 }
 
-
 export async function notifyNewPromotionsAvailable() {
   try {
-    // 🔹 1️⃣ Leer datos del localStorage
+    //  1️⃣ Leer datos del localStorage
     const storedData = localStorage.getItem("env_prueba");
     const userData = storedData ? JSON.parse(storedData) : null;
 
@@ -263,7 +262,7 @@ export async function notifyNewPromotionsAvailable() {
     else if (hora === "tarde") saludo = "Buenas tardes";
     else if (hora === "noche") saludo = "Buenas noches";
 
-    // 🔹 4️⃣ Crear mensaje
+    //  4️⃣ Crear mensaje
     const subject = "Nuevos promociones disponibles";
 
     const message = [
@@ -279,12 +278,12 @@ export async function notifyNewPromotionsAvailable() {
       "— *Equipo SERVINEO*",
     ].join("\n");
 
-    // 🔹 5️⃣ Destinos (solo correo del fixer)
+    //  5️⃣ Destinos (solo correo del fixer)
     const destinations: Destination[] = [];
 
     if (requestCorreo) destinations.push({ email: requestCorreo, name: requestNombre });
 
-    // 🔹 6️⃣ Enviar notificación
+    //  6️⃣ Enviar notificación
     const result = await sendNotification({
       subject,
       message,

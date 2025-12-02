@@ -1,6 +1,5 @@
-// ===========================================================
+
 //   📱 NOTIFICACIONES WHATSAPP (versión clonada del Gmail)
-// ===========================================================
 
 import {
   getProveedorById,
@@ -32,9 +31,9 @@ export type CreateResponse = {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 
-/* ========================================
-   📅 Utilidades
-   ======================================== */
+/* 
+  Utilidades
+    */
 const formatearFechaLarga = (iso: string) => {
   const [y, m, d] = iso.split("-").map(Number);
   return new Date(y, m - 1, d).toLocaleDateString("es-ES", {
@@ -48,9 +47,9 @@ const formatearFechaLarga = (iso: string) => {
 const safeStr = (v: any, fallback = "—") =>
   v === undefined || v === null || v === "" ? fallback : String(v);
 
-/* ===========================================================
-   📱 Función base: WhatsApp
-   =========================================================== */
+/* 
+    Función base: WhatsApp
+    */
 
 export async function sendWhatsAppNotification(payload: {
   message: string;
@@ -115,9 +114,9 @@ export async function sendWhatsAppNotification(payload: {
   return { ok: false, message: "No se pudo enviar la notificación tras varios intentos." };
 }
 
-/* ===========================================================
-   📱 WHATSAPP — Nuevos Servicios
-   =========================================================== */
+/* 
+    WHATSAPP — Nuevos Servicios
+    */
 
 export async function notifyNewServicesAvailableWhatsApp() {
   try {
@@ -185,9 +184,9 @@ export async function notifyNewServicesAvailableWhatsApp() {
   }
 }
 
-/* ===========================================================
-   📱 WHATSAPP — Nuevas Promociones
-   =========================================================== */
+/* 
+    WHATSAPP — Nuevas Promociones
+    */
 
 export async function notifyNewPromotionsAvailableWhatsApp() {
   try {

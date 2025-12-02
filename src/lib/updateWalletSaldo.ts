@@ -11,10 +11,10 @@ export async function rechargeWalletSimple(monto: number): Promise<SimpleRecharg
       return { ok: false, message: "El monto debe ser un número válido." };
     }
 
-    // 👉 Se permite monto 0 o negativo
+    //  Se permite monto 0 o negativo
     const nuevoSaldo = monto;
 
-    // 👉 Guardarlo en localStorage
+    //  Guardarlo en localStorage
     localStorage.setItem("wallet_saldo_prueba", String(nuevoSaldo));
 
     return {

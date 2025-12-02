@@ -7,7 +7,7 @@ export const notifyUserRegister = async (email: string, name: string) => {
     message: `Hola ${name}, gracias por registrarte con nosotros.`,
     destinations: [{ email, name }],
     fromName: "Equipo Fixer",
-    isRegistration: true, // 🔥 importante: bandera para el backend
+    isRegistration: true, //  importante: bandera para el backend
   });
 };
 

@@ -1,6 +1,6 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 
-/** 🧰 Utilidad base para todas las peticiones */
+/*  Utilidad base para todas las peticiones */
 async function fetchFromApi<T = any>(endpoint: string): Promise<T | null> {
   try {
     const url = `${API_URL}${endpoint}`;
@@ -33,9 +33,9 @@ async function fetchFromApi<T = any>(endpoint: string): Promise<T | null> {
   }
 }
 
-/* ===========================================================
-   🔹 Funciones específicas por recurso
-   =========================================================== */
+/* 
+    Funciones específicas por recurso
+    */
 export async function getProveedorById(proveedorId: string) {
   if (!proveedorId) return null;
   return fetchFromApi(`/api/devcode/proveedores/${proveedorId}`);
@@ -51,7 +51,7 @@ export async function getClienteById(clienteId: string) {
   return fetchFromApi(`/api/devcode/clientes/${clienteId}`);
 }
 
-/** 🗓️ Obtener disponibilidad del proveedor en un rango de fechas */
+/* Obtener disponibilidad del proveedor en un rango de fechas */
 export async function getDisponibilidadProveedor(
   proveedorId: string,
   fechaInicio: string,
