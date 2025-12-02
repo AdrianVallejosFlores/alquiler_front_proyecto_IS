@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import Icono from './Icono';
 import { useRouter } from 'next/navigation';
+import GoogleSignInButton from "../../../components/GoogleSignInButton";
+
 
 export default function Header() {
   const [isClient, setIsClient] = useState(false);
@@ -118,24 +120,15 @@ export default function Header() {
         <div className="flex items-center space-x-4">
           {!isLoggedIn ? (
             <>
+              <GoogleSignInButton />
+
               <Link href="/bitcrew/comision">
                 <button className="px-4 py-2 font-semibold text-[#ffffff] bg-[#2a87ff] rounded-md hover:bg-[#1a347a] transition-colors">
                   Ser Fixer
                 </button>
               </Link>
-
-              <Link href="/login">
-                <button className="px-4 py-2 font-semibold text-[#2a87ff] border border-[#2a87ff] rounded-md hover:bg-[#EEF7FF] transition-colors">
-                  Iniciar Sesión
-                </button>
-              </Link>
-
-              <Link href="/registro">
-                <button className="px-4 py-2 font-semibold text-white bg-[#2a87ff] rounded-md hover:bg-[#52ABFF] transition-colors">
-                  Registrarse
-                </button>
-              </Link>
             </>
+
           ) : (
             <>
               <Link href="/ser-fixer">

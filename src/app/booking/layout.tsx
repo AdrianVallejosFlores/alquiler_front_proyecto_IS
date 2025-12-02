@@ -30,7 +30,7 @@ export default function BookingLayout({
       {/* ⬇️ CONTENIDO */}
       <div className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <div style={{ display: "flex", justifyContent: "flex-end", padding: 12 }}>
-          <GoogleSignInButton />
+          {/* <GoogleSignInButton /> */}
         </div>
         {children}
       </div>
