@@ -444,30 +444,6 @@ function AddOrEditOfferPageContent() {
   }
 
   return (
-<<<<<<< HEAD
-    <main className="min-h-screen bg-white">
-      <section className="flex justify-center px-4 py-10 pt-16">
-        <form className="w-full max-w-3xl space-y-8">
-          <div>
-            <h1 className="text-2xl font-semibold text-slate-900">
-              {isEdit ? 'Editar oferta de servicio' : 'Crear nueva oferta de servicio'}
-            </h1>
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-2 md:gap-8">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-900">Descripción</label>
-              <input
-                type="text"
-                value={description}
-                onChange={(event) => setDescription(event.target.value)}
-                maxLength={MAX_DESCRIPTION_LENGTH}
-                placeholder="Describe tu servicio en 100 caracteres o menos."
-                className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-700 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-              />
-              <div className="text-right text-xs text-slate-500">
-                {description.length}/{MAX_DESCRIPTION_LENGTH}
-=======
     <main className="flex flex-col bg-white w-full min-h-screen">
       <header className="flex justify-between items-center px-10 py-3 border-b border-gray-200">
         <div className="flex items-center gap-4">
@@ -519,7 +495,6 @@ function AddOrEditOfferPageContent() {
             {esEdicion && imagenesExistentes?.length > 0 && (
               <div className="mb-2 text-sm text-gray-600">
                 Actualmente: {imagenesExistentes.length} imagen(es) cargada(s).
->>>>>>> dev/recode-sprint3_v2
               </div>
             </div>
 
@@ -540,19 +515,11 @@ function AddOrEditOfferPageContent() {
             </div>
           </div>
 
-<<<<<<< HEAD
-          <div className="space-y-4 rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
-            <p className="text-base font-semibold text-slate-900">Adjuntar imagenes</p>
-            <p className="text-sm text-slate-500">
-              Sube imagenes para una mejor descripción de tu servicio (JPG o PNG, max 5MB).
-            </p>
-=======
           {/* MENSAJE /}
           {mensaje && <p className="text-sm text-red-500">{mensaje}</p>}
 
           {/* BOTONES /}
           <div className="flex justify-between p-4">
->>>>>>> dev/recode-sprint3_v2
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
