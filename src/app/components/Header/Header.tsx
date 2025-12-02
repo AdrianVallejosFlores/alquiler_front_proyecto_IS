@@ -118,6 +118,7 @@ export default function Header() {
         </div>
 
         <div className="flex items-center space-x-4">
+<<<<<<< HEAD
           {hideAuthButtons ? null : (
             !isLoggedIn ? (
               <>
@@ -161,6 +162,49 @@ export default function Header() {
                       className="w-8 h-8 text-[#2a87ff] cursor-pointer"
                       fill="currentColor"
                       viewBox="0 0 24 24"
+=======
+          {!isLoggedIn ? (
+            <>
+              <Link href="/bitcrew/comision">
+                <button className="px-4 py-2 font-semibold text-[#ffffff] bg-[#2a87ff] rounded-md hover:bg-[#1a347a] transition-colors">
+                  Ser Fixer
+                </button>
+              </Link>
+
+              <Link href="/login">
+                <button className="px-4 py-2 font-semibold text-[#2a87ff] border border-[#2a87ff] rounded-md hover:bg-[#EEF7FF] transition-colors">
+                  Iniciar Sesión
+                </button>
+              </Link>
+
+              <Link href="/registro">
+                <button className="px-4 py-2 font-semibold text-white bg-[#2a87ff] rounded-md hover:bg-[#52ABFF] transition-colors">
+                  Registrarse
+                </button>
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link href="/ser-fixer">
+                <button className="px-4 py-2 font-semibold text-[#ffffff] bg-[#2a87ff] rounded-md hover:bg-[#1a347a] transition-colors">
+                  Ser Fixer
+                </button>
+              </Link>
+              <div className="flex items-center space-x-2">
+                <span className="font-semibold text-[#11255A]">Usuario</span>
+                <div className="relative group">
+                  <svg
+                    className="w-8 h-8 text-[#2a87ff] cursor-pointer"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
+                  </svg>
+                  <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                    <button
+                      onClick={handleLogout}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+>>>>>>> dev/recode-sprint3_v2
                     >
                       <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
                     </svg>
