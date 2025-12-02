@@ -286,6 +286,7 @@ export default function HelpButton() {
             Por favor, complete la verificación de seguridad para continuar:
           </p>
 
+
           {/* hCaptcha Component */}
           <div className="flex justify-center mb-4">
             {siteKey && (
