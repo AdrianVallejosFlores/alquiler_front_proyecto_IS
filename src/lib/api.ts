@@ -1,32 +1,19 @@
-export const BACKEND_URL = "http://localhost:5000/api/notifications";
+const BASE_URL = "http://localhost:4000/api/ofertas";
 
-export const sendNotification = async (data: any) => {
-  try {
-    const res = await fetch(BACKEND_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": process.env.NEXT_PUBLIC_API_KEY ?? "",
-      },
-      body: JSON.stringify({
-        ...data,
-        isRegistration: Boolean(data.isRegistration), // 👈 fuerza booleano siempre
-      }),
-    });
+export async function crearOferta(formData: FormData) {
+  const res = await fetch(BASE_URL, {
+    method: "POST",
+    body: formData, // enviamos FormData directamente
+  });
 
-    const result = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error("Error al crear la oferta");
 
-    if (!res.ok) {
-      const errorMessage =
-        result?.error ||
-        result?.details?.message ||
-        result?.message ||
-        `Error ${res.status}: ${res.statusText}`;
-      throw new Error(errorMessage);
-    }
+  return res.json();
+}
 
-    return result;
-  } catch (err: any) {
-    throw new Error(err.message || "Error de conexión con el servidor");
-  }
-};
+export async function obtenerOfertas() {
+  const res = await fetch(BASE_URL);
+  if (!res.ok) throw new Error("Error al obtener las ofertas");
+  return res.json();
+}
+

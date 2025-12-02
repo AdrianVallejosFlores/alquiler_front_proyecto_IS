@@ -63,3 +63,5 @@ export async function getDisponibilidadProveedor(
     `/api/devcode/proveedores/${proveedorId}/disponibilidad?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`
   );
 }
+
+export { fetchFromApi };
