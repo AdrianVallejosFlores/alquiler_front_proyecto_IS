@@ -3,21 +3,21 @@
 
 import { useState } from "react";
 
-// 📧 Gmail
+//  Gmail
 import {
   createAndNotify as createAndNotifyGmail,
   updateAndNotify as updateAndNotifyGmail,
   cancelAndNotify as cancelAndNotifyGmail,
 } from "@/lib/appointments_gmail";
 
-// 💬 WhatsApp (nuevo formato)
+//  WhatsApp (nuevo formato)
 import {
   createAndNotifyWhatsApp,
   updateAndNotifyWhatsApp,
   cancelAndNotifyWhatsApp,
 } from "@/lib/appointments_whatsapp";
 
-// 🧩 Datos reales del proveedor (ajusta según tu BD)
+//  Datos reales del proveedor (ajusta según tu BD)
 const PROVEEDOR = {
   _id: "690c29d00c736bec44e473e4",
   nombre: "namelees",
@@ -28,12 +28,12 @@ const PROVEEDOR = {
 
 const SERVICIO_ID = "690c27190c736bec44e473e0"; // Servicio real
 
-// 👤 Cliente demo
+//  Cliente demo
 const CLIENTE = {
   id: "68fb93e079308369b5a0f264",
   nombre: "Juan Perez",
   email: "adrianvallejosflores24@gmail.com",
-  phone: "59177484270", // ⚠️ cámbialo si querés probar WhatsApp real
+  phone: "59177484270", //  cámbialo si querés probar WhatsApp real
 };
 
 const CITA_ID = "690d234101f0528d2eb18122"; // opcional, solo para meta/log
@@ -53,8 +53,8 @@ export default function TestNotifyPage() {
         servicioId: SERVICIO_ID,
         cliente: CLIENTE,
         citaId: CITA_ID,
-        proveedorTelefono: PROVEEDOR.telefono, // ✅ se pasa explícitamente
-        proveedorEmail: PROVEEDOR.email,       // ✅ también útil para Gmail
+        proveedorTelefono: PROVEEDOR.telefono, //  se pasa explícitamente
+        proveedorEmail: PROVEEDOR.email,       //  también útil para Gmail
       };
 
       if (type === "create") {

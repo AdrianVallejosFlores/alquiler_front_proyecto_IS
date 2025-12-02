@@ -1,7 +1,7 @@
 // src/lib/appointments_gmail.ts
 
 /* Para las funciones de actualizacion y cancelacion faltan validar valores para el nombre
- * del cliente, ya que estamos usando el predeterminado, solo se puso su nombre de pila
+  del cliente, ya que estamos usando el predeterminado, solo se puso su nombre de pila
  */
 
 import {
@@ -48,9 +48,9 @@ const formatearFechaLarga = (iso: string) => {
 const safeStr = (v: any, fallback = "—") =>
   v === undefined || v === null || v === "" ? fallback : String(v);
 
-/* ===========================================================
-   📧 Función base: Gmail
-   =========================================================== */
+/* 
+  Función base: Gmail
+ */
 
 export async function sendNotification(payload: {
   subject: string;
@@ -158,9 +158,9 @@ export async function sendNotification(payload: {
   };
 }
 
-/* ===========================================================
-   📧 CREAR CITA — Requester + Fixer
-   =========================================================== */
+/* 
+    CREAR CITA — Requester + Fixer
+    */
 
 export async function createAndNotify(payload: CreateAppointmentPayload) {
   try {
@@ -188,7 +188,7 @@ export async function createAndNotify(payload: CreateAppointmentPayload) {
       (payload as any)?.id ||
       "";
 
-    /* 📨 Requester (cliente) */
+    /*  Requester (cliente) */
     const destinations: Destination[] = [];
     if (cliente && (cliente as any).email) {
       destinations.push({
@@ -230,7 +230,7 @@ export async function createAndNotify(payload: CreateAppointmentPayload) {
       ? await sendNotification(notifyPayload)
       : { ok: true };
 
-    /* 💌 Fixer (solo si tiene email) */
+    /*  Fixer (solo si tiene email) */
     const fixerEmail: string | undefined = (proveedor as any)?.email;
     const fixerNombre: string = (proveedor as any)?.nombre ?? "Proveedor";
 
@@ -280,9 +280,9 @@ export async function createAndNotify(payload: CreateAppointmentPayload) {
   }
 }
 
-/* ===========================================================
-   📧 UPDATE — Requester + Fixer
-   =========================================================== */
+/* 
+    UPDATE — Requester + Fixer
+    */
 
 export async function updateAndNotify(
   payload: CreateAppointmentPayload & { cambios?: string[] }
@@ -315,7 +315,7 @@ export async function updateAndNotify(
         ? `🔄 *Cambios realizados:* ${payload.cambios.join(", ")}`
         : "Se han actualizado los detalles de tu cita.";
 
-    /* 📨 Requester */
+    /*  Requester */
     const destinos: Destination[] = [];
     if (cliente && (cliente as any).email) {
       destinos.push({
@@ -355,7 +355,7 @@ export async function updateAndNotify(
         })
       : { ok: true };
 
-    /* 💌 Fixer */
+    /*  Fixer */
     const fixerEmail: string | undefined = (proveedor as any)?.email;
     const fixerNombre: string = (proveedor as any)?.nombre ?? "Proveedor";
     const motivoUpdate =
@@ -410,9 +410,9 @@ export async function updateAndNotify(
   }
 }
 
-/* ===========================================================
-   📧 CANCEL — Requester + Fixer
-   =========================================================== */
+/* 
+    CANCEL — Requester + Fixer
+    */
 
 export async function cancelAndNotify(payload: CreateAppointmentPayload) {
   try {
