@@ -2,14 +2,17 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 
+const URL = "http://localhost:5000"
+const ID_OFERTA = "67b123456789abcdef012345"
+
 // --- TIPOS ---
 interface Promocion {
-  id: number;
+  id: string;
   descripcion: string;
   estado: "Activo" | "Inactivo";
 }
 
-// --- DATOS DE PRUEBA ---
+/* --- DATOS DE PRUEBA ---
 const datosIniciales: Promocion[] = [
   { id: 1, descripcion: "¡ 10% de descuento para clientes nuevos !", estado: "Activo" },
   { id: 2, descripcion: "Cotización en obra gratis", estado: "Activo" },
@@ -23,7 +26,7 @@ const datosIniciales: Promocion[] = [
   { id: 10, descripcion: "Pintura de fachadas: Paga 3 paredes, pinta 4", estado: "Activo" },
   { id: 11, descripcion: "Impermeabilización con garantía extendida", estado: "Activo" },
   { id: 12, descripcion: "Pack de reparación de muebles de madera", estado: "Inactivo" },
-];
+];*/
 
 // --- COMPONENTE MODAL (DISEÑO ACTUALIZADO SEGÚN IMAGEN) ---
 interface ModalProps {
@@ -48,13 +51,15 @@ const ModalPromocion: React.FC<ModalProps> = ({ isOpen, onClose, onSave, promoEd
     }
   }, [promoEditar, isOpen]);
 
+  
+
   if (!isOpen) return null;
 
   const handleSubmit = () => {
     if (!descripcion.trim()) return alert("La descripción es obligatoria");
     
     const nuevaPromo: Promocion = {
-      id: promoEditar ? promoEditar.id : Date.now(),
+      id: promoEditar ? promoEditar.id : Date.now().toString(),
       descripcion,
       estado,
     };
@@ -149,7 +154,8 @@ const ModalPromocion: React.FC<ModalProps> = ({ isOpen, onClose, onSave, promoEd
 
 // --- PÁGINA PRINCIPAL (Sin cambios mayores, solo integración) ---
 export default function PromocionesPage() {
-  const [promociones, setPromociones] = useState<Promocion[]>(datosIniciales);
+  const [promociones, setPromociones] = useState<Promocion[]>([]);
+  const [promosEliminadas, setPromosEliminadas] = useState<string[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [promoAEditar, setPromoAEditar] = useState<Promocion | null>(null);
   const [paginaActual, setPaginaActual] = useState(1);
@@ -170,25 +176,104 @@ export default function PromocionesPage() {
     setIsModalOpen(true);
   };
 
-  const guardarDesdeModal = (promoGuardada: Promocion) => {
-    if (promoAEditar) {
-      setPromociones(promociones.map(p => p.id === promoGuardada.id ? promoGuardada : p));
-    } else {
-      setPromociones([promoGuardada, ...promociones]);
+  useEffect(() => {
+    const cargarPromos = async () => {
+      const res = await fetch(`${URL}/api/los_vengadores/promociones/oferta/${ID_OFERTA}`);
+      const data = await res.json();
+  
+      const promosFormateadas = data.map((p: any) => ({
+        id: p._id,
+        descripcion: p.descripcion,
+        estado: p.activo ? "Activo" : "Inactivo",
+      }));
+  
+      setPromociones(promosFormateadas);
+    };
+  
+    cargarPromos();
+  }, []);
+  
+
+  
+  
+  const eliminarPromocion = (id: number | string) => {
+    if (!confirm("¿Estás seguro de eliminar esta promoción?")) return;
+
+    // Guardamos el ID en promosEliminadas si es un _id de Mongo
+    if (id.toString().length === 24) {
+      setPromosEliminadas([...promosEliminadas, id.toString()]);
     }
-    setIsModalOpen(false);
+
+    // Eliminamos visualmente de la lista
+    setPromociones(promociones.filter(p => p.id !== id));
   };
 
-  const eliminarPromocion = (id: number) => {
-    if (window.confirm("¿Estás seguro de eliminar esta promoción?")) {
-      const nuevasPromociones = promociones.filter((p) => p.id !== id);
-      setPromociones(nuevasPromociones);
-      const nuevoTotalPaginas = Math.ceil(nuevasPromociones.length / itemsPorPagina);
-      if (paginaActual > nuevoTotalPaginas && nuevoTotalPaginas > 0) {
-        setPaginaActual(nuevoTotalPaginas);
+  const guardarDesdeModal = async (promoGuardada: Promocion) => {
+    if (promoAEditar) {
+      // Editar en el estado local
+      setPromociones(prev =>
+        prev.map(p => (p.id === promoGuardada.id ? promoGuardada : p))
+      );
+    } else {
+      // Crear nueva en el estado local
+      setPromociones(prev => [...prev, promoGuardada]);
+    }
+  
+    setIsModalOpen(false);
+  };
+  
+  const guardarCambiosEnBD = async () => {
+    // 1️⃣ Eliminar promociones marcadas
+    for (const id of promosEliminadas) {
+      await fetch(`${URL}/api/los_vengadores/promociones/${id}`, { method: "DELETE" });
+    }
+    setPromosEliminadas([]);
+  
+    // 2️⃣ Crear nuevas promociones y actualizar existentes
+    const promocionesActualizadas: Promocion[] = [];
+  
+    for (const promo of promociones) {
+      if (promo.id.length === 24) {
+        // EXISTENTES: actualizar
+        await fetch(`${URL}/api/los_vengadores/promociones/${promo.id}/descripcion`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ descripcion: promo.descripcion }),
+        });
+        await fetch(`${URL}/api/los_vengadores/promociones/${promo.id}/estado`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ activo: promo.estado === "Activo" }),
+        });
+        promocionesActualizadas.push(promo);
+      } else {
+        // NUEVAS: crear y reemplazar ID temporal
+        const nueva = await crearNuevaPromocion(promo);
+        promocionesActualizadas.push(nueva);
       }
     }
+  
+    // 3️⃣ Actualizar el estado global
+    setPromociones(promocionesActualizadas);
+  
+    alert("Promociones guardadas en la BD");
   };
+  
+  const crearNuevaPromocion = async (promo: Promocion) => {
+    const res = await fetch(`${URL}/api/los_vengadores/promociones`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id_ofertaTrabajo: ID_OFERTA,
+        descripcion: promo.descripcion,
+        activo: promo.estado === "Activo",
+      }),
+    });
+    const data = await res.json();
+    return { ...promo, id: data._id }; // reemplaza el ID temporal con el real
+  };
+  
+
 
   return (
     <div className="min-h-screen bg-white p-6 md:p-10 font-sans">
@@ -247,7 +332,7 @@ export default function PromocionesPage() {
               Atrás
             </button>
           </Link>
-          <button onClick={() => alert("Guardado global simulado")} className="bg-blue-600 text-white font-bold py-3 px-10 rounded-lg hover:bg-blue-700 transition shadow-lg">
+          <button onClick={guardarCambiosEnBD} className="bg-blue-600 text-white font-bold py-3 px-10 rounded-lg hover:bg-blue-700 transition shadow-lg">
             Guardar
           </button>
         </div>
