@@ -9,8 +9,8 @@ import {
   notifyNewPromotionsAvailableWhatsApp,
 } from "@/lib/inactivity_whatsapp";
 
-/**
- * Obtiene nuevos servicios de últimos 15 min.
+/*
+  Obtiene nuevos servicios de últimos 15 min.
  */
 export async function getNewServicesCount(): Promise<number> {
   try {
@@ -32,9 +32,9 @@ export async function getNewServicesCount(): Promise<number> {
   }
 }
 
-/**
- * Procesa los servicios dentro del rango de fechas entre appLoadedAt y hora_local_actual,
- * PERO usando IDs procesados para evitar duplicados.
+/*
+  Procesa los servicios dentro del rango de fechas entre appLoadedAt y hora_local_actual,
+  PERO usando IDs procesados para evitar duplicados.
  */
 export function procesarServiciosNuevos(servicios: any[]) {
   const horaLocalStr = localStorage.getItem("hora_local_actual");
@@ -47,7 +47,7 @@ export function procesarServiciosNuevos(servicios: any[]) {
 
   let counter = parseInt(localStorage.getItem("lista_nuevos_servicios") || "0", 10);
 
-  // 🔥 IDs ya procesados (evita duplicados)
+  //  IDs ya procesados (evita duplicados)
   const idsProcesados = new Set(
     JSON.parse(localStorage.getItem("ids_procesados") || "[]")
   );
@@ -59,7 +59,7 @@ export function procesarServiciosNuevos(servicios: any[]) {
     const id = servicio._id;
     if (!id) return;
 
-    // ⛔ Si ya fue contado, no lo contamos de nuevo
+    //  Si ya fue contado, no lo contamos de nuevo
     if (idsProcesados.has(id)) return;
 
     const timestampSeg = parseInt(id.substring(0, 8), 16);
@@ -75,8 +75,8 @@ export function procesarServiciosNuevos(servicios: any[]) {
   localStorage.setItem("ids_procesados", JSON.stringify([...idsProcesados]));
 }
 
-/**
- * Valida días, llama a procesarServiciosNuevos SOLO cuando se ejecute esta función.
+/*
+  Valida días, llama a procesarServiciosNuevos SOLO cuando se ejecute esta función.
  */
 export async function verificarCondicionDias() {
   const ahora = new Date();
@@ -91,10 +91,10 @@ export async function verificarCondicionDias() {
   const diffMs = appLoadedAt.getTime() - ahora.getTime();
   const diffDias = diffMs / (1000 * 60 * 60 * 24) + 0.1;
 
-  // 🔥 Solo se procesa cuando ya se cumplió la condición
+  //  Solo se procesa cuando ya se cumplió la condición
   if (diffDias >= diasNecesarios) {
 
-    // 🟦 Obtengo servicios SOLO para procesar si ya cumplió condición
+    //  Obtengo servicios SOLO para procesar si ya cumplió condición
     const servicios = await fetchFromApi<any[]>("/api/devcode/servicios");
     if (servicios && Array.isArray(servicios)) {
       procesarServiciosNuevos(servicios);

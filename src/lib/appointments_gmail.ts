@@ -1,7 +1,7 @@
 // src/lib/appointments_gmail.ts
 
 /* Para las funciones de actualizacion y cancelacion faltan validar valores para el nombre
- * del cliente, ya que estamos usando el predeterminado, solo se puso su nombre de pila
+  del cliente, ya que estamos usando el predeterminado, solo se puso su nombre de pila
  */
 
 import {
@@ -48,9 +48,9 @@ const formatearFechaLarga = (iso: string) => {
 const safeStr = (v: any, fallback = "—") =>
   v === undefined || v === null || v === "" ? fallback : String(v);
 
-/* ===========================================================
-   📧 Función base: Gmail
-   =========================================================== */
+/* 
+  📧 Función base: Gmail
+    */
 
 function isValidEmail(email?: string) {
   if (!email) return false;
@@ -165,13 +165,13 @@ export async function sendNotification(payload: {
   };
 }
 
-/* ===========================================================
-   📧 CREAR CITA — Requester + Fixer
-   =========================================================== */
+/* 
+  CREAR CITA — Requester + Fixer
+    */
 
 export async function createAndNotify(payload: CreateAppointmentPayload) {
   try {
-    // 🔹 1️⃣ Recuperar datos guardados del localStorage
+    //  1️⃣ Recuperar datos guardados del localStorage
     const storedData = localStorage.getItem("env_prueba");
     const userData = storedData ? JSON.parse(storedData) : null;
 
@@ -182,7 +182,7 @@ export async function createAndNotify(payload: CreateAppointmentPayload) {
 
     const { request, fixer } = userData;
 
-    // 🔹 2️⃣ Usar directamente los datos locales
+    //  2️⃣ Usar directamente los datos locales
     const clienteNombre = request.nombre || "Cliente";
     const clienteCorreo = request.correo || "";
     const clienteNumero = request.numero || "";
@@ -201,7 +201,7 @@ export async function createAndNotify(payload: CreateAppointmentPayload) {
       console.warn("⚠️ No se pudo obtener el nombre del servicio:", e);
     }
 
-    // 🔹 3️⃣ Datos de la cita
+    //  3️⃣ Datos de la cita
     const fechaLocal = formatearFechaLarga(payload.fecha);
     const horaInicio = safeStr(payload.horario?.inicio);
     const horaFin = safeStr(payload.horario?.fin);
@@ -209,7 +209,7 @@ export async function createAndNotify(payload: CreateAppointmentPayload) {
     const notas = payload.ubicacion?.notas ?? "Ninguna";
     const citaId = payload.citaId ?? "";
 
-    // 🔹 4️⃣ Crear mensaje para el Requester
+    //  4️⃣ Crear mensaje para el Requester
     const requesterSubject = `Creación de cita con ${fixerNombre}`;
     const requesterMessage = [
       "✨ *CREACIÓN DE TU CITA* ✨",
@@ -242,7 +242,7 @@ export async function createAndNotify(payload: CreateAppointmentPayload) {
         })
       : { ok: true };
 
-    // 🔹 5️⃣ Notificación al Fixer
+    //  5️⃣ Notificación al Fixer
     if (fixerCorreo) {
       const fixerSubject = "Nueva cita confirmada";
       const fixerMessage = [
@@ -299,15 +299,15 @@ export async function createAndNotify(payload: CreateAppointmentPayload) {
   }
 }
 
-/* ===========================================================
-   📧 UPDATE — Requester + Fixer
-   =========================================================== */
+/* 
+    UPDATE — Requester + Fixer
+    */
 
 export async function updateAndNotify(
   payload: CreateAppointmentPayload & { cambios?: string[] }
 ) {
   try {
-    // 🔹 1️⃣ Recuperar datos guardados del localStorage
+    //  1️⃣ Recuperar datos guardados del localStorage
     const storedData = localStorage.getItem("env_prueba");
     const userData = storedData ? JSON.parse(storedData) : null;
 
@@ -318,7 +318,7 @@ export async function updateAndNotify(
 
     const { request, fixer } = userData;
 
-    // 🔹 2️⃣ Usar directamente los datos locales
+    //  2️⃣ Usar directamente los datos locales
     const clienteNombre = request.nombre || "Cliente";
     const clienteCorreo = request.correo || "";
     const clienteNumero = request.numero || "";
@@ -337,7 +337,7 @@ export async function updateAndNotify(
       console.warn("⚠️ No se pudo obtener el nombre del servicio:", e);
     }
 
-    // 🔹 3️⃣ Datos de la cita
+    //  3️⃣ Datos de la cita
     const fechaLocal = formatearFechaLarga(payload.fecha);
     const horaInicio = safeStr(payload.horario?.inicio);
     const horaFin = safeStr(payload.horario?.fin);
@@ -350,7 +350,7 @@ export async function updateAndNotify(
         ? `🔄 *Cambios realizados:* ${payload.cambios.join(", ")}`
         : "Se han actualizado los detalles de tu cita.";
 
-    // 🔹 4️⃣ Notificación para el Requester
+    //  4️⃣ Notificación para el Requester
     const requesterSubject = `Actualización de tu cita con ${fixerNombre}`;
     const requesterMessage = [
       "✨ *ACTUALIZACIÓN DE CITA* ✨",
@@ -384,7 +384,7 @@ export async function updateAndNotify(
         })
       : { ok: true };
 
-    // 🔹 5️⃣ Notificación para el Fixer
+    //  5️⃣ Notificación para el Fixer
     if (fixerCorreo) {
       const motivoUpdate =
         payload.ubicacion?.notas ||
@@ -450,17 +450,17 @@ export async function updateAndNotify(
   }
 }
 
-/* ===========================================================
-   📧 CANCEL — Requester + Fixer
-   =========================================================== */
+/* 
+  CANCEL — Requester + Fixer
+    */
 
-/* ===========================================================
-   ❌ CANCEL — Requester + Fixer (solo con datos locales)
-   =========================================================== */
+/* 
+  CANCEL — Requester + Fixer (solo con datos locales)
+    */
 
 export async function cancelAndNotify(payload: CreateAppointmentPayload) {
   try {
-    // 🔹 1️⃣ Recuperar datos locales
+    //  1️⃣ Recuperar datos locales
     const storedData = localStorage.getItem("env_prueba");
     const userData = storedData ? JSON.parse(storedData) : null;
 
@@ -471,7 +471,7 @@ export async function cancelAndNotify(payload: CreateAppointmentPayload) {
 
     const { request, fixer } = userData;
 
-    // 🔹 2️⃣ Datos básicos
+    //  2️⃣ Datos básicos
     const clienteNombre = request.nombre || "Cliente";
     const clienteCorreo = request.correo || "";
     const clienteNumero = request.numero || "";
@@ -490,10 +490,10 @@ export async function cancelAndNotify(payload: CreateAppointmentPayload) {
       console.warn("⚠️ No se pudo obtener el nombre del servicio:", e);
     }
 
-    // 🔹 3️⃣ Datos de la cita
+    //  3️⃣ Datos de la cita
     const fechaLocal = formatearFechaLarga(payload.fecha);
 
-    // 🔹 4️⃣ Notificación para el Requester
+    //  4️⃣ Notificación para el Requester
     const requesterSubject = `Cancelación de cita con ${fixerNombre}`;
     const requesterMessage = [
       "❌ *CANCELACIÓN DE CITA* ❌",
@@ -523,7 +523,7 @@ export async function cancelAndNotify(payload: CreateAppointmentPayload) {
         })
       : { ok: true };
 
-    // 🔹 5️⃣ Notificación para el Fixer
+    //  5️⃣ Notificación para el Fixer
     if (fixerCorreo) {
       const fixerSubject = "Cita cancelada";
       const fixerMessage = [

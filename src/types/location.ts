@@ -1,7 +1,7 @@
 // src/types/location.ts
 
-/**
- * Interfaz para los datos de ubicación de un spot de windsurf
+/*
+  Interfaz para los datos de ubicación de un spot de windsurf
  */
 export interface LocationData {
   name: string; // Nombre del spot
@@ -19,8 +19,8 @@ export interface LocationData {
   };
 }
 
-/**
- * Valores por defecto para el formulario
+/*
+  Valores por defecto para el formulario
  */
 export const defaultLocationData: LocationData = {
   name: '',

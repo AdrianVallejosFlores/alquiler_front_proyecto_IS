@@ -36,8 +36,6 @@ export function procesarServiciosNuevos(servicios: any[]) {
   localStorage.setItem("lista_nuevos_servicios", counter.toString());
 }
 
-
-
 export function verificarCondicionDias() {
   const ahora = new Date();
   const appLoadedAtStr = localStorage.getItem("appLoadedAt");

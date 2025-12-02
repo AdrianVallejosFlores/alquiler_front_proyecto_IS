@@ -5,7 +5,7 @@ import {
 } from "@/lib/data-fetcher";
 
 /* Para las funciones de actualizacion y cancelacion faltan validar valores para el nombre
- * del cliente, ya que estamos usando el predeterminado, solo se puso su nombre de pila
+  del cliente, ya que estamos usando el predeterminado, solo se puso su nombre de pila
  */
 
 export type Destination = { phone?: string; name?: string };
@@ -42,9 +42,9 @@ const formatearFechaLarga = (iso: string) => {
   });
 };
 
-/* ===========================================================
-   📱 Base para enviar notificación WhatsApp
-   =========================================================== */
+/* 
+  Base para enviar notificación WhatsApp
+ */
 export async function sendWhatsAppNotification(payload: {
   message: string;
   destinations: Destination[];
@@ -102,12 +102,12 @@ export async function sendWhatsAppNotification(payload: {
   return { ok: false, message: "No se pudo enviar la notificación tras varios intentos." };
 }
 
-/* ===========================================================
-   ✨ CREAR CITA — Cliente + Proveedor
-   =========================================================== */
-/* ===========================================================
-   💬 WHATSAPP — Creación de Cita (solo con datos locales)
-   =========================================================== */
+/* 
+  ✨ CREAR CITA — Cliente + Proveedor
+    */
+/* 
+    WHATSAPP — Creación de Cita (solo con datos locales)
+    */
 
 export async function createAndNotifyWhatsApp(payload: CreateAppointmentPayload) {
   try {
@@ -147,7 +147,7 @@ export async function createAndNotifyWhatsApp(payload: CreateAppointmentPayload)
     const notas = payload.ubicacion?.notas ?? "Ninguna";
     const citaId = payload.citaId || (payload as any)?._id || "";
 
-    // 🔹 Mensaje para el cliente (request)
+    //  Mensaje para el cliente (request)
     if (clienteNumero) {
       const msgCliente = `
 *✨ CREACIÓN DE TU CITA ✨*
@@ -175,7 +175,7 @@ Gracias por confiar en nosotros 💙
       });
     }
 
-    // 🔹 Mensaje para el fixer
+    //  Mensaje para el fixer
     if (fixerNumero) {
       const msgProveedor = `
 ✅ *Nueva cita confirmada*
@@ -209,12 +209,12 @@ Asegúrate de estar disponible en el horario indicado.
 }
 
 
-/* ===========================================================
-   🌀 ACTUALIZACIÓN — Cliente + Proveedor
-   =========================================================== */
-/* ===========================================================
-   💬 WHATSAPP — Actualización de Cita (solo con datos locales)
-   =========================================================== */
+/* 
+  ACTUALIZACIÓN — Cliente + Proveedor
+    */
+/* 
+    WHATSAPP — Actualización de Cita (solo con datos locales)
+    */
 
 export async function updateAndNotifyWhatsApp(
   payload: CreateAppointmentPayload & { cambios?: string[] }
@@ -316,12 +316,12 @@ Si el nuevo horario no te conviene, puedes coordinar con el cliente.
 }
 
 
-/* ===========================================================
-   ❌ CANCELACIÓN — Cliente + Proveedor
-   =========================================================== */
-/* ===========================================================
-   💬 WHATSAPP — Cancelación de Cita (solo con datos locales)
-   =========================================================== */
+/* 
+    CANCELACIÓN — Cliente + Proveedor
+    */
+/* 
+    WHATSAPP — Cancelación de Cita (solo con datos locales)
+    */
 
 export async function cancelAndNotifyWhatsApp(payload: CreateAppointmentPayload) {
   try {
@@ -355,7 +355,7 @@ export async function cancelAndNotifyWhatsApp(payload: CreateAppointmentPayload)
 
     const fechaLocal = formatearFechaLarga(payload.fecha);
 
-    // 🔹 Mensaje para el cliente (request)
+    //  Mensaje para el cliente (request)
     if (clienteNumero) {
       const msgCliente = `
 *❌ CANCELACIÓN DE CITA ❌*
@@ -378,7 +378,7 @@ Si fue un error, puedes volver a programarla cuando desees.
       });
     }
 
-    // 🔹 Mensaje para el fixer (proveedor)
+    //  Mensaje para el fixer (proveedor)
     if (fixerNumero) {
       const msgProveedor = `
 ❌ *Cita cancelada*
