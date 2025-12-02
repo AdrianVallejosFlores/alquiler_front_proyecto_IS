@@ -3,6 +3,9 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AppointmentModal from "./appointment-modal";
+import { useCurrentClienteId } from "@/config/userConfig";
+import ModalConfirmacion from './ModalConfirmacion';
+import { useNotifications } from "../../context/NotificationContext";
 
 interface Cita {
   _id: string;
@@ -31,8 +34,8 @@ const CitasAgendadas = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // cliente fijo en tu código original
-  const clienteId = "6927e784567c50dddae45310";
+  // cliente del usuario actual (centralizado en userConfig)
+  const clienteId = useCurrentClienteId();
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
   const fetchCitas = async () => {
@@ -63,11 +66,50 @@ const CitasAgendadas = () => {
   // Estado para editar
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedCita, setSelectedCita] = useState<Cita | null>(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   const handleEditar = (cita: Cita) => {
     setSelectedCita(cita);
     setModalOpen(true);
   };
+
+  const { notify } = useNotifications();
+
+  const cancelarCita = async () => {
+  if (!selectedCita) return;
+
+  try {
+    const res = await fetch(
+      `${API_BASE}/api/devcode/citas/${selectedCita._id}/cancelar`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include", // por si usas cookies para auth
+      }
+    );
+
+    const json = await res.json();
+
+    if (!json.success) {
+      throw new Error(json.error || "Error al cancelar");
+    }
+
+    notify(
+      `Cita cancelada.\n${
+        json.googleSyncSuccess
+          ? "Evento eliminado de Google Calendar correctamente."
+          : "No se pudo eliminar el evento de Google Calendar."
+      }`,
+      json.googleSyncSuccess ? "success" : "info"
+    );
+
+    fetchCitas();
+  } catch (err: any) {
+    notify(err.message || "Error desconocido", "error");
+  }
+};
 
   // Mapea la cita al formato que espera appointment-modal (InitialAppointment)
   const mapToInitial = (cita: Cita | null) => {
@@ -147,6 +189,15 @@ const CitasAgendadas = () => {
                 >
                   Editar Cita
                 </button>
+                <button
+                  onClick={() => {
+                    setSelectedCita(cita);
+                    setShowCancelModal(true);
+                  }}
+                  className="bg-red-500 text-white rounded px-4 py-2 ml-2"
+                >
+                  Cancelar Cita
+                </button>
               </div>
             </div>
           ))
@@ -173,6 +224,17 @@ const CitasAgendadas = () => {
           isEditing={true}
           appointmentId={selectedCita?._id}
         />
+      )}
+
+      {showCancelModal && (
+       <ModalConfirmacion
+       isOpen={showCancelModal}
+       onClose={() => setShowCancelModal(false)}
+       onConfirm={cancelarCita}
+       title="¿Cancelar cita?"
+       message="Esta acción no se puede deshacer.\n¿Deseas cancelar esta cita?"
+       success={false} // modo alerta
+       />
       )}
     </div>
   );
