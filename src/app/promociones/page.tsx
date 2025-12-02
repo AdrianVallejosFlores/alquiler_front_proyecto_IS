@@ -1,102 +1,329 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import ModalEditar from "./ModalEditar"; // Asegúrate de que la ruta sea correcta
 
-// Datos de prueba
-const datosIniciales = [
+const URL = "http://localhost:5000"
+const ID_OFERTA = "67b123456789abcdef012345"
+
+// --- TIPOS ---
+interface Promocion {
+  id: string;
+  descripcion: string;
+  estado: "Activo" | "Inactivo";
+}
+
+/* --- DATOS DE PRUEBA ---
+const datosIniciales: Promocion[] = [
   { id: 1, descripcion: "¡ 10% de descuento para clientes nuevos !", estado: "Activo" },
   { id: 2, descripcion: "Cotización en obra gratis", estado: "Activo" },
   { id: 3, descripcion: "¡ 20% de descuento para clientes antiguos !", estado: "Activo" },
-];
+  { id: 4, descripcion: "Limpieza de jardines: 2x1 este fin de semana", estado: "Activo" },
+  { id: 5, descripcion: "Revisión eléctrica básica gratuita", estado: "Inactivo" },
+  { id: 6, descripcion: "Descuento del 15% en plomería de emergencia", estado: "Activo" },
+  { id: 7, descripcion: "Instalación de aire acondicionado con 5% off", estado: "Activo" },
+  { id: 8, descripcion: "Consulta de diseño de interiores gratis", estado: "Activo" },
+  { id: 9, descripcion: "Mantenimiento de techos: 10% de descuento", estado: "Inactivo" },
+  { id: 10, descripcion: "Pintura de fachadas: Paga 3 paredes, pinta 4", estado: "Activo" },
+  { id: 11, descripcion: "Impermeabilización con garantía extendida", estado: "Activo" },
+  { id: 12, descripcion: "Pack de reparación de muebles de madera", estado: "Inactivo" },
+];*/
 
-export default function PromocionesPage() {
-  const [promociones, setPromociones] = useState(datosIniciales);
+// --- COMPONENTE MODAL (DISEÑO ACTUALIZADO SEGÚN IMAGEN) ---
+interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (promo: Promocion) => void;
+  promoEditar: Promocion | null;
+}
 
-  // --- ESTADOS PARA EL MODAL ---
-  const [modalAbierto, setModalAbierto] = useState(false);
-  const [promoSeleccionada, setPromoSeleccionada] = useState<{id: number, descripcion: string} | null>(null);
+const ModalPromocion: React.FC<ModalProps> = ({ isOpen, onClose, onSave, promoEditar }) => {
+  const [descripcion, setDescripcion] = useState("");
+  const [estado, setEstado] = useState<"Activo" | "Inactivo">("Activo");
 
-  // 1. Función para ABRIR el modal al dar click al lápiz
-  const abrirModalEdicion = (promo: { id: number; descripcion: string }) => {
-    setPromoSeleccionada(promo);
-    setModalAbierto(true);
-  };
-
-  // 2. Función para GUARDAR los cambios que vienen del modal
-  const guardarCambios = (id: number, nuevaDescripcion: string) => {
-    const promocionesActualizadas = promociones.map((p) =>
-      p.id === id ? { ...p, descripcion: nuevaDescripcion } : p
-    );
-    setPromociones(promocionesActualizadas);
-    setModalAbierto(false); // Cerramos el modal
-  };
-
-  // Función de eliminar (la que ya tenías)
-  const eliminarPromocion = (id: number) => {
-    const confirm = window.confirm("¿Estás seguro de eliminar esta promoción?");
-    if (confirm) {
-      setPromociones(promociones.filter((p) => p.id !== id));
+  // Cargar datos si estamos editando
+  useEffect(() => {
+    if (promoEditar) {
+      setDescripcion(promoEditar.descripcion);
+      setEstado(promoEditar.estado);
+    } else {
+      setDescripcion(""); // Limpiar si es nuevo
+      setEstado("Activo");
     }
+  }, [promoEditar, isOpen]);
+
+  
+
+  if (!isOpen) return null;
+
+  const handleSubmit = () => {
+    if (!descripcion.trim()) return alert("La descripción es obligatoria");
+    
+    const nuevaPromo: Promocion = {
+      id: promoEditar ? promoEditar.id : Date.now().toString(),
+      descripcion,
+      estado,
+    };
+    onSave(nuevaPromo);
   };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
+      {/* Contenedor del Modal */}
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg p-8 relative">
+        
+        {/* Título: Azul y Grande */}
+        <h2 className="text-3xl font-extrabold text-blue-600 mb-6">
+          {promoEditar ? "Editar promoción." : "Crear nueva promoción."}
+        </h2>
+        
+        <div className="space-y-6">
+          {/* Campo Descripción */}
+          <div>
+            <label className="block text-xl font-bold text-black mb-2">
+              Descripción promoción:
+            </label>
+            <textarea
+              className="w-full border border-gray-300 rounded-lg p-3 text-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none h-32"
+              value={descripcion}
+              onChange={(e) => setDescripcion(e.target.value)}
+            />
+          </div>
+          
+          {/* Radio Buttons para ¿Activa? */}
+          <div className="flex items-center gap-6">
+            <label className="text-xl font-bold text-black">¿Activa?</label>
+            
+            <div className="flex items-center gap-6">
+              {/* Opción SI */}
+              <label className="flex items-center gap-2 cursor-pointer">
+                <div className="relative flex items-center">
+                  <input 
+                    type="radio" 
+                    name="estadoPromocion" 
+                    className="w-6 h-6 border-2 border-black rounded-full checked:bg-black appearance-none cursor-pointer"
+                    checked={estado === "Activo"}
+                    onChange={() => setEstado("Activo")}
+                  />
+                  {/* Pequeño punto interior para simular radio nativo customizado si se desea, o usar default */}
+                  {estado === "Activo" && (
+                    <div className="absolute inset-0 m-auto w-3 h-3 bg-black rounded-full pointer-events-none"></div>
+                  )}
+                </div>
+                <span className="text-xl text-black">Si</span>
+              </label>
+
+              {/* Opción NO */}
+              <label className="flex items-center gap-2 cursor-pointer">
+                <div className="relative flex items-center">
+                  <input 
+                    type="radio" 
+                    name="estadoPromocion" 
+                    className="w-6 h-6 border-2 border-black rounded-full appearance-none cursor-pointer"
+                    checked={estado === "Inactivo"}
+                    onChange={() => setEstado("Inactivo")}
+                  />
+                  {estado === "Inactivo" && (
+                     <div className="absolute inset-0 m-auto w-3 h-3 bg-black rounded-full pointer-events-none"></div>
+                  )}
+                </div>
+                <span className="text-xl text-black">No</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        {/* Botones de Acción (Atrás y Guardar) */}
+        <div className="flex justify-between gap-4 mt-8">
+          <button 
+            onClick={onClose} 
+            className="w-1/2 py-3 bg-blue-600 text-white rounded-lg text-xl font-bold hover:bg-blue-700 transition shadow"
+          >
+            Atrás
+          </button>
+          <button 
+            onClick={handleSubmit} 
+            className="w-1/2 py-3 bg-blue-600 text-white rounded-lg text-xl font-bold hover:bg-blue-700 transition shadow"
+          >
+            Guardar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- PÁGINA PRINCIPAL (Sin cambios mayores, solo integración) ---
+export default function PromocionesPage() {
+  const [promociones, setPromociones] = useState<Promocion[]>([]);
+  const [promosEliminadas, setPromosEliminadas] = useState<string[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [promoAEditar, setPromoAEditar] = useState<Promocion | null>(null);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const itemsPorPagina = 3;
+
+  const indiceUltimoItem = paginaActual * itemsPorPagina;
+  const indicePrimerItem = indiceUltimoItem - itemsPorPagina;
+  const itemsActuales = promociones.slice(indicePrimerItem, indiceUltimoItem);
+  const totalPaginas = Math.ceil(promociones.length / itemsPorPagina);
+
+  const abrirModalNueva = () => {
+    setPromoAEditar(null);
+    setIsModalOpen(true);
+  };
+
+  const abrirModalEditar = (promo: Promocion) => {
+    setPromoAEditar(promo);
+    setIsModalOpen(true);
+  };
+
+  useEffect(() => {
+    const cargarPromos = async () => {
+      const res = await fetch(`${URL}/api/los_vengadores/promociones/oferta/${ID_OFERTA}`);
+      const data = await res.json();
+  
+      const promosFormateadas = data.map((p: any) => ({
+        id: p._id,
+        descripcion: p.descripcion,
+        estado: p.activo ? "Activo" : "Inactivo",
+      }));
+  
+      setPromociones(promosFormateadas);
+    };
+  
+    cargarPromos();
+  }, []);
+  
+
+  
+  
+  const eliminarPromocion = (id: number | string) => {
+    if (!confirm("¿Estás seguro de eliminar esta promoción?")) return;
+
+    // Guardamos el ID en promosEliminadas si es un _id de Mongo
+    if (id.toString().length === 24) {
+      setPromosEliminadas([...promosEliminadas, id.toString()]);
+    }
+
+    // Eliminamos visualmente de la lista
+    setPromociones(promociones.filter(p => p.id !== id));
+  };
+
+  const guardarDesdeModal = async (promoGuardada: Promocion) => {
+    if (promoAEditar) {
+      // Editar en el estado local
+      setPromociones(prev =>
+        prev.map(p => (p.id === promoGuardada.id ? promoGuardada : p))
+      );
+    } else {
+      // Crear nueva en el estado local
+      setPromociones(prev => [...prev, promoGuardada]);
+    }
+  
+    setIsModalOpen(false);
+  };
+  
+  const guardarCambiosEnBD = async () => {
+    // 1️⃣ Eliminar promociones marcadas
+    for (const id of promosEliminadas) {
+      await fetch(`${URL}/api/los_vengadores/promociones/${id}`, { method: "DELETE" });
+    }
+    setPromosEliminadas([]);
+  
+    // 2️⃣ Crear nuevas promociones y actualizar existentes
+    const promocionesActualizadas: Promocion[] = [];
+  
+    for (const promo of promociones) {
+      if (promo.id.length === 24) {
+        // EXISTENTES: actualizar
+        await fetch(`${URL}/api/los_vengadores/promociones/${promo.id}/descripcion`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ descripcion: promo.descripcion }),
+        });
+        await fetch(`${URL}/api/los_vengadores/promociones/${promo.id}/estado`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ activo: promo.estado === "Activo" }),
+        });
+        promocionesActualizadas.push(promo);
+      } else {
+        // NUEVAS: crear y reemplazar ID temporal
+        const nueva = await crearNuevaPromocion(promo);
+        promocionesActualizadas.push(nueva);
+      }
+    }
+  
+    // 3️⃣ Actualizar el estado global
+    setPromociones(promocionesActualizadas);
+  
+    alert("Promociones guardadas en la BD");
+  };
+  
+  const crearNuevaPromocion = async (promo: Promocion) => {
+    const res = await fetch(`${URL}/api/los_vengadores/promociones`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id_ofertaTrabajo: ID_OFERTA,
+        descripcion: promo.descripcion,
+        activo: promo.estado === "Activo",
+      }),
+    });
+    const data = await res.json();
+    return { ...promo, id: data._id }; // reemplaza el ID temporal con el real
+  };
+  
+
 
   return (
     <div className="min-h-screen bg-white p-6 md:p-10 font-sans">
       <div className="max-w-4xl mx-auto">
-        
-        {/* Encabezado */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-blue-700">Promociones</h1>
-          <button className="bg-blue-600 text-white font-bold py-2 px-6 rounded hover:bg-blue-700 transition shadow-md">
+          <button 
+            onClick={abrirModalNueva}
+            className="bg-blue-600 text-white font-bold py-2 px-6 rounded hover:bg-blue-700 transition shadow-md"
+          >
             Nueva Promoción
           </button>
         </div>
 
-        {/* Lista de Promociones */}
-        <div className="space-y-4 mb-8">
-          {promociones.map((promo) => (
-            <div
-              key={promo.id}
-              className="border-2 border-blue-600 rounded-lg p-4 flex justify-between items-center bg-white shadow-sm"
-            >
-              <div className="flex-1">
-                <div className="mb-2">
-                  <span className="font-bold text-black text-lg">Descripción:</span>
-                  <p className="text-gray-800 text-lg mt-1">{promo.descripcion}</p>
+        <div className="space-y-4 mb-8 min-h-[300px]">
+          {itemsActuales.length > 0 ? (
+            itemsActuales.map((promo) => (
+              <div key={promo.id} className="border-2 border-blue-600 rounded-lg p-4 flex justify-between items-center bg-white shadow-sm">
+                <div className="flex-1">
+                  <div className="mb-2">
+                    <span className="font-bold text-black text-lg">Descripción:</span>
+                    <p className="text-gray-800 text-lg mt-1">{promo.descripcion}</p>
+                  </div>
+                  <div className="font-bold text-black text-lg">
+                    Estado: <span className={`font-normal ${promo.estado === 'Activo' ? 'text-black' : 'text-black'}`}>{promo.estado}</span>
+                  </div>
                 </div>
-                <div className="font-bold text-black text-lg">
-                  Estado: <span className="font-normal">{promo.estado}</span>
+                <div className="flex flex-col gap-3 ml-4">
+                  <button onClick={() => abrirModalEditar(promo)} className="w-12 h-12 border-2 border-blue-500 rounded flex items-center justify-center hover:bg-blue-50 transition">
+                    <span className="text-2xl">✏️</span>
+                  </button>
+                  <button onClick={() => eliminarPromocion(promo.id)} className="w-12 h-12 border-2 border-blue-500 rounded flex items-center justify-center hover:bg-red-50 transition">
+                    <span className="text-2xl">🗑️</span>
+                  </button>
                 </div>
               </div>
-
-              {/* Botones de Acción */}
-              <div className="flex flex-col gap-3 ml-4">
-                {/* Botón Editar - AHORA CONECTADO */}
-                <button 
-                  onClick={() => abrirModalEdicion(promo)}
-                  className="w-12 h-12 border-2 border-blue-500 rounded flex items-center justify-center hover:bg-blue-50 transition"
-                >
-                  <span className="text-2xl">✏️</span>
-                </button>
-
-                {/* Botón Eliminar */}
-                <button 
-                  onClick={() => eliminarPromocion(promo.id)}
-                  className="w-12 h-12 border-2 border-blue-500 rounded flex items-center justify-center hover:bg-red-50 transition"
-                >
-                  <span className="text-2xl">🗑️</span>
-                </button>
-              </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p className="text-center text-gray-500 mt-10">No hay promociones registradas.</p>
+          )}
         </div>
 
-        {/* ... (Paginación y botones inferiores siguen igual) ... */}
-        
         <div className="flex justify-end mb-8 items-center gap-4">
-            <button className="px-4 py-2 border border-gray-300 rounded text-blue-600 font-semibold hover:bg-gray-100">Anterior</button>
-            <span className="text-blue-600 font-semibold">Página 1 de 3</span>
-            <button className="px-4 py-2 border border-gray-300 rounded text-blue-600 font-semibold hover:bg-gray-100">Siguiente</button>
+            <button onClick={() => setPaginaActual(p => Math.max(1, p - 1))} disabled={paginaActual === 1} className={`px-4 py-2 border rounded font-semibold transition ${paginaActual === 1 ? "border-gray-200 text-gray-400 cursor-not-allowed" : "border-gray-300 text-blue-600 hover:bg-gray-100"}`}>
+              Anterior
+            </button>
+            <span className="text-blue-600 font-semibold">Página {paginaActual} de {totalPaginas || 1}</span>
+            <button onClick={() => setPaginaActual(p => Math.min(totalPaginas, p + 1))} disabled={paginaActual === totalPaginas || totalPaginas === 0} className={`px-4 py-2 border rounded font-semibold transition ${paginaActual === totalPaginas || totalPaginas === 0 ? "border-gray-200 text-gray-400 cursor-not-allowed" : "border-gray-300 text-blue-600 hover:bg-gray-100"}`}>
+              Siguiente
+            </button>
         </div>
 
         <div className="flex justify-between items-center mt-10">
@@ -105,21 +332,13 @@ export default function PromocionesPage() {
               Atrás
             </button>
           </Link>
-          <button className="bg-blue-600 text-white font-bold py-3 px-10 rounded-lg hover:bg-blue-700 transition shadow-lg">
+          <button onClick={guardarCambiosEnBD} className="bg-blue-600 text-white font-bold py-3 px-10 rounded-lg hover:bg-blue-700 transition shadow-lg">
             Guardar
           </button>
         </div>
 
+        <ModalPromocion isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={guardarDesdeModal} promoEditar={promoAEditar} />
       </div>
-
-      {/* AQUÍ INSERTAMOS EL COMPONENTE MODAL */}
-      <ModalEditar 
-        isOpen={modalAbierto}
-        onClose={() => setModalAbierto(false)}
-        onSave={guardarCambios}
-        promocionActual={promoSeleccionada}
-      />
-
     </div>
   );
 }

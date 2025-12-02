@@ -1,12 +1,13 @@
-"use client"; // 👈 1. Convertir a Client Component
+"use client";
 
-import { useState, useEffect } from "react"; // 👈 2. Importar hooks
+import { useState, useEffect } from "react";
 import "leaflet/dist/leaflet.css";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
 import Header from "./components/Header/Header";
+import NotificationBell from "../components/NotificationBell"; // 👈 IMPORTANTE
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,30 +24,24 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // 3. Estado para rastrear la conexión
   const [isOnline, setIsOnline] = useState(true);
 
-  // 4. Efecto para escuchar eventos de conexión
   useEffect(() => {
-    // Función para actualizar el estado
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
 
-    // Asignar estado inicial al cargar
     if (typeof window !== "undefined") {
       setIsOnline(navigator.onLine);
     }
 
-    // Agregar event listeners
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
 
-    // Limpiar listeners al desmontar el componente
     return () => {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
     };
-  }, []); // El array vacío asegura que esto solo se ejecute al montar/desmontar
+  }, []);
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -54,23 +49,26 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning={true}
       >
-        {/* 5. Banner de "Sin Conexión" */}
+        {/* 🔴 Banner de offline */}
         {!isOnline && (
           <div className="fixed top-0 left-0 w-full bg-red-600 text-white text-center p-2 z-50 shadow-lg animate-pulse">
-            <p className="font-semibold">
-              Estás sin conexión
-            </p>
-            <p className="text-sm">
-              Comprueba tu conexión a internet.
-            </p>
+            <p className="font-semibold">Estás sin conexión</p>
+            <p className="text-sm">Comprueba tu conexión a internet.</p>
           </div>
         )}
 
-        <Header />
+        {/* 🟦 Header */}
+        <div className="relative">
+          <Header />
 
-        {/* SOLUCIÓN: Cambiar el padding para que funcione en todos los dispositivos */}
+          {/* 🔔 Campanita NOTIFICACIONES — flotante en esquina derecha */}
+          <div className="fixed  top-20 right-4 z-50">
+            <NotificationBell />
+          </div>
+        </div>
+
+        {/* Contenido principal */}
         <div className="pt-16 sm:pt-20">
-          {/* Aumenté el padding-top */}
           {children}
         </div>
       </body>
