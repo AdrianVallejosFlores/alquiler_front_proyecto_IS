@@ -101,7 +101,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ⭐ Botón flotante + modal de configuración */}
+      {/*  Botón flotante + modal de configuración */}
       <EnvConFigModal />
     </div>
   );

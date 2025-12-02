@@ -93,18 +93,18 @@ export default function VentanaPrueba() {
       return;
     }
 
-    // ➕ Sumamos días
+    // Sumamos días
     fecha.setDate(fecha.getDate() + n);
 
     // Guardamos en ISO
     const nuevaFechaISO = fecha.toISOString();
     localStorage.setItem("appLoadedAt", nuevaFechaISO);
 
-    // 🔄 LEER OTRA VEZ DEL LOCALSTORAGE
+    //  LEER OTRA VEZ DEL LOCALSTORAGE
     const verificadoISO = localStorage.getItem("appLoadedAt");
     const fechaVerificada = verificadoISO ? new Date(verificadoISO) : null;
 
-    // 🟢 Formato bonito dd/mm/yyyy HH:MM
+    //  Formato bonito dd/mm/yyyy HH:MM
     const formatDate = (d: Date) => {
       const pad = (x: number) => String(x).padStart(2, "0");
       return (
@@ -241,7 +241,7 @@ export default function VentanaPrueba() {
               </Button>
             </div>
 
-            {/* =============== WALLET =============== */}
+            {/*  WALLET  */}
             <div className="p-4 rounded-xl border bg-gray-50">
               <h3 className="font-semibold text-purple-600">
                 Recargar Wallet del Fixer
@@ -263,7 +263,7 @@ export default function VentanaPrueba() {
               </Button>
             </div>
 
-            {/* =============== REQUESTER =============== */}
+            {/*  REQUESTER  */}
             <div className="p-4 rounded-xl border bg-white">
               <h3 className="font-semibold text-blue-600">Datos del Requester</h3>
 
@@ -289,7 +289,7 @@ export default function VentanaPrueba() {
               </Button>
             </div>
 
-            {/* =============== FIXER =============== */}
+            {/*  FIXER  */}
             <div className="p-4 rounded-xl border bg-white">
               <h3 className="font-semibold text-green-600">Datos del Fixer</h3>
 
@@ -315,7 +315,7 @@ export default function VentanaPrueba() {
               </Button>
             </div>
 
-            {/* =============== SERVICIO (OCUPA LAS 2 COLUMNAS) =============== */}
+            {/*  SERVICIO (OCUPA LAS 2 COLUMNAS)  */}
             <div className="p-4 rounded-xl border bg-white col-span-2">
               <h3 className="font-semibold text-orange-600">
                 Crear Servicio

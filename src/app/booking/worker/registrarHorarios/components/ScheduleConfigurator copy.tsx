@@ -2,19 +2,19 @@
 
 import React, { useState, useCallback } from 'react';
 import {
-  ScheduleConfig,
-  TimeRange,
-  DayName,
-  DAYS_OF_WEEK,
-  ScheduleErrors,
-  WeeklyUniformSchedule, 
-  DaySchedule
+    ScheduleConfig,
+    TimeRange,
+    DayName,
+    DAYS_OF_WEEK,
+    ScheduleErrors,
+    WeeklyUniformSchedule, 
+    DaySchedule
 } from '../types'; 
 
 const PROVEEDOR_ID = "6927e823567c50dddae45313";
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-// --- Lógica de Utilidad ---
+//  Lógica de Utilidad 
 const timeToMinutes = (time: string): number => {
     const [hours, minutes] = time.split(':').map(Number);
     return hours * 60 + minutes;
@@ -39,7 +39,7 @@ const validateNoOverlap = (ranges: TimeRange[]): boolean => {
     return true;
 };
 
-// --- Definición del Estado Inicial ---
+//  Definición del Estado Inicial 
 const initialDayConfig: DaySchedule = { enabled: false, ranges: [{ start: '09:00', end: '18:00' }] };
 const initialSchedule: ScheduleConfig = DAYS_OF_WEEK.reduce((acc, day) => {
   acc[day] = { ...initialDayConfig }; // copia para evitar referencia compartida
@@ -52,7 +52,7 @@ const initialWeeklySchedule: WeeklyUniformSchedule = {
     ranges: [{ start: '09:00', end: '18:00' }],
 };
 
-// --- Componente Principal ---
+//  Componente Principal 
 export default function ScheduleConfigurator() {
     const [schedule, setSchedule] = useState<ScheduleConfig>(initialSchedule);
     const [activeTab, setActiveTab] = useState<'daily' | 'weekly'>('daily');
@@ -62,7 +62,7 @@ export default function ScheduleConfigurator() {
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [weeklySchedule, setWeeklySchedule] = useState<WeeklyUniformSchedule>(initialWeeklySchedule);
 
-    // --- Funciones Semanales ---
+    //  Funciones Semanales 
     const toggleWeeklyDay = (day: DayName) => {
         setWeeklySchedule(prev => {
             const isSelected = prev.selectedDays.includes(day);
@@ -84,7 +84,7 @@ export default function ScheduleConfigurator() {
         setHasChanges(true);
     };
 
-    // --- Funciones Diarias ---
+    //  Funciones Diarias 
     const toggleDay = (day: DayName) => {
         setSchedule(prev => ({
             ...prev,
@@ -118,7 +118,7 @@ export default function ScheduleConfigurator() {
         setHasChanges(true);
     };
 
-    // --- Validación ---
+    //  Validación 
     const validateAndSetErrors = useCallback((): boolean => {
         let isValid = true;
         const newErrors: ScheduleErrors = {};
@@ -158,13 +158,13 @@ export default function ScheduleConfigurator() {
         return isValid;
     }, [schedule, weeklySchedule, activeTab]);
 
-    // --- Cancelar ---
+    //  Cancelar 
     const handleCancel = () => {
         if (hasChanges) setIsModalOpen(true);
         else console.log("No hay cambios para cancelar.");
     };
 
-    // --- Mapeo de días ---
+    //  Mapeo de días 
     const diasMap: Record<string, number> = {
         Lunes: 1,
         Martes: 2,
@@ -175,7 +175,7 @@ export default function ScheduleConfigurator() {
         Domingo: 7,
     };
 
-    // --- Submit ---
+    //  Submit 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!validateAndSetErrors()) return;
@@ -299,7 +299,7 @@ export default function ScheduleConfigurator() {
         );
     };
 
-    // --- JSX Principal ---
+    //  JSX Principal 
     return (
         <main className="min-h-full p-6 bg-white font-sans">
             <div className="max-w-4xl mx-auto">

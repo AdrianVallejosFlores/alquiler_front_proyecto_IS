@@ -51,7 +51,7 @@ export default function GestionCitas() {
     fetchCitas();
   }, []);
 
-  // 🔹 Agrupar citas por fecha
+  //  Agrupar citas por fecha
   useEffect(() => {
     const agrupadas: Record<string, Cita[]> = {};
     citas.forEach((cita) => {

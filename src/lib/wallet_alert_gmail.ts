@@ -48,9 +48,9 @@ const formatearFechaLarga = (iso: string) => {
 const safeStr = (v: any, fallback = "—") =>
   v === undefined || v === null || v === "" ? fallback : String(v);
 
-/* ===========================================================
-   📧 Función base: Gmail
-   =========================================================== */
+/* 
+    Función base: Gmail
+    */
 
 function isValidEmail(email?: string) {
   if (!email) return false;

@@ -2,26 +2,25 @@
 
 import React, { useState, useCallback } from 'react';
 import {
-  ScheduleConfig,
-  TimeRange,
-  DayName,
-  DAYS_OF_WEEK,
-  ScheduleErrors,
-  WeeklyUniformSchedule, 
-  DaySchedule
+    ScheduleConfig,
+    TimeRange,
+    DayName,
+    DAYS_OF_WEEK,
+    ScheduleErrors,
+    WeeklyUniformSchedule, 
+    DaySchedule
 } from '../types'; 
 
 const PROVEEDOR_ID = "6927f418475360050f2016e9";
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-// --- Tipos para el Modal de Resumen ---
+//  Tipos para el Modal de Resumen 
 interface SummaryData {
     title: string;
     lines: string[];
 }
-// -------------------------------------
 
-// --- Lógica de Utilidad ---
+//  Lógica de Utilidad 
 const timeToMinutes = (time: string): number => {
     const [hours, minutes] = time.split(':').map(Number);
     return hours * 60 + minutes;
@@ -46,11 +45,11 @@ const validateNoOverlap = (ranges: TimeRange[]): boolean => {
     return true;
 };
 
-// --- Definición del Estado Inicial ---
+//  Definición del Estado Inicial 
 const initialDayConfig: DaySchedule = { enabled: false, ranges: [{ start: '09:00', end: '18:00' }] };
 const initialSchedule: ScheduleConfig = DAYS_OF_WEEK.reduce((acc, day) => {
-  acc[day] = initialDayConfig;
-  return acc;
+    acc[day] = initialDayConfig;
+    return acc;
 }, {} as Record<DayName, DaySchedule>) as ScheduleConfig;
 
 const initialWeeklySchedule: WeeklyUniformSchedule = {
@@ -71,7 +70,7 @@ export default function ScheduleConfigurator() {
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [weeklySchedule, setWeeklySchedule] = useState<WeeklyUniformSchedule>(initialWeeklySchedule);
 
-    // --- Funciones de Manejo de Estado ---
+    //  Funciones de Manejo de Estado 
     const toggleWeeklyDay = (day: DayName) => {
         setWeeklySchedule(prev => {
             const isSelected = prev.selectedDays.includes(day);
@@ -178,7 +177,7 @@ export default function ScheduleConfigurator() {
         }
     };
     
-    // --- Lógica de Validación ---
+    //  Lógica de Validación 
     const validateAndSetErrors = useCallback((): boolean => {
         let isValid = true;
         const newErrors: ScheduleErrors = {};
@@ -231,7 +230,7 @@ export default function ScheduleConfigurator() {
         return isValid;
     }, [schedule, weeklySchedule, activeTab]);
 
-    // --- Lógica de Generación de Resumen ---
+    //  Lógica de Generación de Resumen 
     const generateSummary = (data: ScheduleConfig | WeeklyUniformSchedule, type: 'daily' | 'weekly'): SummaryData => {
         if (type === 'daily') {
             const dailyData = data as ScheduleConfig;
@@ -268,7 +267,7 @@ export default function ScheduleConfigurator() {
         }
     };
 
-    // --- FUNCIÓN DE GUARDADO ---
+    //  FUNCIÓN DE GUARDADO 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
     
@@ -354,10 +353,10 @@ export default function ScheduleConfigurator() {
         }
     };
 
-    // --- Resto de componentes (SummaryModal, WeeklyConfigSection, JSX principal) ---
+    //  Resto de componentes (SummaryModal, WeeklyConfigSection, JSX principal) 
     // Los dejo igual, no generan errores de TS.
 
-    // --- NUEVO COMPONENTE: Modal de Resumen ---
+    //  NUEVO COMPONENTE: Modal de Resumen 
     const SummaryModal = () => {
         if (!savedScheduleSummary) return null;
         const { title, lines } = savedScheduleSummary;
@@ -394,7 +393,7 @@ export default function ScheduleConfigurator() {
     };
 
 
-    // --- Componente: Sección de Configuración Semanal (sin cambios) ---
+    //  Componente: Sección de Configuración Semanal (sin cambios) 
     const WeeklyConfigSection = () => {
         const { ranges, selectedDays } = weeklySchedule; 
         const isDayError = !!errors['weekly-days'];
@@ -487,7 +486,7 @@ export default function ScheduleConfigurator() {
         );
     };
 
-    // --- JSX Principal ---
+    //  JSX Principal 
     const isDailyGeneralError = !!errors['daily-general'];
 
     return (
@@ -639,10 +638,10 @@ export default function ScheduleConfigurator() {
                     </div>
                 </form>
                 
-                {/* --- NUEVO: Modal de Resumen al Guardar --- */}
+                {/*  NUEVO: Modal de Resumen al Guardar  */}
                 {isSummaryModalOpen && <SummaryModal />}
                 
-                {/* --- Modal de Cancelación (sin cambios) --- */}
+                {/*  Modal de Cancelación (sin cambios)  */}
                 {isModalOpen && (
                     <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
                         <div className="bg-white p-6 rounded-lg shadow-2xl w-96">

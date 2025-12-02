@@ -5,7 +5,7 @@ import { Button } from '../../../components/ui/button';
 import { Calendar, X } from 'lucide-react';
 import CancelReprogramModal from './CancelReprogramModal';
 
-// ✅ Incluimos reprogramCount opcional para compatibilidad
+//  Incluimos reprogramCount opcional para compatibilidad
 type Appointment = {
   id: string;
   fecha: string;

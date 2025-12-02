@@ -3,7 +3,7 @@ import { useState } from "react";
 import { AppointmentModal } from "./appointment-modal";
 
 interface AgendarCitaButtonProps {
-  proveedorId: string;  // <-- definir props aquí
+  proveedorId: string;  // definir props aquí
   servicioId: string;
 }
 

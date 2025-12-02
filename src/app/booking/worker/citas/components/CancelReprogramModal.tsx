@@ -24,8 +24,7 @@ interface CancelReprogramModalProps {
   actionType: 'cancel' | 'reprogram';
   isFixer?: boolean;
   citaId: string;
-  onUpdate?: (updated: Appointment) => void; // <-- agrega esto
-
+  onUpdate?: (updated: Appointment) => void; //  agrega esto
 }
 
 export default function CancelReprogramModal({
@@ -43,7 +42,7 @@ export default function CancelReprogramModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isWithinLimit, setIsWithinLimit] = useState(false);
 
-  // 🔹 Verifica si falta menos de 3 horas para la cita
+  //  Verifica si falta menos de 3 horas para la cita
   const isWithin3Hours = () => {
     if (!appointment.horario) return false;
     const now = new Date();

@@ -46,7 +46,7 @@ const CitasAgendadas = () => {
 
       if (!json.success) throw new Error(json.error || "Error al obtener citas");
 
-      setCitas(json.data); // ✅ aquí citas es un array
+      setCitas(json.data); //  aquí citas es un array
     } catch (err: any) {
       setError(err.message || "Error desconocido");
     } finally {

@@ -19,8 +19,8 @@ export interface LocationData {
   };
 }
 
-/**
- * Valores por defecto para el formulario
+/*
+  Valores por defecto para el formulario
  */
 export const defaultLocationData: LocationData = {
   name: '',
