@@ -44,13 +44,13 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
           top = window.innerHeight - stepRect.height - 20;
         }
         if (top < 20) {
-          top = 20;
+          top = 10;
         }
         if (left + stepRect.width > window.innerWidth) {
           left = window.innerWidth - stepRect.width - 20;
         }
         if (left < 20) {
-          left = 20;
+          left = 0;
         }
 
         setPosition({ top, left });
@@ -86,124 +86,7 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
     }
   }, [step.targetElement]);
 
-  // Focus trap - mantener Tab dentro del tooltip
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key !== 'Tab') return;
-
-      if (!tooltipRef.current) return;
-
-      // Obtener todos los elementos focusables dentro del tooltip
-      const focusableElements = tooltipRef.current.querySelectorAll(
-        'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-      );
-      const focusableArray = Array.from(focusableElements) as HTMLElement[];
-
-      if (focusableArray.length === 0) return;
-
-      const firstElement = focusableArray[0];
-      const lastElement = focusableArray[focusableArray.length - 1];
-      const activeElement = document.activeElement as HTMLElement;
-
-      if (e.shiftKey) {
-        // Shift + Tab - moverse hacia atras
-        if (activeElement === firstElement) {
-          e.preventDefault();
-          lastElement.focus();
-        }
-      } else {
-        // Tab - moverse hacia adelante
-        if (activeElement === lastElement) {
-          e.preventDefault();
-          firstElement.focus();
-        }
-      }
-    };
-
-    // Solo agregar listener cuando el tooltip este montado
-    const currentTooltip = tooltipRef.current;
-    if (currentTooltip) {
-      currentTooltip.addEventListener('keydown', handleKeyDown);
-      // Asegurar que el contenedor pueda recibir foco y enfocarlo primero
-      currentTooltip.setAttribute('tabindex', '-1');
-      currentTooltip.focus();
-      // Luego enfocar el primer botón disponible dentro del tooltip
-      const firstButton = currentTooltip.querySelector('button');
-      if (firstButton) {
-        setTimeout(() => (firstButton as HTMLElement).focus(), 0);
-      }
-    }
-
-    return () => {
-      if (currentTooltip) {
-        currentTooltip.removeEventListener('keydown', handleKeyDown);
-      }
-    };
-  }, [currentStep]);
-
-  return (
-    <>
-      {/* Tooltip del paso */}
-      <div
-        ref={tooltipRef}
-        className="fixed z-60 bg-white rounded-xl shadow-2xl border border-blue-100 max-w-sm w-full transform transition-all duration-300"
-        style={{
-          top: `${position.top}px`,
-          left: `${position.left}px`
-        }}
-      >
-        <div ref={stepRef}>
-        {/* Header */}
-        <div className="bg-linear-to-r from-[#11255a] to-[#52abff] p-4 rounded-t-xl">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-xl">{step.icon}</span>
-              <h3 className="text-white font-semibold text-lg">{step.title}</h3>
-            </div>
-            <span className="bg-white/20 text-white/90 px-2 py-1 rounded-full text-sm font-medium">
-              {currentStep + 1}/{totalSteps}
-            </span>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="p-4">
-          <p className="text-gray-700 leading-relaxed">{step.description}</p>
-        </div>
-
-        {/* Actions */}
-        <div className="flex justify-between items-center p-4 border-t border-gray-100">
-          <div className="flex gap-2">
-            <button
-              onClick={onPrev}
-              disabled={currentStep === 0}
-              className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                currentStep === 0
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-blue-50 text-blue-600 hover:bg-blue-100 hover:scale-105'
-              }`}
-            >
-              ← Anterior
-            </button>
-            <button
-              onClick={onNext}
-              className="px-4 py-2 bg-linear-to-r from-[#52abff] to-[#11255a] text-white rounded-lg font-medium hover:from-[#3a9cff] hover:to-[#0e1f4d] transition-all duration-200 transform hover:scale-105"
-            >
-              {currentStep === totalSteps - 1 ? 'Finalizar ' : 'Siguiente →'}
-            </button>
-          </div>
-          
-          <button
-            onClick={onSkip}
-            className="text-gray-500 hover:text-gray-700 font-medium text-sm hover:scale-105 transition-transform duration-200"
-          >
-            Saltar
-          </button>
-        </div>
-        </div>
-      </div>
-    </>
-  );
+ 
 };
 
 export default TutorialStep;
