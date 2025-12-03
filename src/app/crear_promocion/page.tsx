@@ -1,3 +1,4 @@
+'use client';
 // pages/promociones/crear.tsx
 import CrearPromocion from '../crear_promocion/CrearPromocion';
 import { NextPage } from 'next';

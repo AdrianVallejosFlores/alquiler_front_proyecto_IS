@@ -98,7 +98,8 @@ function AddOrEditOfferPageContent() {
         setAccessDenied(false);
         setDescription(offer.description ?? '');
         setCategory(offer.category ?? PLACEHOLDER_CATEGORY);
-        setIsActive(offer.isActive ?? true); // Cargar el valor de isActive si se está editando
+        // Verificamos si el status es 'active' (o diferente de 'inactive')
+        setIsActive(offer.status === 'active'); // Cargar el valor de isActive si se está editando
         const existing = Array.isArray(offer.images) ? offer.images : [];
         setExistingImages(existing);
         initialSnapshot.current = {
@@ -295,11 +296,26 @@ function AddOrEditOfferPageContent() {
     };
   }, []);
 
+
+  const handleCancelExit = () => {
+    setShowExitModal(false);
+    pendingNavigationRef.current = null;
+  };
+
+  const handleConfirmExit = () => {
+    if (pendingNavigationRef.current) {
+      allowRouteChangeRef.current = true; // Permitir la navegación
+      pendingNavigationRef.current();
+    }
+    setShowExitModal(false);
+  };
+
   async function handleSubmit() {
     if (!currentFixerId) {
       setFeedback({ type: 'error', message: 'Debes ser fixer para gestionar ofertas.' });
       return;
     }
+    
     const trimmedDescription = description.trim();
     if (!trimmedDescription) {
       setFeedback({ type: 'error', message: 'La descripción es obligatoria.' });
