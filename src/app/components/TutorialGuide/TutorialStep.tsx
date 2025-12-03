@@ -172,27 +172,28 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
           <p className="text-gray-700 leading-relaxed">{step.description}</p>
         </div>
 
-      {/* Actions */}
-      <div className="flex justify-between items-center p-3 border-t border-gray-200">
-        <div className="flex gap-2">
-          <button
-            onClick={onPrev}
-            disabled={currentStep === 0}
-            className={`px-3 py-2 rounded font-medium ${
-              currentStep === 0
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : 'bg-blue-100 text-blue-600 hover:bg-blue-200'
-            }`}
-          >
-            ← Anterior
-          </button>
-          <button
-            onClick={onNext}
-            className="px-3 py-2 bg-blue-600 text-white rounded font-medium hover:bg-blue-700"
-          >
-            {currentStep === totalSteps - 1 ? 'Finalizar' : 'Siguiente →'}
-          </button>
-        </div>
+       {/* Actions */}
+        <div className="flex justify-between items-center p-4 border-t border-gray-100">
+          <div className="flex gap-2">
+            <button
+              onClick={onPrev}
+              disabled={currentStep === 0}
+              className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                currentStep === 0
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-blue-50 text-blue-600 hover:bg-blue-100 hover:scale-105'
+              }`}
+            >
+              ← Anterior
+            </button>
+            <button
+              onClick={onNext}
+              className="px-4 py-2 bg-linear-to-r from-[#52abff] to-[#11255a] text-white rounded-lg font-medium hover:from-[#3a9cff] hover:to-[#0e1f4d] transition-all duration-200 transform hover:scale-105"
+            >
+              {currentStep === totalSteps - 1 ? 'Finalizar ' : 'Siguiente →'}
+            </button>
+          </div>
+
         
         <button
           onClick={onSkip}
