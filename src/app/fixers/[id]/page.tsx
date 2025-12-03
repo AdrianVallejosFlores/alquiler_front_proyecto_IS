@@ -4,6 +4,8 @@ import FixerOwnerActions from "../components/FixerOwnerActions";
 import FixerSkillsList from "../components/FixerSkillsList";
 import WorkExperienceBridge from "../../fixers/components/WorkExperienceBridge";
 import VisualPortfolioBridge from "../../fixers/components/VisualPortfolioBridge";
+// Importamos el componente de promociones
+import PromotionsSection from "../../fixers/components/PromotionsSection";
 
 type PageProps = { params: Promise<{ id: string }> };
 
@@ -92,7 +94,6 @@ export default async function FixerDetailPage({ params }: PageProps) {
   const memberSince = data?.memberSince ?? data?.createdAt ?? new Date(2019, 7, 28).toISOString();
   const methods: string[] = Array.isArray(data?.paymentMethods) ? data.paymentMethods : ["cash", "qr", "card"];
   
-  // ✅ Bug 1.1.1 RESUELTO: Mostrar bio real o mensaje específico del fixer
   const bio = data?.bio?.trim() || null;
   const hasBio = bio !== null && bio.length > 0;
   
@@ -209,7 +210,8 @@ export default async function FixerDetailPage({ params }: PageProps) {
             </div>
           </div>
 
-          {/* ✅ Bug 1.1.1 RESUELTO: Mostrar bio real o mensaje personalizado */}
+          {/* ❌ BOTONES DE DISPONIBILIDAD Y SOLICITUD ELIMINADOS AQUÍ */}
+
           <div className="rounded-xl border border-slate-200 p-4 md:col-span-3">
             <div className="mb-2 text-sm text-slate-500">Sobre mí</div>
             {hasBio ? (
@@ -238,6 +240,12 @@ export default async function FixerDetailPage({ params }: PageProps) {
       <div className="mt-8">
         <VisualPortfolioBridge fixerId={id} />
       </div>
+
+      {/* ✅ SECCIÓN DE PROMOCIONES (Movida aquí abajo) */}
+      <div className="mt-12 mb-8">
+        <PromotionsSection fixerId={id} />
+      </div>
+      {/* --------------------------------------------------- */}
 
       <div className="mt-6 flex justify-end">
         {wa ? (
