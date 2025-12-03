@@ -99,7 +99,7 @@ export default function CarruselInspirador() {
         relative w-full overflow-hidden shadow-lg bg-white flex flex-col md:flex-row
         h-auto md:h-[420px]
         rounded-none md:rounded-2xl
-        !mt-0 !pt-0
+        mt-0! pt-0!
       "
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}

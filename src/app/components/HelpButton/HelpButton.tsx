@@ -181,7 +181,7 @@ export default function HelpButton() {
 
   return (
     <>
-    <div className="fixed z-[100] bottom-20 right-6 flex flex-col items-end gap-3" ref={menuRef}>
+    <div className="fixed z-100 bottom-20 right-6 flex flex-col items-end gap-3" ref={menuRef}>
       {/* Menú desplegable - solo FAQ y Centro de Ayuda */}
       {isMenuOpen && (
         <div className="bg-white rounded-xl shadow-xl overflow-hidden w-60 animate-in slide-in-from-bottom-5 fade-in duration-200 border border-gray-100">
