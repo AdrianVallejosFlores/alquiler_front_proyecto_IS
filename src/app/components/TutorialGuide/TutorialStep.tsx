@@ -86,7 +86,61 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
     }
   }, [step.targetElement]);
 
- 
+  // Focus trap - mantener Tab dentro del tooltip
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+
+      if (!tooltipRef.current) return;
+
+      // Obtener todos los elementos focusables dentro del tooltip
+      const focusableElements = tooltipRef.current.querySelectorAll(
+        'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      const focusableArray = Array.from(focusableElements) as HTMLElement[];
+
+      if (focusableArray.length === 0) return;
+
+      const firstElement = focusableArray[0];
+      const lastElement = focusableArray[focusableArray.length - 1];
+      const activeElement = document.activeElement as HTMLElement;
+
+      if (e.shiftKey) {
+        // Shift + Tab - moverse hacia atras
+        if (activeElement === firstElement) {
+          e.preventDefault();
+          lastElement.focus();
+        }
+      } else {
+        // Tab - moverse hacia adelante
+        if (activeElement === lastElement) {
+          e.preventDefault();
+          firstElement.focus();
+        }
+      }
+    };
+
+    // Solo agregar listener cuando el tooltip este montado
+    const currentTooltip = tooltipRef.current;
+    if (currentTooltip) {
+      currentTooltip.addEventListener('keydown', handleKeyDown);
+      // Asegurar que el contenedor pueda recibir foco y enfocarlo primero
+      currentTooltip.setAttribute('tabindex', '-1');
+      currentTooltip.focus();
+      // Luego enfocar el primer botón disponible dentro del tooltip
+      const firstButton = currentTooltip.querySelector('button');
+      if (firstButton) {
+        setTimeout(() => (firstButton as HTMLElement).focus(), 0);
+      }
+    }
+
+    return () => {
+      if (currentTooltip) {
+        currentTooltip.removeEventListener('keydown', handleKeyDown);
+      }
+    };
+  }, [currentStep]);
+
 };
 
 export default TutorialStep;
