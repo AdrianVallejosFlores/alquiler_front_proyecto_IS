@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 
-const URL = "http://localhost:5000";
+const URL = "http://localhost:4000";
 const ID_OFERTA = "67b123456789abcdef012345";
 
 // --- TIPOS ---

@@ -2,6 +2,8 @@ import { getFixer } from "@/lib/api/fixer";
 import Link from "next/link";
 import FixerOwnerActions from "../components/FixerOwnerActions";
 import FixerSkillsList from "../components/FixerSkillsList";
+import WorkExperienceBridge from "../../fixers/components/WorkExperienceBridge";
+import VisualPortfolioBridge from "../../fixers/components/VisualPortfolioBridge";
 
 type PageProps = { params: Promise<{ id: string }> };
 
@@ -229,6 +231,14 @@ export default async function FixerDetailPage({ params }: PageProps) {
         </div>
       </div>
 
+      <div className="mt-8">
+        <WorkExperienceBridge fixerId={id} />
+      </div>
+
+      <div className="mt-8">
+        <VisualPortfolioBridge fixerId={id} />
+      </div>
+
       <div className="mt-6 flex justify-end">
         {wa ? (
           <a
@@ -257,8 +267,6 @@ export default async function FixerDetailPage({ params }: PageProps) {
           </button>
         )}
       </div>
-
-      {/* ✅ Bug 1.1.1 RESUELTO: Componente de edición para el propietario */}
       <FixerOwnerActions
         fixerId={id}
         currentBio={bio}
