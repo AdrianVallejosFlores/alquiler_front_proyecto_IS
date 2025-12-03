@@ -10,6 +10,7 @@ import { SiTiktok } from 'react-icons/si';
 import Modal from '../reutilizables/Modal';
 import Icono from '../Header/Icono';
 import LoginRequiredModal from '../LoginRequiredModal/LoginRequiredModal';
+import { useLanguage } from '../../context/LanguageContext';
 
 // Contenido para cada modal (sin cambios)
 const modalContents = {
@@ -175,10 +176,10 @@ const openMailClientOrGmail = (subjectText = 'Contacto desde Servineo', bodyText
 const Footer = () => {
   const [activeModal, setActiveModal] = useState<keyof typeof modalContents | null>(null);
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
-  const [currentLanguage, setCurrentLanguage] = useState<LanguageCode>('es');
   const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);
   const languageMenuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const { lang, setLang, t } = useLanguage();
 
   useEffect(() => {
     if (!isLanguageMenuOpen) {
@@ -236,7 +237,7 @@ const Footer = () => {
     window.dispatchEvent(new CustomEvent('show-tutorial'));
   };
 
-  const selectedLanguage = languageOptions.find((option) => option.code === currentLanguage) ?? languageOptions[0];
+  const selectedLanguage = languageOptions.find((option) => option.code === lang) ?? languageOptions[0];
 
   const handleCloseModal = () => {
     setActiveModal(null);
@@ -256,44 +257,44 @@ const Footer = () => {
                 <h3 className="text-2xl font-bold font-heading">Servineo</h3>
               </div>
               <p className="text-[#b9ddff] text-sm sm:text-base">
-                La plataforma líder que conecta clientes con proveedores de servicios profesionales. Encuentra el fixer perfecto para tu proyecto.
+                {t('tagline')}
               </p>
             </div>
 
             <div className="space-y-4">
-              <h4 className="text-xl font-semibold font-heading">Categorías</h4>
+              <h4 className="text-xl font-semibold font-heading">{t('categories')}</h4>
               {/* ===== SECCIÓN "CATEGORÍAS" ACTUALIZADA (SIN MANUAL) ===== */}
               <nav className="flex flex-col space-y-2 items-center md:items-start">
                 <a href="#trabajos-recientes" className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">
-                  Trabajos recientes
+                  {t('recentJobs')}
                 </a>
                 <a href="#mapa" className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">
-                  Mapa
+                  {t('map')}
                 </a>
                 <a href="#servicios" className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">
-                  Lista de servicios
+                  {t('servicesList')}
                 </a>
                 <a href="#carrusel" className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">
-                  Sección carrusel
+                  {t('carousel')}
                 </a>
               </nav>
             </div>
 
             <div className="space-y-4">
-              <h4 className="text-xl font-semibold font-heading">Funciones del Sistema</h4>
+              <h4 className="text-xl font-semibold font-heading">{t('systemFeatures')}</h4>
               <nav className="flex flex-col space-y-2 items-center md:items-start">
                 <a href="/convertir-fixer" className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">Convertir en fixer</a>
-                <button type="button" onClick={() => setActiveModal('howItWorks')} className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 text-left focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">¿Cómo funciona?</button>
+                <button type="button" onClick={() => setActiveModal('howItWorks')} className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 text-left focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">{t('howItWorks')}</button>
                 {/* ✅ NUEVO BOTÓN: Guía de Usuario */}
                 <button 
                   type="button" 
                   onClick={handleTutorialClick}
                   className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 text-left focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded flex items-center gap-2"
                 >
-                  <span>Guía de Usuario</span>
+                  <span>{t('userGuide')}</span>
                 </button>
-                <a href="/login" className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">Iniciar sesión</a>
-                <a href="/registro" className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">Registrarse</a>
+                <a href="/login" className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">{t('login')}</a>
+                <a href="/registro" className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">{t('register')}</a>
               </nav>
             </div>
 
@@ -301,7 +302,7 @@ const Footer = () => {
               className="space-y-4"
               data-tutorial="support-section" // ✅ NUEVO: Para paso 2 del tutorial
             >
-              <h4 className="text-xl font-semibold font-heading">Soporte</h4>
+              <h4 className="text-xl font-semibold font-heading">{t('support')}</h4>
               {/* ===== SECCIÓN "SOPORTE" ACTUALIZADA (CON MANUAL) ===== */}
               <ul className="space-y-3">
                 <li className="flex items-center justify-center md:justify-start">
@@ -328,9 +329,9 @@ const Footer = () => {
                   </a>
                 </li>
                 <li className="flex items-center justify-center md:justify-start">
-                  <a href="/panel" className="flex items-center transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">
+                    <a href="/panel" className="flex items-center transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">
                     <FaBookOpen className="mr-3 text-[#52abff]" />
-                    <span className="text-sm">Ver manual usuario</span>
+                    <span className="text-sm">{t('viewManual')}</span>
                   </a>
                 </li>
               </ul>
@@ -349,7 +350,7 @@ const Footer = () => {
           </div>
 
           <div className="border-t border-[#1140bc] mt-8 pt-8 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <p className="text-sm text-[#89c9ff]">© {new Date().getFullYear()} Servineo. Todos los derechos reservados.</p>
+                <p className="text-sm text-[#89c9ff]">© {new Date().getFullYear()} Servineo. {lang === 'es' ? 'Todos los derechos reservados.' : 'All rights reserved.'}</p>
             <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
               <div className="relative w-full md:w-auto" ref={languageMenuRef}>
                 <button
@@ -377,21 +378,16 @@ const Footer = () => {
                           <button
                             type="button"
                             onClick={() => {
-                              if (option.code === 'en') {
-                                setIsLanguageMenuOpen(false);
-                                router.push('/404');
-                                return;
-                              }
-                              setCurrentLanguage(option.code);
+                              setLang(option.code as any);
                               setIsLanguageMenuOpen(false);
                             }}
                             className={`flex w-full items-center gap-2 px-4 py-2 text-sm transition transform duration-150 ease-in-out hover:scale-105 ${
-                              option.code === currentLanguage
+                              option.code === lang
                                 ? 'bg-[#1140bc] text-[#d8ecff]'
                                 : 'text-[#d8ecff] hover:bg-[#173a87]'
                             }`}
                             role="option"
-                            aria-selected={option.code === currentLanguage}
+                            aria-selected={option.code === lang}
                           >
                             <Image
                               src={option.flagSrc}
