@@ -6,6 +6,7 @@ import type { Offer } from '../services/offersService';
 type Props = {
   offer: Offer;
   onOpen: (offer: Offer) => void;
+  onOpenPromotions: (offer: Offer) => void;
 };
 
 // Utilidad segura: maneja null/undefined y corta a 100 chars
@@ -14,7 +15,7 @@ const clamp = (text: string | undefined | null, max = 100) => {
   return t.length > max ? t.slice(0, max - 1) + '…' : t;
 };
 
-export default function OfferCard({ offer, onOpen }: Props) {
+export default function OfferCard({ offer, onOpen, onOpenPromotions }: Props) {
   const isInactive = offer.status === 'inactive';
 
   return (
@@ -105,9 +106,7 @@ export default function OfferCard({ offer, onOpen }: Props) {
            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
            <button
            type="button"
-          onClick={() => {
-            console.log('Ver promociones de:', offer.title);
-           }}
+          onClick={() => onOpenPromotions(offer)}
     className="btn-outline"
     style={{
       cursor: 'pointer',
