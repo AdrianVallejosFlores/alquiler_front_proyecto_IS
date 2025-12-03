@@ -4,6 +4,8 @@ import React from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { getOfferById, canEditOffer, deleteOffer, type Offer } from '../services/offersService';
 import { useClientSession } from '@/lib/auth/useSession';
+// 1. IMPORTAMOS EL COMPONENTE
+import PromotionsList from '../../fixers/components/PromotionsList';
 
 const shellStyles: React.CSSProperties = {
   maxWidth: 960,
@@ -238,16 +240,16 @@ export default function OfferDetail() {
                   style={{ width: '100%', height: '100%', objectFit: 'contain', background: '#111827' }}
                 />
                 {images.length > 1 && (
-              <>
+                  <>
                     <button type="button" onClick={goPrev} aria-label="Imagen anterior" style={sliderButton({ left: 12 })}>
                       {'<'}
                     </button>
                     <button type="button" onClick={goNext} aria-label="Imagen siguiente" style={sliderButton({ right: 12 })}>
                       {'>'}
                     </button>
-                <div style={dotWrapper}>
-                  {images.map((_, dotIndex) => (
-                    <span
+                    <div style={dotWrapper}>
+                      {images.map((_, dotIndex) => (
+                        <span
                           key={String(dotIndex)}
                           style={{
                             width: dotIndex === index ? 10 : 8,
@@ -332,6 +334,9 @@ export default function OfferDetail() {
           </div>
         </article>
 
+        {/* ✅ 2. SECCIÓN DE PROMOCIONES INSERTADA AQUÍ (Antes de los botones) */}
+        <PromotionsList />
+
         <footer
           style={{
             display: 'flex',
@@ -364,7 +369,7 @@ export default function OfferDetail() {
                 type="button"
                 onClick={() => router.push(`/addNewJobOffer?edit=${offer.id}`)}
                 style={{
-                 border: '1px solid #2563EB',
+                  border: '1px solid #2563EB',
                   background: '#2563EB',
                   color: '#FFFFFF',
                   fontWeight: 600,
