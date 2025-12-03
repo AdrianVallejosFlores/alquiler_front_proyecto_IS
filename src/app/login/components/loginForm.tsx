@@ -4,13 +4,8 @@ import React, { useState } from 'react';
 import { useLoginForm } from '../hooks/useLoginForm';
 import AppleIcon from '../assets/icons8-apple-50.png';
 import Link from 'next/link';
-<<<<<<< HEAD
 import { useRouter, useSearchParams } from 'next/navigation';
 import { loginUsuario } from '@/app/teamsys/services/UserService';
-=======
-import { useRouter } from 'next/navigation';
-import { loginUsuario } from '@/app/teamsys/services/UserService';  
->>>>>>> dev/recode-sprint3_v2
 import { useGoogleAuth } from '../../google/hooks/useGoogleAuth';
 import { GoogleButton } from '../../google/components/GoogleButton';
 import { getFixerByUser } from '@/lib/api/fixer';
