@@ -4,7 +4,7 @@
  * Servicio para que el proveedor confirme o rechace trabajos (HU1)
  */
 
-const BASE_URL = "http://localhost:5000/api/los_vengadores/trabajos";
+const BASE_URL = "https://back-segundosprint-1.onrender.com/api/los_vengadores/trabajos";
 
 // 🔹 Tipo esperado desde el backend
 export interface TrabajoResponse {

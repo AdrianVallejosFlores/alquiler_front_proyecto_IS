@@ -8,7 +8,7 @@ export type Role = 'cliente' | 'proveedor';
 // URL del backend (igual que trabajosTerminados)
 // ===============================
 const BACKEND_URL =
-  'http://localhost:5000/api/los_vengadores/trabajo-cancelado';
+  'https://back-segundosprint-1.onrender.com/api/los_vengadores/trabajo-cancelado';
 
 // ===============================
 // Adaptador Mongo → Job (usado por DetallesAmbos)

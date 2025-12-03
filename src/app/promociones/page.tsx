@@ -178,7 +178,7 @@ export default function PromocionesPage() {
   
   const sp = useSearchParams();
   const id = sp.get('id');
-  const ID_OFERTA = id;
+  const ID_OFERTA = id || "69305e4ed53a2f78f215f6e1";
   
 
   const abrirModalNueva = () => {
