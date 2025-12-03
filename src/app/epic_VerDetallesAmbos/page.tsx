@@ -8,7 +8,7 @@ import { RatingModal } from './RatingModal';
 export default function VerDetallesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   
-  const API_URL = "http://localhost:5000/api/los_vengadores/trabajos/trabajo/69043b0b04115600c8f6fa65/calificar";
+  const API_URL = "https://back-segundosprint-1.onrender.com/api/los_vengadores/trabajos/trabajo/69043b0b04115600c8f6fa65/calificar";
 
   // Eliminamos 'router' y 'redirectPath' si ya no se usan para redireccionar
   // const router = useRouter(); 

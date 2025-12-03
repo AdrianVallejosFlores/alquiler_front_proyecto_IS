@@ -69,7 +69,7 @@ export default function DetalleTerminado({ trabajo }: { trabajo: TrabajoTerminad
     setIsModalOpen(false);
   };
   
-  const API_URL = `http://localhost:5000/api/los_vengadores/trabajos/trabajo/${trabajo.id}/calificar`;
+  const API_URL = `https://back-segundosprint-1.onrender.com/api/los_vengadores/trabajos/trabajo/${trabajo.id}/calificar`;
 
   const handleEnviarClick = async (rating: number, comment: string) => {
     console.log("Datos a enviar:", { rating, comment });

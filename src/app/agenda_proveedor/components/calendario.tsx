@@ -37,7 +37,7 @@ const Calendario: React.FC = () => {
 {
         console.error("Error al cargar info del proveedor:", error);
         setInfoProveedor({
-          nombre: "Hector",
+          nombre: "Juan Pérez",
           profesion: "Electricista",
           descripcion: "Especialista en electricidad"
         });

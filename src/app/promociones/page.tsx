@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 
-const URL = "http://localhost:4000";
+const URL = "https://back-tercersprint.onrender.com";
 
 
 // --- TIPOS ---

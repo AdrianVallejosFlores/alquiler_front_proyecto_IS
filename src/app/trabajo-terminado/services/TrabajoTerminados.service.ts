@@ -4,7 +4,7 @@ import type { TrabajoTerminado } from "../interfaces/Trabajo.interface";
 // URL del backend (igual que los demás módulos)
 // =======================================
 // Tu backend corre en el puerto 5000 según tu .env del back
-const BACKEND_URL = "http://localhost:5000/api/los_vengadores/trabajo-cancelado";
+const BACKEND_URL = "https://back-segundosprint-1.onrender.com/api/los_vengadores/trabajo-cancelado";
 
 // =======================================
 // Adaptador Mongo → Front
