@@ -1,4 +1,4 @@
-'use client';
+'use client'; 
 
 import React from 'react';
 
@@ -11,6 +11,7 @@ const CompletionPanel: React.FC<CompletionPanelProps> = ({ onRestart, onClose })
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300 scale-100">
+        
         {/* Header */}
         <div className="bg-linear-to-r from-green-500 to-emerald-600 p-6 rounded-t-2xl text-center">
           <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -47,8 +48,13 @@ const CompletionPanel: React.FC<CompletionPanelProps> = ({ onRestart, onClose })
             >
               🔄 Ver de Nuevo
             </button>
+
+            {/* 🔥 Botón corregido */}
             <button
-              onClick={onClose}
+              onClick={() => {
+                onClose(); 
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
               className="w-full border border-gray-300 text-gray-600 py-3 px-4 rounded-lg font-medium hover:bg-gray-50 transition-all duration-200"
             >
               Volver al Inicio
