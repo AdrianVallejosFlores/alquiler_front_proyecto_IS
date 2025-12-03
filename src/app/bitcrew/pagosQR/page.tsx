@@ -1,15 +1,18 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, Suspense } from "react";
 import axios from "axios";
 import { useRouter, useSearchParams } from "next/navigation";
 
+// URL del Backend
+//const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://wallletback.vercel.app";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
-
-const RecargaQR: React.FC = () => {
+// 1. RENOMBRAMOS EL COMPONENTE PRINCIPAL A "RecargaContent"
+// (Este es el que tiene toda la lógica)
+const RecargaContent: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   
-  // 1. CAPTURAMOS EL ID DE LA URL
+  // CAPTURAMOS EL ID DE LA URL
   const fixerId = searchParams.get("fixer_id") || searchParams.get("usuario");
 
   const [tipoDocumento, setTipoDocumento] = useState("CI");
@@ -33,6 +36,23 @@ const RecargaQR: React.FC = () => {
   const [isFormValid, setIsFormValid] = useState(false);
 
   const qrRef = useRef<HTMLDivElement>(null);
+
+  // --- OBTENER SALDO REAL DEL BACKEND ---
+  useEffect(() => {
+    const fetchSaldo = async () => {
+      if (!fixerId) return;
+
+      try {
+        const response = await axios.get(`${API_URL}/api/bitCrew/wallet/fixer/${fixerId}`);
+        if (response.data.success && response.data.billetera) {
+          setSaldo(response.data.billetera.saldo);
+        }
+      } catch (error) {
+        console.error("Error al obtener saldo:", error);
+      }
+    };
+    fetchSaldo();
+  }, [fixerId]);
 
   useEffect(() => {
     let valid = true;
@@ -105,13 +125,10 @@ const RecargaQR: React.FC = () => {
         telefono,
         tipoDocumento,
         numeroDocumento,
-        // 2. ENVIAMOS EL ID AL BACKEND (CRÍTICO PARA QUE NO FALLE)
         fixerId: fixerId 
       };
 
       const response = await axios.post(url, payload);
-
-      console.log("✅ Respuesta:", response.data);
 
       if (response.data.success) {
         return true;
@@ -155,7 +172,6 @@ const RecargaQR: React.FC = () => {
   };
 
   const aceptarTransaccion = () => {
-    // 3. REDIRECCIÓN SEGURA A LA WALLET
     if (fixerId) {
         router.push(`/bitcrew/wallet?fixer_id=${fixerId}`);
     } else {
@@ -177,7 +193,6 @@ const RecargaQR: React.FC = () => {
           Recarga por QR
         </h1>
 
-        {/* Aviso de seguridad si falta el ID */}
         {!fixerId && (
             <div className="mb-4 p-3 bg-yellow-100 text-yellow-800 rounded-lg text-center text-sm border border-yellow-200">
                 ⚠️ Advertencia: No se detectó tu usuario. La recarga podría fallar.
@@ -189,6 +204,15 @@ const RecargaQR: React.FC = () => {
             ⚠️ {errorServidor}
           </div>
         )}
+
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-6">
+          <button className="px-6 py-2 bg-gradient-to-r from-blue-800 to-blue-600 text-white rounded-lg w-full sm:w-auto cursor-default">
+            Saldo Actual
+          </button>
+          <div className="px-6 py-2 bg-blue-200 text-blue-900 font-semibold rounded-lg w-full sm:w-auto text-center">
+            Bs. {saldo.toLocaleString("es-BO", { minimumFractionDigits: 2 })}
+          </div>
+        </div>
 
         <div className="flex flex-col items-center gap-3 mb-8">
           <div className="flex justify-center gap-3 flex-wrap w-full">
@@ -372,6 +396,20 @@ const RecargaQR: React.FC = () => {
         )}
       </div>
     </div>
+  );
+};
+
+// 2. CREAMOS EL COMPONENTE "RecargaQR" (Default) QUE ENVUELVE AL ANTERIOR
+// Usamos Suspense para manejar el useSearchParams durante el build
+const RecargaQR = () => {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-[#11255A] font-semibold animate-pulse">Cargando formulario...</div>
+      </div>
+    }>
+      <RecargaContent />
+    </Suspense>
   );
 };
 

@@ -28,6 +28,7 @@ export default function Header() {
 
   // URL del Backend (Asegúrate de que coincida con tu .env o puerto local)
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
+  //const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://wallletback.vercel.app/api';
 
   const syncSession = useCallback(() => {
     setIsLoggedIn(Boolean(getToken()));

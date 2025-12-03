@@ -19,7 +19,7 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
 
   // URL del Backend
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
-
+  //const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://wallletback.vercel.app/api';
   useEffect(() => {
     const checkBalance = async () => {
       try {

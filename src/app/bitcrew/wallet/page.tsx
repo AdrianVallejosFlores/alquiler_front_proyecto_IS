@@ -12,8 +12,8 @@ import WalletRestrictionModal from "./components/WalletRestrictionModal";
 import { ChevronLeft, BarChart3, Wallet, Settings } from "lucide-react";
 
 // Importaciones del Captcha (Agregado por el otro dev)
-import Recaptcha from "../captcha/components/Recaptcha";
-import { validarCaptcha } from "../captcha/service/captcha.service";
+//import Recaptcha from "../captcha/components/Recaptcha";
+//import { validarCaptcha } from "../captcha/service/captcha.service";
 
 function WalletLogic() {
   const router = useRouter();
@@ -45,7 +45,7 @@ function WalletLogic() {
   const [showRestriction, setShowRestriction] = useState(false);
 
   // Estados para Captcha (Lógica del otro dev)
-  const [captchaValido, setCaptchaValido] = useState(false);
+  /*const [captchaValido, setCaptchaValido] = useState(false);
   const [captchaCargando, setCaptchaCargando] = useState(false);
 
   const onCaptchaVerify = async (token: string | null) => {
@@ -58,7 +58,7 @@ function WalletLogic() {
     setCaptchaCargando(false);
     setCaptchaValido(result.success);
   };
-
+*/
   const handleRecargar = () => {
     if (fixerId) router.push(`/bitcrew/pagosQR?fixer_id=${fixerId}`);
   };
@@ -121,7 +121,7 @@ function WalletLogic() {
 
               <button
                 onClick={handleRecargar}
-                disabled={loading || !fixerId || !captchaValido}
+                //disabled={loading || !fixerId || !captchaValido}
                 className="flex items-center space-x-2 bg-[#11255A] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-md hover:bg-[#0B1A40] transition-colors disabled:opacity-50"
               >
                 <Wallet className="w-5 h-5" />
@@ -143,10 +143,10 @@ function WalletLogic() {
         </header>
 
         {/* SECCIÓN CAPTCHA (Agregado por el otro dev) */}
-        <div className="mt-4 mb-6">
+        {/*<div className="mt-4 mb-6">
           <Recaptcha onVerify={onCaptchaVerify} />
           {captchaCargando && <p className="text-sm text-gray-500 mt-1">Validando...</p>}
-        </div>
+        </div>*/}
 
         <main>
           {error && <div className="text-red-500 bg-red-50 p-3 rounded mb-4">{error}</div>}
@@ -171,7 +171,7 @@ function WalletLogic() {
               <div className="flex flex-col gap-3 mt-4 mb-6 md:hidden">
                 <button
                   onClick={handleRecargar}
-                  disabled={loading || !fixerId || !captchaValido} // Validación Captcha agregada aquí también
+                  //disabled={loading || !fixerId || !captchaValido} // Validación Captcha agregada aquí también
                   className="w-full flex items-center justify-center space-x-2 bg-[#11255A] text-white px-4 py-3 rounded-xl text-sm font-medium shadow-sm hover:bg-[#0B1A40] transition-colors disabled:opacity-50"
                 >
                   <Wallet className="w-5 h-5" />

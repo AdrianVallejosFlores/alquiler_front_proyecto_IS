@@ -2,6 +2,7 @@ import { IBilletera, ITransaccionBackend } from "../types";
 
 // Si tu .env no está definido, esto usará localhost:4000/api
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
+//const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://wallletback.vercel.app/api";
 
 export const fetchWalletData = async (fixerId: string) => {
   
