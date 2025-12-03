@@ -24,26 +24,20 @@ export const useHighlighting = () => {
     
     if (terms.length > 0) {
       setSearchTerms(terms);
-      // Persistir en sessionStorage para recargas
-      sessionStorage.setItem('highlightTerms', JSON.stringify(terms));
+      // Persistir en localStorage para mantener entre secciones
+      localStorage.setItem('highlightTerms', JSON.stringify(terms));
     } else {
-      // Solo limpiar si estamos en la página de búsqueda
-      if (pathname.includes('/alquiler')) {
+      // Solo limpiar si estamos fuera del contexto de búsqueda
+      if (!pathname.includes('/alquiler')) {
         setSearchTerms([]);
-        sessionStorage.removeItem('highlightTerms');
+        localStorage.removeItem('highlightTerms');
       }
     }
   }, [getSearchTermsFromURL, pathname]);
 
-  // Cargar desde sessionStorage en recargas
+  // Cargar desde localStorage en navegaciones
   useEffect(() => {
-    // Solo cargar si estamos en la página de búsqueda
-    if (!pathname.includes('/alquiler')) {
-      setSearchTerms([]);
-      return;
-    }
-
-    const storedTerms = sessionStorage.getItem('highlightTerms');
+    const storedTerms = localStorage.getItem('highlightTerms');
     if (storedTerms) {
       try {
         const terms = JSON.parse(storedTerms);
@@ -52,14 +46,14 @@ export const useHighlighting = () => {
         }
       } catch (error) {
         console.warn('Error loading highlight terms from storage:', error);
-        sessionStorage.removeItem('highlightTerms');
+        localStorage.removeItem('highlightTerms');
       }
     }
-  }, [pathname]);
+  }, []);
 
   const clearHighlighting = useCallback(() => {
     setSearchTerms([]);
-    sessionStorage.removeItem('highlightTerms');
+    localStorage.removeItem('highlightTerms');
   }, []);
 
   return {

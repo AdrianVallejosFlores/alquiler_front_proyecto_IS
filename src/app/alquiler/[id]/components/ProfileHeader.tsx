@@ -1,5 +1,5 @@
 import React from 'react';
-import HighlightedText from '@/components/HighlightedText';
+import { HighlightedText } from '../../paginacion/components/HighlightedText';
 
 type Props = {
   nombre?: string;

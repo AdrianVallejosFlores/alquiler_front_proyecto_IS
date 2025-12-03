@@ -88,6 +88,7 @@ function BusquedaContent() {
   const [modoVista, setModoVista] = useState<ModoVista>("jobs");
   const [filtersNoResults, setFiltersNoResults] = useState(false);
   const [filtrosAplicados, setFiltrosAplicados] = useState(false);
+  const [filtrosActuales, setFiltrosActuales] = useState<Filtros | null>(null);
   const itemsPerPage = 10;
 
   const opcionesOrdenamiento = [
@@ -230,6 +231,9 @@ function BusquedaContent() {
   const handleAdvancedFilters = (filtros: Filtros, resultadosApi?: ResultItem[]) => {
   console.log("🟦 Filtros recibidos:", filtros);
   console.log("🟩 Resultados API recibidos:", resultadosApi);
+
+  // Guardar los filtros actuales para resaltado
+  setFiltrosActuales(filtros);
 
   // 1️⃣ SI LA API DEVUELVE RESULTADOS → MOSTRAR PROFESIONALES
  if (resultadosApi && resultadosApi.length > 0) {
@@ -562,6 +566,7 @@ return ordenarItems(sortBy, data);
                             <JobCardWithHighlight
                               key={`${job.title}-${index}-highlight`}
                               {...job}
+                              appliedFilters={filtrosActuales}
                               onViewDetails={() => handleViewDetails(job.id)}
                             />
                           ) : (

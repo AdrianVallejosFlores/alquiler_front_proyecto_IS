@@ -3,6 +3,8 @@
 import React from 'react';
 import { HighlightedText } from './HighlightedText';
 import { useHighlighting } from '../hooks/useHighlighting';
+import { useFilterTermMatch } from '../hooks/useFilterTermMatch';
+import type { Filtros } from '../../BusquedaAvanzada/BusquedaAvanzada';
 
 
 interface JobCardWithHighlightProps {
@@ -16,10 +18,12 @@ interface JobCardWithHighlightProps {
   employmentTypeColor: string;
   rating?: number;
   onViewDetails?: () => void;
+  appliedFilters?: Filtros | null;
 }
 
 export const JobCardWithHighlight: React.FC<JobCardWithHighlightProps> = (props) => {
   const { searchTerms } = useHighlighting();
+  const { hasMatch: filterTermMatch } = useFilterTermMatch(searchTerms, props.appliedFilters || null);
   const shouldHighlight = searchTerms.length > 0;
 
   return (
@@ -49,7 +53,7 @@ export const JobCardWithHighlight: React.FC<JobCardWithHighlightProps> = (props)
             props.employmentType === "Disponible"
               ? "bg-green-100 text-green-700 border border-green-200"
               : "bg-red-100 text-red-700 border border-red-200"
-          }`}>
+          } ${filterTermMatch ? 'ring-2 ring-yellow-300' : ''}`}>
             {props.employmentType}
           </span>
           <div className="flex items-center gap-1">

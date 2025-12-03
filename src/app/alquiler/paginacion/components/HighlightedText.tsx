@@ -23,7 +23,7 @@ export const HighlightedText: React.FC<HighlightedTextProps> = ({
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "") // Elimina tildes y diacríticos
       .replace(/[´`'"]/g, '')
-      .replace(/[^\w\sáéíóúñü]/gi, ' ') // Convierte caracteres especiales en espacios
+      .replace(/[^\w\sáéíóúñü\-_\.]/gi, ' ') // Preserva -_. en palabras
       .replace(/\s+/g, ' ')
       .toLowerCase()
       .trim();
