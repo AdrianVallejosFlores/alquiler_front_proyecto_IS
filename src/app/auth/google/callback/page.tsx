@@ -78,14 +78,44 @@ function Inner() {
 
         console.log('📊 Respuesta del backend:', { status: response.status, data });
 
-        // ✅ FLUJO CORREGIDO
-        if (!response.ok) {
-          // CASO 1: Usuario ya registrado (durante REGISTRO) → Redirigir a LOGIN
-          if (response.status === 400 && data.message === 'usuario ya registrado' && authType === 'register') {
-            console.log('🔄 Usuario ya registrado durante registro - Redirigiendo a login');
-            setStatus('success');
-            setMessage('✅ Este correo ya está registrado. Redirigiendo al login...');
-            setTimeout(() => router.push('/login'), 2000);
+        if (!data.success) {
+          if (data.message === 'usuario ya registrado') {
+            if (typeof window !== 'undefined' && window.opener && window.opener !== window) {
+  const emailFromBackend: string | undefined =
+    data?.data?.user?.email ?? data?.data?.user?.correo ?? data?.data?.email;
+  window.opener.postMessage(
+    {
+      type: 'google-auth-success',
+      email: emailFromBackend,
+    },
+    window.location.origin
+  );
+  window.close();
+  return; // no seguir con el flujo normal
+}
+//
+            if(data.data.user.authProvider=='local'){
+              throw new Error("metodo de autenticacion no activado para este correo");
+              
+            }
+            if (data) {
+      const token = data.data.accessToken ?? data.data.token; 
+
+      if (token) sessionStorage.setItem('authToken', token);
+
+      sessionStorage.setItem('userData', JSON.stringify(data.data.user));
+    }
+      
+      // Disparar evento de login exitoso para que el Header se actualice
+      if(data.data.user.twoFactorEnabled){
+        sessionStorage.setItem("checkSeguridad", "true");
+      router.push('/loginSeguridad')
+      return
+      }
+          sessionStorage.setItem("login",'true')
+          const eventLogin = new CustomEvent("login-exitoso");
+          window.dispatchEvent(eventLogin);
+          router.push('/');
             return;
           }
           
@@ -123,13 +153,44 @@ function Inner() {
             setMessage('🎉 ¡Registro exitoso! Redirigiendo...');
             setTimeout(() => router.push('/ImagenLocalizacion'), 2000);
           } else {
-            // LOGIN exitoso → Redirigir a Homepage
-            setMessage('🎉 ¡Inicio de sesión exitoso! Redirigiendo a Homepage...');
-            setTimeout(() => router.push('/Homepage'), 2000);
+            throw new Error(data.message || 'Error en la autenticación con Google');
           }
-        } else {
-          throw new Error('Respuesta inválida del servidor');
         }
+
+        //Extraer datos correctamente desde data.data
+        const user = data.data.user;
+        const accessToken = data.data.accessToken;
+        const refreshToken = data.data.refreshToken;
+          // >>> Añadir: soporte POPUP (linkear método)
+// Si este callback fue abierto en popup, devolvemos SOLO el email y cerramos.
+if (typeof window !== 'undefined' && window.opener && window.opener !== window) {
+  const emailFromProfile: string | undefined = user?.email ?? user?.correo;
+  window.opener.postMessage(
+    {
+      type: 'google-auth-success',
+      email: emailFromProfile,
+    },
+    window.location.origin
+  );
+  window.close();
+  return; // no continuar con guardados ni redirecciones normales
+}
+// <<< Fin añadido
+        //  Guardar token y usuario
+        localStorage.setItem('userToken', accessToken);
+        localStorage.setItem('refreshToken', refreshToken);
+        localStorage.setItem('userData', JSON.stringify(user));
+
+        //  Guardar en sessionStorage para ImagenLocalizacion
+        sessionStorage.setItem('datosUsuarioParcial', JSON.stringify(user));
+
+        // (Si luego usas finalizeFromGoogleProfile, aquí lo puedes llamar)
+        // await finalizeFromGoogleProfile?.(user);
+
+        // Redirigir a /ImagenLocalizacion
+        setTimeout(() => {
+          router.push('/ImagenLocalizacion');
+        }, 1500);
 
       } catch (error) {
         console.error('❌ Error en autenticación:', error);

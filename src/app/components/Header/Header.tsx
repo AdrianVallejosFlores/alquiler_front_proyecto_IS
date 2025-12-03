@@ -11,16 +11,51 @@ import {
   type StoredUser,
 } from '@/lib/auth/session';
 import { STORAGE_KEYS, removeFromStorage } from '@/app/convertirse-fixer/storage';
+import SimpleProfileMenu from '@/app/Menu/components/Menu';
+import { useForceLogout } from "../../teamsys/hooks/useForceLogout";
+import { getSocket } from '@/app/teamsys/realtime/socketClient';
 
 export default function Header() {
   const [isClient, setIsClient] = useState(false);
   const [areButtonsVisible, setAreButtonsVisible] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<StoredUser | null>(null);
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  // NUEVO: solo cuando esto sea true creamos socket
+  const [canInitSocket, setCanInitSocket] = useState(false);
+  let isSocketReady = useForceLogout(
+    isLoggedIn && canInitSocket ? userId : null,accessToken ?? null 
+  );
+const handleHomeClick = () => {
+    // Si el socket NO está formado, limpiamos
+  const respuesta=sessionStorage.getItem("login") 
+  if (!getSocket()){
+      handleLogout()
 
+    } 
+   if (!respuesta) {
+    
+      // lo que pediste:
+      sessionStorage.clear(); // o solo algunas claves si prefieres
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("userData");
+    }
+     
+    // No hace falta router.push aquí, Link ya navega a "/"
+  };
   const lastScrollY = useRef(0);
   const router = useRouter();
   const pathname = usePathname();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+  const checkSize = () => setIsMobile(window.innerWidth < 640);
+  checkSize();
+  window.addEventListener("resize", checkSize);
+  return () => window.removeEventListener("resize", checkSize);
+}, []);
 
   const syncSession = useCallback(() => {
     setIsLoggedIn(Boolean(getToken()));
@@ -30,7 +65,24 @@ export default function Header() {
   useEffect(() => {
     setIsClient(true);
     syncSession();
+    const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+    if (token) {
+      setIsLoggedIn(true);
+      setCanInitSocket(true);
+    }
+    try {
+      const raw =
+        sessionStorage.getItem("userData") ||
+        localStorage.getItem("userData");
 
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        const id = parsed._id || null;
+        setUserId(id);
+      }
+    } catch (e) {
+      console.error("[Header] error leyendo userData:", e);
+    }
     const handleScroll = () => {
       if (window.innerWidth < 640) {
         setAreButtonsVisible(
@@ -40,23 +92,62 @@ export default function Header() {
       }
     };
 
+    const handleLoginExitoso = () => {
+      setIsLoggedIn(true);
+      setCanInitSocket(true);
+
+      try {
+        const raw =
+          sessionStorage.getItem("userData") ||
+          localStorage.getItem("userData");
+          const token=sessionStorage.getItem("authToken")
+        if (raw && token) {
+          const parsed = JSON.parse(raw);
+          const id = parsed._id || null;
+          setUserId(id);
+          setAccessToken(token);
+        }
+      } catch (e) {
+        console.error("[Header] error leyendo userData tras login:", e);
+      }
+    };
+
     const handleSessionChange = () => {
       syncSession();
+    };
+
+    const handleLogoutEvent = () => {
+      setIsLoggedIn(false);
+      setCanInitSocket(false);
+      setUserId(null);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener(SESSION_EVENTS.login, handleSessionChange);
     window.addEventListener(SESSION_EVENTS.logout, handleSessionChange);
     window.addEventListener(SESSION_EVENTS.updated, handleSessionChange);
+    window.addEventListener('login-exitoso', handleLoginExitoso);
+    window.addEventListener('logout-exitoso', handleLogoutEvent);
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener(SESSION_EVENTS.login, handleSessionChange);
       window.removeEventListener(SESSION_EVENTS.logout, handleSessionChange);
       window.removeEventListener(SESSION_EVENTS.updated, handleSessionChange);
+      window.removeEventListener('login-exitoso', handleLoginExitoso);
+      window.removeEventListener('logout-exitoso', handleLogoutEvent);
     };
   }, [syncSession]);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!(event.target as HTMLElement).closest(".menu-container")) {
+        setMenuVisible(false);
+      }
+    };
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
   // Ocultar barra de búsqueda en login y registro
   const shouldShowSearchBar = !['/login', '/registro'].includes(pathname);
 
@@ -70,11 +161,13 @@ export default function Header() {
   const handleLogout = () => {
     clearSession();
     Object.values(STORAGE_KEYS).forEach((key) => removeFromStorage(key));
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userData');
+    sessionStorage.clear();
     setIsLoggedIn(false);
     setCurrentUser(null);
-
-    window.dispatchEvent(new CustomEvent(SESSION_EVENTS.logout));
-    window.dispatchEvent(new CustomEvent(SESSION_EVENTS.updated));
+    const eventLogout = new CustomEvent("logout-exitoso");
+    window.dispatchEvent(eventLogout);
 
     router.push('/');
   };
@@ -188,23 +281,22 @@ export default function Header() {
                   <span className="font-semibold text-[#11255A]">
                     {displayName}
                   </span>
-                  <div className="relative group">
-                    <svg
-                      className="w-8 h-8 text-[#2a87ff] cursor-pointer"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
-                    </svg>
-                    <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                      <button
-                        onClick={handleLogout}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      >
-                        Cerrar Sesion
-                      </button>
+                  <div className="relative menu-container">
+                  <svg
+                    onClick={() => setMenuVisible(!menuVisible)} // 👈 Al hacer clic, abre/cierra tu menú
+                    className="w-8 h-8 text-[#2a87ff] cursor-pointer"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
+                  </svg>
+
+                  {menuVisible && (
+                    <div className="absolute right-0 mt-2 z-50">
+                      <SimpleProfileMenu /> {/* 👈 Tu menú reemplaza el botón Cerrar Sesión */}
                     </div>
-                  </div>
+                  )}
+                </div>
                 </div>
               </>
             )}
@@ -315,6 +407,18 @@ export default function Header() {
                       </button>
                     </div>
                   </div>
+                  {menuVisible && !isMobile && (
+  <div className="absolute right-0 top-full mt-2 z-50">
+    <SimpleProfileMenu />
+  </div>
+)}
+
+{/* Móvil: menú sube hacia arriba */}
+{menuVisible && isMobile && (
+  <div className="absolute right-0 bottom-full mb-2 z-50">
+    <SimpleProfileMenu />
+  </div>
+)}
                 </div>
               </div>
             )}
@@ -322,7 +426,7 @@ export default function Header() {
       </footer>
 
       {/* Espacio para el header fijo */}
-      <div className="h-16 sm:h-0" />
+      {/*<div className="h-16 sm:h-0" />*/}
     </>
   );
 }

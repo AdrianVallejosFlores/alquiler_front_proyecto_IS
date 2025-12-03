@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { useLoginForm } from '../hooks/useLoginForm';
 import AppleIcon from '../assets/icons8-apple-50.png';
 import Link from 'next/link';
@@ -31,10 +31,12 @@ export const LoginForm: React.FC = () => {
   const { isLoading: googleLoading, error: googleError, handleGoogleAuth } = useGoogleAuth();
 
   const handleGoogleClick = async () => {
-    // Para login, usar tipo "login" específicamente
-    await handleGoogleAuth('login');
+    await handleGoogleAuth();
   };
-
+  useEffect(()=>{
+      
+sessionStorage.clear()
+    },[]);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorBackend(null);
@@ -51,10 +53,17 @@ export const LoginForm: React.FC = () => {
         datosFormulario.password
       );
 
+      if (res.data) {
+      const token = res.data.accessToken ?? res.data.token; 
+
+      if (token) sessionStorage.setItem('authToken', token);
+
+      sessionStorage.setItem('userData', JSON.stringify(res.data.user));
+    }
       let fixerId: string | null = null;
-      if (res?.user?.id) {
+      if (res?.data?.user._id) {
         try {
-          const fixer = await getFixerByUser(res.user.id);
+          const fixer = await getFixerByUser(res.data.user._id);
           fixerId = fixer?.id ?? null;
         } catch {
           fixerId = null;
@@ -62,22 +71,29 @@ export const LoginForm: React.FC = () => {
       }
 
       // Persistencia de datos y sesión (Lógica HEAD)
-      if (res?.user?.id) {
-        saveToStorage(STORAGE_KEYS.userId, res.user.id);
+      if (res?.data.user?._id) {
+        saveToStorage(STORAGE_KEYS.userId, res.data.user._id);
       }
       saveToStorage(STORAGE_KEYS.fixerId, fixerId);
 
       const storedUser = {
-        ...(res.user ?? {}),
+        ...(res.data.user ?? {}),
         fixerId,
       };
-      persistSession({ token: res.token ?? null, user: storedUser });
+      persistSession({ token: res.data.accessToken ?? res.data.token, user: storedUser });
 
       // Disparar eventos de sesión (Ambas ramas)
+      if(res.data.user.twoFactorEnabled){
+        sessionStorage.setItem("checkSeguridad", "true");
+      router.push('/loginSeguridad')
+      return
+      }
       window.dispatchEvent(new CustomEvent(SESSION_EVENTS.updated));
       window.dispatchEvent(new CustomEvent(SESSION_EVENTS.login));
       window.dispatchEvent(new CustomEvent("login-exitoso"));
-
+      sessionStorage.setItem("intentos","0" )
+      sessionStorage.setItem("login",'true')
+      
       // Redirección: Usa 'next' si existe, si no va a Homepage (Sprint 2)
       const normalizedNext = nextRoute?.trim();
       const fallbackRoute = "/Homepage";
