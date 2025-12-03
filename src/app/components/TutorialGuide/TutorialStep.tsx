@@ -132,7 +132,7 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
               onClick={onNext}
               className="px-4 py-2 bg-linear-to-r from-[#52abff] to-[#11255a] text-white rounded-lg font-medium hover:from-[#3a9cff] hover:to-[#0e1f4d] transition-all duration-200 transform hover:scale-105"
             >
-              {currentStep === totalSteps - 1 ? 'Finalizar 🎉' : 'Siguiente →'}
+              {currentStep === totalSteps - 1 ? 'Finalizar ' : 'Siguiente →'}
             </button>
           </div>
           
