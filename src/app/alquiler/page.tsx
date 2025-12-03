@@ -5,4 +5,5 @@ export default function AlquilerHome() {
       <p>Bienvenido. Aquí puedes buscar y filtrar profesionales o servicios disponibles.</p>
     </div>
   );
+
 }

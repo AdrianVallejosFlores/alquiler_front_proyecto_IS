@@ -1,4 +1,5 @@
 'use client';
+import type { Filtros, ResultItem } from "../BusquedaAvanzada/BusquedaAvanzada";
 
 import { useState, useEffect, useMemo, Suspense, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -12,6 +13,11 @@ import { Job } from "../../../types/job";
 import FiltrosForm from "../Feature/Componentes/FiltroForm";
 import { UsuarioResumen } from "../Feature/Types/filtroType";
 import BusquedaAvanzada from "../BusquedaAvanzada/BusquedaAvanzada";
+
+// imports para el resaltado 
+import { JobCardWithHighlight } from "./components/JobCardWithHighlight";
+import { UserProfileCardWithHighlight } from "./components/UserProfileCardWithHighlight";
+import { useHighlighting } from "./hooks/useHighlighting";
 
 // Componente de carga
 function LoadingFallback() {
@@ -27,6 +33,8 @@ function LoadingFallback() {
 function BusquedaContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  const { searchTerms, hasHighlighting } = useHighlighting();
 
   const urlQuery = searchParams.get("q") || "";
   const urlPage = searchParams.get("page");
@@ -219,74 +227,79 @@ function BusquedaContent() {
 
 
 
-  const handleAdvancedFilters = (filtros: any) => {
-    console.log(" Filtros aplicados:", filtros);
+  const handleAdvancedFilters = (filtros: Filtros, resultadosApi?: ResultItem[]) => {
+  console.log("🟦 Filtros recibidos:", filtros);
+  console.log("🟩 Resultados API recibidos:", resultadosApi);
 
-    let baseData = allJobs;
+  // 1️⃣ SI LA API DEVUELVE RESULTADOS → MOSTRAR PROFESIONALES
+ if (resultadosApi && resultadosApi.length > 0) {
+  console.log("🟢 Mostrando resultados desde API avanzada");
 
-    // Aplicar filtros avanzados
-    let filtrados = baseData.filter((job) => {
-      let match = true;
+  setUsuariosFiltrados(
+    resultadosApi.map((item) => item as unknown as UsuarioResumen)
+  );
 
-      if (filtros.tipoServicio)
-        match &&= job.title.toLowerCase().includes(filtros.tipoServicio.toLowerCase());
-      if (filtros.zona)
-        match &&= job.location?.toLowerCase().includes(filtros.zona.toLowerCase());
-      if (filtros.precioMin || filtros.precioMax) {
-        const precioNum = Number(job.salaryRange.replace(/[^0-9.-]+/g, ""));
-        if (filtros.precioMin) match &&= precioNum >= filtros.precioMin;
-        if (filtros.precioMax) match &&= precioNum <= filtros.precioMax;
-      }
-      if (filtros.horario)
-        match &&= job.employmentType.toLowerCase() === filtros.horario.toLowerCase();
-
-      return match;
-    });
+  setModoVista("usuarios");
+  setFiltrosAplicados(true);
+  setFiltersNoResults(resultadosApi.length === 0);
+  return;
+}
 
 
-    if (urlQuery.trim() !== "") {
-      const normalizarBusqueda = (texto: string) => {
-        return texto
-          .normalize("NFD")
-          .replace(/[\u0300-\u036f]/g, "")
-          .replace(/[´'"]/g, '')
-          .replace(/\s+/g, ' ')
-          .trim()
-          .toLowerCase();
-      };
-      const queryNormalizado = normalizarBusqueda(urlQuery);
-      const tokens = queryNormalizado.split(' ').filter(token => token.length > 0);
+  // 2️⃣ SI LA API NO DEVUELVE → usar filtro local sobre ALLJOBS
+  let filtrados = allJobs.filter((job) => {
+    let ok = true;
 
-      if (tokens.length > 0) {
-        filtrados = filtrados.filter(job => {
-            const tituloNormalizado = job.title ? normalizarBusqueda(job.title) : "";
-            const empresaNormalizada = job.company ? normalizarBusqueda(job.company) : "";
-            const serviciosNormalizados = job.service ? normalizarBusqueda(job.service) : "";
-            const campos = [tituloNormalizado, empresaNormalizada, serviciosNormalizados];
+    if (filtros.tipoServicio)
+      ok &&= job.title.toLowerCase().includes(filtros.tipoServicio.toLowerCase());
 
-            return campos.some(campoTexto => {
-                if (!campoTexto) return false;
-                let posicionActual = 0;
-                let todosLosTokensEnOrden = true;
-                for (const token of tokens) {
-                    const posicionToken = campoTexto.indexOf(token, posicionActual);
-                    if (posicionToken === -1) {
-                        todosLosTokensEnOrden = false;
-                        break;
-                    }
-                    posicionActual = posicionToken + token.length;
-                }
-                return todosLosTokensEnOrden;
-            });
-        });
-      }
+    if (filtros.zona)
+      ok &&= job.location?.toLowerCase().includes(filtros.zona.toLowerCase());
+
+    if (filtros.horario)
+      ok &&= job.employmentType.toLowerCase() === filtros.horario.toLowerCase();
+
+    if (filtros.precioMin !== undefined || filtros.precioMax !== undefined) {
+      const precioNum = Number(job.salaryRange.replace(/[^0-9.-]+/g, ""));
+      if (filtros.precioMin !== undefined) ok &&= precioNum >= filtros.precioMin;
+      if (filtros.precioMax !== undefined) ok &&= precioNum <= filtros.precioMax;
     }
 
-    setFiltrosAplicados(true);
-    setSearchResults(filtrados);
-    setModoVista("jobs");
-    setFiltersNoResults(filtrados.length === 0);
-  };
+    return ok;
+  });
+
+  // 3️⃣ Si hay búsqueda en URL (?q=...), mantener tu lógica
+  if (urlQuery.trim() !== "") {
+    const normalizar = (t: string) =>
+      t.normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[´'"]/g, "")
+        .replace(/\s+/g, " ")
+        .trim()
+        .toLowerCase();
+
+    const tokens = normalizar(urlQuery).split(" ").filter((t) => t.length > 0);
+
+    filtrados = filtrados.filter((job) => {
+      const campos = [
+        normalizar(job.title || ""),
+        normalizar(job.company || ""),
+        normalizar(job.service || "")
+      ];
+
+      return campos.some((campo) =>
+        tokens.every((tk) => campo.includes(tk))
+      );
+    });
+  }
+
+  console.log("🟡 Mostrando resultados filtrados de trabajos");
+  setSearchResults(filtrados);
+  setModoVista("jobs");
+  setFiltrosAplicados(true);
+  setFiltersNoResults(filtrados.length === 0);
+};
+
 
   const [busquedaAvanzadaAbierta, setBusquedaAvanzadaAbierta] = useState(false);
 
@@ -308,8 +321,9 @@ function BusquedaContent() {
 
   const jobsToDisplay = useMemo(() => {
     // SIEMPRE trabajar sobre searchResults
-    let data = searchResults;
-    return ordenarItems(sortBy, data);
+   const data = searchResults;
+return ordenarItems(sortBy, data);
+
   }, [searchResults, sortBy]);
 
   const usuariosOrdenados = useMemo(
@@ -443,13 +457,24 @@ function BusquedaContent() {
               <>
                 <div className="UserProfilesContainer space-y-6">
                   {usuariosFiltrados.map((usuario, index) => (
-                    <UserProfileCard
-                      key={`${usuario.id_usuario}-${index}`}
-                      usuario={usuario}
-                      onContactClick={() =>
-                        router.push(`/alquiler/${usuario.id_usuario}`)
-                      }
-                    />
+                    // ✅ REEMPLAZADO: UserProfileCard condicional con resaltado
+                    hasHighlighting ? (
+                      <UserProfileCardWithHighlight
+                        key={`${usuario.id_usuario}-${index}-highlight`}
+                        usuario={usuario}
+                        onContactClick={() =>
+                          router.push(`/alquiler/${usuario.id_usuario}`)
+                        }
+                      />
+                    ) : (
+                      <UserProfileCard
+                        key={`${usuario.id_usuario}-${index}`}
+                        usuario={usuario}
+                        onContactClick={() =>
+                          router.push(`/alquiler/${usuario.id_usuario}`)
+                        }
+                      />
+                    )
                   ))}
                 </div>
                 <p className="text-sm text-gray-600 mt-4">
@@ -532,12 +557,20 @@ function BusquedaContent() {
                     // Mostrar resultados
                     <>
                       <div className="space-y-6">
-                        {currentItems.map((job, index) => (
-                          <JobCard
-                            key={`${job.title}-${index}`}
-                            {...job}
-                            onViewDetails={() => handleViewDetails(job.id)}
-                          />
+                        {currentItems.map((job, index) => (                      
+                          hasHighlighting ? (
+                            <JobCardWithHighlight
+                              key={`${job.title}-${index}-highlight`}
+                              {...job}
+                              onViewDetails={() => handleViewDetails(job.id)}
+                            />
+                          ) : (
+                            <JobCard
+                              key={`${job.title}-${index}`}
+                              {...job}
+                              onViewDetails={() => handleViewDetails(job.id)}
+                            />
+                          )
                         ))}
                       </div>
 
