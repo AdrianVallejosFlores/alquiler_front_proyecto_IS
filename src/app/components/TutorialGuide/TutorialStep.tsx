@@ -167,10 +167,10 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
           </div>
         </div>
 
-      {/* Content */}
-      <div className="p-3">
-        <p className="text-gray-700">{step.description}</p>
-      </div>
+         {/* Content */}
+        <div className="p-4">
+          <p className="text-gray-700 leading-relaxed">{step.description}</p>
+        </div>
 
       {/* Actions */}
       <div className="flex justify-between items-center p-3 border-t border-gray-200">
