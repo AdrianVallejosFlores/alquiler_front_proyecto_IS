@@ -42,30 +42,37 @@ const defaultImages = [
 import { Portfolio } from '../types/usuario.types';
 
 const PortfolioGrid = ({ portfolio, serverOrigin }: { portfolio?: Portfolio[]; serverOrigin: string }) => {
-  // Usar las imágenes proporcionadas o las predeterminadas
   const items = portfolio?.length ? portfolio : defaultImages;
   
   return (
-    <div className="mt-6 bg-white rounded-xl shadow p-6 border" style={{ borderColor: '#1769ff' }}>
-      <h3 className="text-blue-600 font-semibold mb-4">Portafolio y Proyectos Anteriores</h3>
+    <div className="mt-8 bg-white dark:bg-slate-900 rounded-2xl shadow-lg p-8 border border-gray-200 dark:border-slate-700">
+      <div className="flex items-center gap-3 mb-8">
+        <div className="p-2 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg">
+          <svg width="24" height="24" fill="white" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        </div>
+        <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent dark:from-blue-400 dark:to-blue-300">
+          Portafolio y Proyectos
+        </h3>
+      </div>
+      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
         {items.map((p, idx) => (
-          <div key={idx} className="group relative rounded-lg overflow-hidden bg-gray-100 border border-gray-200 aspect-video hover:shadow-xl transition-all duration-300">
+          <div key={idx} className="group relative rounded-xl overflow-hidden bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 aspect-video hover:shadow-xl transition-all duration-500 hover:border-blue-300 dark:hover:border-blue-600">
             <div className="relative w-full h-full">
               <Image 
                 src={resolveImage(p.imagen)}
                 alt={p.titulo || `Proyecto de decoración ${idx + 1}`}
                 fill
                 style={{ objectFit: 'cover' }}
-                className="transition-transform duration-300 group-hover:scale-110"
+                className="transition-transform duration-500 group-hover:scale-110"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 priority={idx < 2}
               />
             </div>
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                <h4 className="text-lg font-semibold mb-1">{p.titulo}</h4>
-                <p className="text-sm opacity-90">{p.descripcion}</p>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <div className="absolute inset-0 flex flex-col justify-end p-6">
+                <h4 className="text-lg font-bold text-white mb-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">{p.titulo}</h4>
+                <p className="text-sm text-gray-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300">{p.descripcion}</p>
               </div>
             </div>
           </div>

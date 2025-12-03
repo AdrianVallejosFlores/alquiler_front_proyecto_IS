@@ -61,31 +61,44 @@ interface ReviewsListProps {
 }
 
 const ReviewsList: React.FC<ReviewsListProps> = ({ calificaciones, nombreUsuario }) => {
-  // Solo mostrar las reseñas por defecto si es Ana María Flores
   const items = nombreUsuario === "Ana María Flores" ? defaultReviews : (calificaciones ?? []);
   
   return (
-    <div className="mt-6 bg-white rounded-xl shadow-lg p-6 border border-blue-100">
-      <h3 className="text-blue-600 font-semibold text-xl mb-6">Opiniones de Clientes Verificados</h3>
+    <div className="mt-8 bg-white dark:bg-slate-900 rounded-2xl shadow-lg p-8 border border-gray-200 dark:border-slate-700">
+      <div className="flex items-center gap-3 mb-8">
+        <div className="p-2 bg-gradient-to-br from-amber-500 to-amber-600 rounded-lg">
+          <svg width="24" height="24" fill="white" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2l-2.81 6.63L2 9.24l5.46 4.73L5.82 21z"/></svg>
+        </div>
+        <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent dark:from-blue-400 dark:to-blue-300">
+          Opiniones de Clientes Verificados
+        </h3>
+      </div>
+      
       <div className="space-y-6">
         {items.map((review, idx) => (
-          <div key={idx} className="border-b border-gray-100 pb-6 last:border-0">
-            <div className="flex items-start justify-between mb-3">
-              <div className="space-y-1">
-                <div className="font-semibold text-gray-900">{review.nombre_cliente}</div>
-                {review.fecha_calificacion && (
-                  <div className="text-sm text-gray-500">
-                    {new Date(review.fecha_calificacion).toLocaleDateString('es-ES', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
-                  </div>
-                )}
+          <div key={idx} className="group relative p-6 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl hover:shadow-md transition-all duration-300 overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-amber-400/0 via-amber-400/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            
+            <div className="relative">
+              <div className="flex items-start justify-between mb-4 flex-wrap gap-4">
+                <div>
+                  <div className="font-bold text-gray-900 dark:text-white text-lg">{review.nombre_cliente}</div>
+                  {review.fecha_calificacion && (
+                    <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                      {new Date(review.fecha_calificacion).toLocaleDateString('es-ES', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-900/30 px-3 py-1.5 rounded-full">
+                  <StarRating rating={review.puntuacion} />
+                </div>
               </div>
-              <StarRating rating={review.puntuacion} />
+              <p className="text-gray-700 dark:text-gray-200 leading-relaxed text-base">{review.comentario}</p>
             </div>
-            <p className="text-gray-700 leading-relaxed mt-2">{review.comentario}</p>
           </div>
         ))}
       </div>
