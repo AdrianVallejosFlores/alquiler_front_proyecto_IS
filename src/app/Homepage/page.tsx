@@ -125,7 +125,7 @@ export default function Home() {
                   }}
                   className="bg-linear-to-r from-[#52abff] to-[#11255a] text-white px-6 py-3 rounded-xl font-semibold hover:from-[#3a9cff] hover:to-[#0e1f4d] transition-all duration-200 transform hover:scale-105 shadow-lg"
                 >
-                   🛠️🛠️Comenzar Registro 
+                   🛠️Comenzar Registro 🛠️
                 </button>
                 <a
                   href="https://youtu.be/5lGf_-xGDUs"
