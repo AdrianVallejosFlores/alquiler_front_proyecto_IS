@@ -1,9 +1,11 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 const URL = "http://localhost:4000";
-const ID_OFERTA = "67b123456789abcdef012345";
+
 
 // --- TIPOS ---
 interface Promocion {
@@ -23,6 +25,8 @@ interface ModalProps {
 const ModalPromocion: React.FC<ModalProps> = ({ isOpen, onClose, onSave, promoEditar }) => {
   const [descripcion, setDescripcion] = useState("");
   const [estado, setEstado] = useState<"Activo" | "Inactivo">("Activo");
+  
+
 
   // Variable para verificar si sobrepasamos el límite
   const isOverLimit = descripcion.length > 100;
@@ -157,6 +161,8 @@ const ModalPromocion: React.FC<ModalProps> = ({ isOpen, onClose, onSave, promoEd
 
 // --- PÁGINA PRINCIPAL (Sin cambios) ---
 export default function PromocionesPage() {
+
+  const router = useRouter();
   const [promociones, setPromociones] = useState<Promocion[]>([]);
   const [promosEliminadas, setPromosEliminadas] = useState<string[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -168,6 +174,12 @@ export default function PromocionesPage() {
   const indicePrimerItem = indiceUltimoItem - itemsPorPagina;
   const itemsActuales = promociones.slice(indicePrimerItem, indiceUltimoItem);
   const totalPaginas = Math.ceil(promociones.length / itemsPorPagina);
+
+  
+  const sp = useSearchParams();
+  const id = sp.get('id');
+  const ID_OFERTA = id;
+  
 
   const abrirModalNueva = () => {
     setPromoAEditar(null);
@@ -327,7 +339,7 @@ export default function PromocionesPage() {
 
         <div className="flex justify-between items-center mt-10">
           <Link href="/">
-            <button className="bg-blue-600 text-white font-bold py-3 px-10 rounded-lg hover:bg-blue-700 transition shadow-lg">
+            <button onClick={() => router.back()} className="bg-blue-600 text-white font-bold py-3 px-10 rounded-lg hover:bg-blue-700 transition shadow-lg">
               Atrás
             </button>
           </Link>

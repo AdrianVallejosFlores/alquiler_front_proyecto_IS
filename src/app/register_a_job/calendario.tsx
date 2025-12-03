@@ -3,22 +3,28 @@ import React, { useState } from "react";
 import { useEffect } from "react";
 import { mesesNombres, diasSemanaCortos } from "./Constantes";
 import Horarios from "./horarios";
+import { useClientSession } from '@/lib/auth/useSession';
 
-const URL = "http://localhost:5000" //"https://back-1kgu.onrender.com/";
-const ID_PROVEEDOR = "6902c43438df4e88b6680640"; 
+const URL = "http://localhost:4000" 
 
 
 
 const Calendario: React.FC = () => {
+
+  const { user, ready } = useClientSession();
+  const ID_PROVEEDOR = user?.fixerId??"";
+
   const [proveedorNombre, setProveedorNombre] = useState<string>("");
   useEffect(() => {
+    if (!ready || !user) return; // Espera a que la sesión esté lista
+  
     const fetchProveedor = async () => {
       try {
-        const res = await fetch(`${URL}/api/los_vengadores/proveedores/${ID_PROVEEDOR}`);
+        const ID_PROVEEDOR = user.fixerId; // ahora sí seguro
+        const res = await fetch(`${URL}/api/los_vengadores/proveedores/fixers/fixerId/${ID_PROVEEDOR}/nombre`);
         if (!res.ok) throw new Error("Error al obtener proveedor");
         const data = await res.json();
-        // La ruta devuelve algo como { success: true, data: { nombre: "Juan" } }
-        setProveedorNombre(data.nombre || "Sin nombre");
+        setProveedorNombre(data.name || "Sin nombre");
       } catch (err) {
         console.error(err);
         setProveedorNombre("Sin nombre");
@@ -26,8 +32,8 @@ const Calendario: React.FC = () => {
     };
   
     fetchProveedor();
-  }, []);
-  
+  }, [ready, user]);
+
 
 
 
