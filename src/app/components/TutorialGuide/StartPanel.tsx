@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { tutorialFeatures } from './tutorialData';
 
 interface StartPanelProps {
@@ -9,8 +9,62 @@ interface StartPanelProps {
 }
 
 const StartPanel: React.FC<StartPanelProps> = ({ onStart, onSkip }) => {
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  // Focus trap - mantener Tab dentro del panel
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+
+      if (!panelRef.current) return;
+
+      // Obtener todos los elementos focusables dentro del panel
+      const focusableElements = panelRef.current.querySelectorAll(
+        'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      const focusableArray = Array.from(focusableElements) as HTMLElement[];
+
+      if (focusableArray.length === 0) return;
+
+      const firstElement = focusableArray[0];
+      const lastElement = focusableArray[focusableArray.length - 1];
+      const activeElement = document.activeElement as HTMLElement;
+
+      if (e.shiftKey) {
+        // Shift + Tab
+        if (activeElement === firstElement) {
+          e.preventDefault();
+          lastElement.focus();
+        }
+      } else {
+        // Tab
+        if (activeElement === lastElement) {
+          e.preventDefault();
+          firstElement.focus();
+        }
+      }
+    };
+
+    const currentPanel = panelRef.current;
+    if (currentPanel) {
+      currentPanel.addEventListener('keydown', handleKeyDown);
+      // Asegurar que el contenedor pueda recibir foco y posicionar el foco dentro
+      currentPanel.setAttribute('tabindex', '-1');
+      currentPanel.focus();
+      const firstButton = currentPanel.querySelector('button');
+      if (firstButton) {
+        setTimeout(() => (firstButton as HTMLButtonElement).focus(), 0);
+      }
+    }
+
+    return () => {
+      if (currentPanel) {
+        currentPanel.removeEventListener('keydown', handleKeyDown);
+      }
+    };
+  }, []);
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div ref={panelRef} className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300 scale-100">
         {/* Header */}
         <div className="bg-linear-to-r from-[#11255a] to-[#52abff] p-6 rounded-t-2xl text-center">
