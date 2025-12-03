@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
@@ -30,9 +29,9 @@ function AddOrEditOfferPageContent() {
   const { user, ready } = useClientSession();
   const currentFixerId = user?.fixerId ?? null;
   const ownerWhatsapp = (
-    user?.telefono ??
-    (user as any)?.contact?.whatsapp ??
-    (user as any)?.whatsapp ??
+    user?.telefono ?? 
+    (user as any)?.contact?.whatsapp ?? 
+    (user as any)?.whatsapp ?? 
     ""
   ).trim();
 
@@ -45,6 +44,7 @@ function AddOrEditOfferPageContent() {
   const [feedback, setFeedback] = useState<{ type: 'error' | 'success'; message: string } | null>(null);
   const [categories, setCategories] = useState<CategoryDTO[]>([]);
   const [accessDenied, setAccessDenied] = useState(false);
+  const [isActive, setIsActive] = useState(true);  // Nuevo estado para controlar si está activa la oferta
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const previewUrlsRef = useRef<Set<string>>(new Set());
@@ -98,6 +98,7 @@ function AddOrEditOfferPageContent() {
         setAccessDenied(false);
         setDescription(offer.description ?? '');
         setCategory(offer.category ?? PLACEHOLDER_CATEGORY);
+        setIsActive(offer.isActive ?? true); // Cargar el valor de isActive si se está editando
         const existing = Array.isArray(offer.images) ? offer.images : [];
         setExistingImages(existing);
         initialSnapshot.current = {
@@ -170,7 +171,6 @@ function AddOrEditOfferPageContent() {
   }, [isDirty]);
 
   useEffect(() => {
-
     const handlePopState = () => {
       if (!isDirtyRef.current || allowRouteChangeRef.current) {
         allowRouteChangeRef.current = false;
@@ -232,25 +232,7 @@ function AddOrEditOfferPageContent() {
     });
   };
 
-  const handleConfirmExit = () => {
-    setShowExitModal(false);
-    const action = pendingNavigationRef.current;
-    pendingNavigationRef.current = null;
-    historyBlockInsertedRef.current = false;
-    if (action) {
-      action();
-    } else {
-      allowRouteChangeRef.current = true;
-      router.back();
-    }
-  };
-
-  const handleCancelExit = () => {
-    setShowExitModal(false);
-    pendingNavigationRef.current = null;
-  };
-
-  function handleFilesSelected(list: FileList | null) {
+  const handleFilesSelected = (list: FileList | null) => {
     if (!list?.length) return;
     setFeedback(null);
 
@@ -291,7 +273,7 @@ function AddOrEditOfferPageContent() {
     }
 
     resetFileInput();
-  }
+  };
 
   function handleRemoveNewImage(index: number) {
     setNewImages((prev) => {
@@ -345,8 +327,9 @@ function AddOrEditOfferPageContent() {
           description: trimmedDescription,
           category,
           images,
+          isActive, // Aquí se agrega el estado de la oferta activa
         }, currentFixerId);
-        setFeedback({ type: 'success', message: 'Edicion realizada con exito.' });
+        setFeedback({ type: 'success', message: 'Edición realizada con éxito.' });
         setExistingImages(images);
         initialSnapshot.current = {
           description: trimmedDescription,
@@ -366,6 +349,7 @@ function AddOrEditOfferPageContent() {
           description: trimmedDescription,
           category,
           images,
+          isActive, // Aquí se agrega el estado de la oferta activa
           contact: ownerWhatsapp ? { whatsapp: ownerWhatsapp } : undefined,
           ownerId: currentFixerId,
         });
@@ -549,6 +533,35 @@ function AddOrEditOfferPageContent() {
             </div>
           )}
 
+          {/* Mostrar ¿Activa? solo cuando estamos editando */}
+          {isEdit && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-900">¿Activa?</label>
+              <div className="flex gap-4">
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="activeStatus"
+                    checked={isActive}
+                    onChange={() => setIsActive(true)}
+                    className="mr-2"
+                  />
+                  Sí
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="activeStatus"
+                    checked={!isActive}
+                    onChange={() => setIsActive(false)}
+                    className="mr-2"
+                  />
+                  No
+                </label>
+              </div>
+            </div>
+          )}
+
           {feedback && (
             <div
               className={`rounded-xl px-4 py-3 text-sm ${
@@ -597,9 +610,9 @@ function AddOrEditOfferPageContent() {
       {showExitModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4">
           <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-lg">
-            <h2 className="text-lg font-semibold text-slate-900">Esta seguro de salir?</h2>
+            <h2 className="text-lg font-semibold text-slate-900">¿Está seguro de salir?</h2>
             <p className="mt-2 text-sm text-slate-600">
-              Tienes cambios sin guardar y se perderan si sales de esta pagina.
+              Tienes cambios sin guardar y se perderán si sales de esta página.
             </p>
             <div className="mt-6 flex justify-end gap-3">
               <button
