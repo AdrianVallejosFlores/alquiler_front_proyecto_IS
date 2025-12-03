@@ -37,7 +37,7 @@ type HorariosCatalogo =
   | string[]
   | { data: string[] };
 
-const API_BASE = "http://localhost:5000/api/borbotones/search/avanzada";
+const API_BASE = "https://alquiler-back-1-9td5.onrender.com/api/borbotones/search/avanzada";
 const API_SERVICIOS = `${API_BASE}/servicios`;
 const API_DISPONIBILIDAD = `${API_BASE}/disponibilidad`;
 const API_ZONA = `${API_BASE}/zona`;
