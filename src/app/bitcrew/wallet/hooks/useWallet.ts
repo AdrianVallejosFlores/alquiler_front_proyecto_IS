@@ -24,13 +24,15 @@ export const useWallet = (usuario: string | null) => {
       
       setBalanceData(billetera);
 
-      // Tu lógica original de mapeo se mantiene intacta aquí
+      // Tu lógica original de mapeo corregida
       const frontendTransactions: IFrontendTransaction[] = transacciones.map((tx) => ({
         id: tx._id,
         type: tx.tipo,
         date: tx.fecha,
         amount: tx.monto,
         descripcion: tx.descripcion,
+        // ✅ AGREGADO: Campo obligatorio para cumplir con la interfaz
+        currency: 'BOB', 
       }));
       setTransactions(frontendTransactions);
 

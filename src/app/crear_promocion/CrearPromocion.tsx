@@ -1,3 +1,4 @@
+'use client';
 import React, { useState } from 'react';
 
 // Definición de las props del componente
