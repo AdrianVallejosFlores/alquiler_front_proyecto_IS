@@ -11,6 +11,7 @@ import { GoogleButton } from '../../google/components/GoogleButton';
 import { getFixerByUser } from '@/lib/api/fixer';
 import { STORAGE_KEYS, saveToStorage } from '@/app/convertirse-fixer/storage';
 import { persistSession, SESSION_EVENTS } from '@/lib/auth/session';
+import Image from 'next/image';
 
 export const LoginForm: React.FC = () => {
   const router = useRouter();
@@ -30,7 +31,8 @@ export const LoginForm: React.FC = () => {
   const { isLoading: googleLoading, error: googleError, handleGoogleAuth } = useGoogleAuth();
 
   const handleGoogleClick = async () => {
-    await handleGoogleAuth();
+    // Para login, usar tipo "login" específicamente
+    await handleGoogleAuth('login');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -43,15 +45,11 @@ export const LoginForm: React.FC = () => {
       return;
     }
 
-    console.log('Formulario válido, listo para enviar:', datosFormulario);
-
     try {
       const res = await loginUsuario(
         datosFormulario.email,
         datosFormulario.password
       );
-
-      console.log('Login exitoso:', res);
 
       let fixerId: string | null = null;
       if (res?.user?.id) {
@@ -63,6 +61,7 @@ export const LoginForm: React.FC = () => {
         }
       }
 
+      // Persistencia de datos y sesión (Lógica HEAD)
       if (res?.user?.id) {
         saveToStorage(STORAGE_KEYS.userId, res.user.id);
       }
@@ -74,40 +73,40 @@ export const LoginForm: React.FC = () => {
       };
       persistSession({ token: res.token ?? null, user: storedUser });
 
+      // Disparar eventos de sesión (Ambas ramas)
       window.dispatchEvent(new CustomEvent(SESSION_EVENTS.updated));
       window.dispatchEvent(new CustomEvent(SESSION_EVENTS.login));
+      window.dispatchEvent(new CustomEvent("login-exitoso"));
 
+      // Redirección: Usa 'next' si existe, si no va a Homepage (Sprint 2)
       const normalizedNext = nextRoute?.trim();
-      const fallbackRoute = "/";
+      const fallbackRoute = "/Homepage";
       router.push(normalizedNext && normalizedNext !== "/login" ? normalizedNext : fallbackRoute);
+      
     } catch (error: unknown) {
       console.error('Error completo al iniciar sesión:', error);
       
       let mensajeError = 'Error al iniciar sesión';
       
-      if (
-        error instanceof Error &&
-        (
+      if (error instanceof Error) {
+        if (
           error.message.includes('401') ||
           error.message.includes('Unauthorized') ||
           error.message.includes('contraseña') ||
           error.message.includes('password') ||
           error.message.includes('Credenciales')
-        )
-      ) {
-        mensajeError = 'Contraseña incorrecta.';
-      } else if (
-        error instanceof Error &&
-        (
+        ) {
+          mensajeError = 'Contraseña incorrecta.';
+        } else if (
           error.message.includes('404') ||
           error.message.includes('No encontrado') ||
           error.message.includes('Usuario') ||
           error.message.includes('user')
-        )
-      ) {
-        mensajeError = 'Usuario no encontrado. Verifica tu correo electrónico.';
-      } else if (error instanceof Error) {
-        mensajeError = error.message || 'Error al conectar con el servidor';
+        ) {
+          mensajeError = 'Usuario no encontrado. Verifica tu correo electrónico.';
+        } else {
+          mensajeError = error.message || 'Error al conectar con el servidor';
+        }
       } else {
         mensajeError = 'Error al conectar con el servidor';
       }
@@ -221,9 +220,11 @@ export const LoginForm: React.FC = () => {
               type="button"
               className="w-full max-w-xs sm:max-w-sm bg-white text-black py-2 sm:py-3 px-4 border border-gray-300 rounded-2xl hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200 transition-colors duration-200 flex items-center justify-center gap-3 text-xs sm:text-sm"
             >
-              <img
+              <Image
                 src={AppleIcon.src}
                 alt="Registrarse con Apple"
+                width={16}
+                height={16}
                 className="w-4 h-4 sm:w-5 sm:h-5"
               />
               Registrarse con Apple
@@ -244,6 +245,3 @@ export const LoginForm: React.FC = () => {
     </div>
   );
 };
-
-
-

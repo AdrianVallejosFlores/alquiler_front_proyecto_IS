@@ -1,10 +1,15 @@
 'use client';
-
 import Link from 'next/link';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Icono from './Icono';
 import { useRouter, usePathname } from 'next/navigation';
-import { clearSession, getStoredUser, getToken, SESSION_EVENTS, type StoredUser } from '@/lib/auth/session';
+import {
+  clearSession,
+  getStoredUser,
+  getToken,
+  SESSION_EVENTS,
+  type StoredUser,
+} from '@/lib/auth/session';
 import { STORAGE_KEYS, removeFromStorage } from '@/app/convertirse-fixer/storage';
 
 export default function Header() {
@@ -12,6 +17,7 @@ export default function Header() {
   const [areButtonsVisible, setAreButtonsVisible] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<StoredUser | null>(null);
+
   const lastScrollY = useRef(0);
   const router = useRouter();
   const pathname = usePathname();
@@ -27,7 +33,9 @@ export default function Header() {
 
     const handleScroll = () => {
       if (window.innerWidth < 640) {
-        setAreButtonsVisible(window.scrollY <= lastScrollY.current || window.scrollY === 0);
+        setAreButtonsVisible(
+          window.scrollY <= lastScrollY.current || window.scrollY === 0
+        );
         lastScrollY.current = window.scrollY;
       }
     };
@@ -48,6 +56,9 @@ export default function Header() {
       window.removeEventListener(SESSION_EVENTS.updated, handleSessionChange);
     };
   }, [syncSession]);
+
+  // Ocultar barra de búsqueda en login y registro
+  const shouldShowSearchBar = !['/login', '/registro'].includes(pathname);
 
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -72,7 +83,10 @@ export default function Header() {
   const fixerCtaHref = fixerId ? `/fixers/${fixerId}` : '/convertirse-fixer';
   const fixerCtaLabel = fixerId ? 'Mi perfil Fixer' : 'Ser Fixer';
   const rawName = currentUser?.nombre?.trim();
-  const displayName = rawName && rawName.length > 0 ? rawName.split(/\s+/)[0] : currentUser?.correo ?? 'Usuario';
+  const displayName =
+    rawName && rawName.length > 0
+      ? rawName.split(/\s+/)[0]
+      : currentUser?.correo ?? 'Usuario';
 
   if (!isClient) return null;
 
@@ -92,37 +106,49 @@ export default function Header() {
           <span className="ml-2 text-xl font-bold text-[#11255A]">Servineo</span>
         </div>
 
-        <div className="grow mx-8">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Buscar"
-              onKeyDown={handleSearch}
-              className="w-full px-4 py-2 pl-10 border border-[#D8ECFF] rounded-md focus:outline-none focus:ring-2 focus:ring-[#2a87ff] bg-white text-[#11255A]"
-            />
-            <svg
-              className="absolute w-5 h-5 text-[#89C9FF] left-3 top-1/2 transform -translate-y-1/2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              ></path>
-            </svg>
+        {/* BARRA DE BÚSQUEDA - Solo mostrar si no estamos en login/registro */}
+        {shouldShowSearchBar ? (
+          <div className="grow mx-8">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Buscar"
+                onKeyDown={handleSearch}
+                data-tutorial="search-bar"
+                className="w-full px-4 py-2 pl-10 border border-[#D8ECFF] rounded-md focus:outline-none focus:ring-2 focus:ring-[#2a87ff] bg-white text-[#11255A]"
+              />
+              <svg
+                className="absolute w-5 h-5 text-[#89C9FF] left-3 top-1/2 transform -translate-y-1/2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                ></path>
+              </svg>
+            </div>
           </div>
-        </div>
+        ) : (
+          // Si estamos en login/registro, centrar los elementos
+          <div className="grow" />
+        )}
 
         <div className="flex items-center space-x-4">
-          {hideAuthButtons ? null : (
-            !isLoggedIn ? (
+          {hideAuthButtons
+            ? null
+            : !isLoggedIn
+            ? (
               <>
                 <Link href={fixerEntryHref}>
-                  <button className="px-4 py-2 font-semibold text-white bg-[#2a87ff] rounded-md hover:bg-[#1a347a] transition-colors">
+                  <button 
+                    data-tutorial="become-fixer" // ✅ NUEVO: Para paso 5 del tutorial
+                    className="px-4 py-2 font-semibold text-white bg-[#2a87ff] rounded-md hover:bg-[#1a347a] transition-colors"
+                  >
                     {fixerEntryLabel}
                   </button>
                 </Link>
@@ -142,10 +168,14 @@ export default function Header() {
                   </button>
                 </Link>
               </>
-            ) : (
+            )
+            : (
               <>
                 <Link href={fixerCtaHref}>
-                  <button className="px-4 py-2 font-semibold text-white bg-[#2a87ff] rounded-md hover:bg-[#1a347a] transition-colors">
+                  <button 
+                    data-tutorial="become-fixer" // ✅ NUEVO: Para paso 5 del tutorial
+                    className="px-4 py-2 font-semibold text-white bg-[#2a87ff] rounded-md hover:bg-[#1a347a] transition-colors"
+                  >
                     {fixerCtaLabel}
                   </button>
                 </Link>
@@ -155,7 +185,9 @@ export default function Header() {
                   </button>
                 </Link>
                 <div className="flex items-center space-x-2">
-                  <span className="font-semibold text-[#11255A]">{displayName}</span>
+                  <span className="font-semibold text-[#11255A]">
+                    {displayName}
+                  </span>
                   <div className="relative group">
                     <svg
                       className="w-8 h-8 text-[#2a87ff] cursor-pointer"
@@ -175,8 +207,7 @@ export default function Header() {
                   </div>
                 </div>
               </>
-            )
-          )}
+            )}
         </div>
       </header>
 
@@ -186,40 +217,50 @@ export default function Header() {
           <Link href="/">
             <Icono size={28} />
           </Link>
-          <div className="flex-1 relative">
-            <input
-              type="text"
-              placeholder="Buscar"
-              onKeyDown={handleSearch}
-              className="w-full px-3 py-1.5 pl-9 border border-[#D8ECFF] rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-[#2a87ff] bg-white text-[#11255A]"
-            />
-            <svg
-              className="absolute w-4 h-4 text-[#89C9FF] left-2.5 top-1/2 transform -translate-y-1/2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              ></path>
-            </svg>
-          </div>
+          {/* BARRA DE BÚSQUEDA MÓVIL - Solo mostrar si no estamos en login/registro */}
+          {shouldShowSearchBar && (
+            <div className="flex-1 relative">
+              <input
+                type="text"
+                placeholder="Buscar"
+                onKeyDown={handleSearch}
+                data-tutorial="search-bar"
+                className="w-full px-3 py-1.5 pl-9 border border-[#D8ECFF] rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-[#2a87ff] bg-white text-[#11255A]"
+              />
+              <svg
+                className="absolute w-4 h-4 text-[#89C9FF] left-2.5 top-1/2 transform -translate-y-1/2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                ></path>
+              </svg>
+            </div>
+          )}
+          {/* Si estamos en login/registro, ocupar el espacio restante */}
+          {!shouldShowSearchBar && <div className="flex-1"></div>}
         </div>
       </header>
 
       {/* FOOTER MOVIL INFERIOR */}
       <footer
-        className={`sm:hidden fixed bottom-0 left-0 w-full px-3 py-2 bg-[#EEF7FF] shadow-md z-50 transform transition-transform duration-300 ease-in-out ${areButtonsVisible ? 'translate-y-0' : 'translate-y-full'}`}
+        className={`sm:hidden fixed bottom-0 left-0 w-full px-3 py-2 bg-[#EEF7FF] shadow-md z-50 transform transition-transform duration-300 ease-in-out ${
+          areButtonsVisible ? 'translate-y-0' : 'translate-y-full'
+        }`}
       >
         <div className="flex flex-col items-center space-y-1">
           <span className="text-[#11255A] font-bold text-sm">Servineo</span>
 
-          {hideAuthButtons ? null : (
-            !isLoggedIn ? (
+          {hideAuthButtons
+            ? null
+            : !isLoggedIn
+            ? (
               <div className="flex w-full space-x-1">
                 <Link href="/offers" className="flex-1">
                   <button className="w-full px-2 py-1.5 font-semibold text-white bg-[#1f7ae5] rounded-md hover:bg-[#1353a8] text-xs">
@@ -237,7 +278,8 @@ export default function Header() {
                   </button>
                 </Link>
               </div>
-            ) : (
+            )
+            : (
               <div className="flex items-center justify-center space-x-2 w-full">
                 <Link href="/offers" className="flex-1">
                   <button className="w-full px-2 py-1 text-xs font-semibold text-white bg-[#1f7ae5] rounded-md hover:bg-[#1353a8]">
@@ -245,12 +287,17 @@ export default function Header() {
                   </button>
                 </Link>
                 <Link href={fixerCtaHref} className="flex-1">
-                  <button className="w-full px-2 py-1 text-xs font-semibold text-white bg-[#2a87ff] rounded-md hover:bg-[#1a347a]">
+                  <button 
+                    data-tutorial="become-fixer" // ✅ NUEVO: Para paso 5 del tutorial
+                    className="w-full px-2 py-1 text-xs font-semibold text-white bg-[#2a87ff] rounded-md hover:bg-[#1a347a]"
+                  >
                     {fixerCtaLabel}
                   </button>
                 </Link>
                 <div className="flex items-center space-x-1 flex-1 justify-end">
-                  <span className="text-[#11255A] text-xs font-semibold truncate">{displayName}</span>
+                  <span className="text-[#11255A] text-xs font-semibold truncate">
+                    {displayName}
+                  </span>
                   <div className="relative group">
                     <svg
                       className="w-5 h-5 text-[#2a87ff] cursor-pointer"
@@ -270,12 +317,12 @@ export default function Header() {
                   </div>
                 </div>
               </div>
-            )
-          )}
+            )}
         </div>
       </footer>
 
-      <div className="h-16 sm:h-20" />
+      {/* Espacio para el header fijo */}
+      <div className="h-16 sm:h-0" />
     </>
   );
 }

@@ -100,7 +100,6 @@ export default function HelpButton() {
     const newAttemptCount = attemptCount + 1;
     setAttemptCount(newAttemptCount);
 
-  
     if (newAttemptCount >= MAX_ATTEMPTS) {
       const blockUntil = Date.now() + BLOCK_TIME;
       setIsBlocked(true);
@@ -126,16 +125,15 @@ export default function HelpButton() {
       const data = await res.json();
 
       if (data.success) {
-      
+        // Redirigir a WhatsApp si el captcha es correcto
         window.open('https://wa.me/59160379823?text=Hola%20necesito%20ayuda', '_blank');
         setCaptchaRequired(false);
         
-        
+        // Guardar intentos
         localStorage.setItem('whatsappAttempts', newAttemptCount.toString());
       } else {
         alert(`Captcha inválido. Intento ${newAttemptCount} de ${MAX_ATTEMPTS}`);
         setCaptchaRequired(false);
-        
         
         localStorage.setItem('whatsappAttempts', newAttemptCount.toString());
       }
@@ -157,7 +155,7 @@ export default function HelpButton() {
   };
 
   const handleAIAssistant = () => {
-    window.location.href = '/asistente-ia'; // Esta es la ruta que creamos antes
+    window.location.href = '/asistente-ia'; 
     setIsMenuOpen(false);
   };
 

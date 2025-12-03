@@ -2,7 +2,9 @@
 import { Job } from '../interfaces/types';
 import { convertirAISO, normalizarEstado } from '../utils/helpers';
 
-const API_URL = 'http://localhost:5000/api/los_vengadores/trabajos';
+// Se usa la URL de producción (Vercel) del branch 'origin/dev/soft_war_Sprint_2'.
+// Nota: Se corrigió 'los_vengadores' por 'vengadores' para coincidir con el backend remoto.
+const API_URL = 'https://alquiler-back-soft-war2.vercel.app/api/vengadores/trabajos';
 
 // 🔹 Actualizar la interfaz para incluir campos de cancelación
 interface BackendTrabajo {
@@ -23,6 +25,7 @@ interface BackendTrabajo {
 
 // 🔹 Obtener trabajos del cliente desde el backend real
 export async function fetchTrabajosCliente(clienteId: string): Promise<Job[]> {
+  // Se usa la constante API_URL definida arriba
   const res = await fetch(`${API_URL}/cliente/${clienteId}`, { cache: 'no-store' });
 
   if (!res.ok) throw new Error('Error al obtener trabajos del cliente');
