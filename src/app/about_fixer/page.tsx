@@ -9,6 +9,7 @@ import VisualPortfolioSection from "./components/VisualPortfolioSection";
 import { useClientSession } from "@/lib/auth/useSession";
 import { getFixer, getFixerByUser, type FixerDTO } from "@/lib/api/fixer";
 
+
 const formatRating = (rating?: number) => (rating ? rating.toFixed(1) : "—");
 
 function AboutFixerPageContent() {
