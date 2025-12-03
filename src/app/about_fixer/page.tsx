@@ -1,111 +1,185 @@
-import Header from "./components/Header";
-import React from "react";
-import "./components/global.css"; // Importa los estilos de Tailwind
+'use client';
+
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Image from "next/image";
+import Header from "./components/Header";
+import WorkExperienceSection from "./components/WorkExperienceSection";
+import VisualPortfolioSection from "./components/VisualPortfolioSection";
+import { useClientSession } from "@/lib/auth/useSession";
+import { getFixer, getFixerByUser, type FixerDTO } from "@/lib/api/fixer";
 
-// --- DATOS DE EJEMPLO ---
-// En una aplicación real, estos datos vendrían de una API
-const userData = {
-  name: "Juan Pérez",
-  imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=144&h=144&q=80",
-  city: "Cochabamba",
-  skills: "Carpintero, Albañil, Plomero",
-  about: "Soy una persona responsable y eficiente que trabajo tanto en obras grandes y pequeñas",
-  jobsCount: 45,
-  rating: 4,
-  memberSince: "28-08-2015",
-  whatsappNumber: "59176543210" // Número de ejemplo
-};
+const formatRating = (rating?: number) => (rating ? rating.toFixed(1) : "—");
 
-export default function Page() {
+function AboutFixerPageContent() {
+  const { user, ready } = useClientSession();
+  const searchParams = useSearchParams();
+  const queryFixerId = searchParams.get("fixerId");
+
+  const [fixer, setFixer] = useState<FixerDTO | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [editMode, setEditMode] = useState(false);
+
+  const fixerId = useMemo(() => queryFixerId || user?.fixerId || null, [queryFixerId, user?.fixerId]);
+  const isOwner = fixerId && user?.fixerId === fixerId;
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!fixerId) {
+        setFixer(null);
+        setLoading(false);
+        return;
+      }
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await getFixer(fixerId);
+        setFixer(response.data);
+      } catch (err: any) {
+        try {
+          if (user?.id) {
+            const byUser = await getFixerByUser(user.id);
+            if (byUser) {
+              setFixer(byUser);
+              return;
+            }
+          }
+        } catch {
+          // ignore
+        }
+        setError(String(err?.message || "No se pudo cargar el perfil del fixer."));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (ready) fetchData();
+  }, [fixerId, ready, user?.id]);
+
+  useEffect(() => {
+    const handler = (event: Event) => {
+      const detail = (event as CustomEvent<{ open?: boolean }>).detail;
+      if (typeof detail?.open === "boolean") {
+        setEditMode(detail.open);
+      }
+    };
+    window.addEventListener("fixer-edit-mode", handler as EventListener);
+    return () => window.removeEventListener("fixer-edit-mode", handler as EventListener);
+  }, []);
+
+  const renderAvatar = () => {
+    const url = fixer?.photoUrl;
+    if (!url) {
+      return (
+        <div className="flex h-36 w-36 items-center justify-center rounded-full bg-slate-200 text-xl font-semibold text-slate-500">
+          {fixer?.name?.[0]?.toUpperCase() || "?"}
+        </div>
+      );
+    }
+    return (
+      <Image
+        src={url}
+        alt="Foto de perfil del fixer"
+        width={144}
+        height={144}
+        className="rounded-full border border-slate-200 object-cover"
+      />
+    );
+  };
+
+  const aboutText = fixer?.bio || "Este fixer aún no ha agregado una descripción.";
+  const displayName = fixer?.name || `${user?.nombre ?? ""} ${user?.apellido ?? ""}`.trim() || "Fixer";
+  const displayCity = fixer?.city || "Sin ciudad";
+  const displaySkills =
+    fixer?.categoriesInfo?.map((cat) => cat.name).join(", ") ||
+    fixer?.categories?.join(", ") ||
+    "Sin rubros asignados";
+
   return (
     <>
       <Header />
-      <main className="mx-auto max-w-6xl px-4 sm:px-6 py-10">
-        {/* Avatar centrado arriba */}
-        <div className="flex justify-center mb-8">
-          <Image
-            src={userData.imageUrl}
-            alt="Foto de perfil del usuario"
-            width={144}
-            height={144}
-            className="rounded-full border border-gray-400 object-cover"
-          />
-        </div>
+      <main className="mx-auto max-w-6xl px-4 sm:px-6 py-8">
+        {loading && (
+          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <p className="text-sm text-slate-600">Cargando perfil...</p>
+          </section>
+        )}
 
-        {/* Grid 2 columnas (izq datos / der métricas) */}
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-10">
-          {/* Columna izquierda */}
-          <div className="space-y-5">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{userData.name}</h1>
-            </div>
+        {!loading && !fixer && (
+          <section className="rounded-2xl border border-amber-200 bg-amber-50 p-6 shadow-sm">
+            <p className="text-sm font-semibold text-amber-800">
+              {error ?? "No encontramos el perfil. Inicia sesión como fixer o pasa ?fixerId= en la URL."}
+            </p>
+          </section>
+        )}
 
-            <div>
-              <p className="text-gray-600 dark:text-gray-400">Ciudad:</p>
-              <p className="text-sm text-gray-500 dark:text-gray-300">{userData.city}</p>
-            </div>
+        {fixer && (
+          <>
+            <div className="flex justify-center mb-8">{renderAvatar()}</div>
 
-            <div>
-              <p className="font-medium text-gray-900 dark:text-gray-100">Rubros</p>
-              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-300">
-                {userData.skills}
-              </p>
-            </div>
+            <section className="grid grid-cols-1 gap-8 md:grid-cols-2">
+              <div className="space-y-5">
+                <div>
+                  <h1 className="text-2xl font-bold text-slate-900">{displayName}</h1>
+                  <p className="text-sm text-slate-500">{displayCity}</p>
+                </div>
 
-            <div>
-              <p className="capitalize font-medium text-gray-900 dark:text-gray-100">sobre mi :</p>
-              <div className="rounded-2xl border border-green-400 bg-gray-100 dark:bg-gray-800 p-4 text-sm text-gray-800 dark:text-gray-200 shadow-card">
-                {userData.about}
+                <div>
+                  <p className="font-semibold text-slate-900">Rubros</p>
+                  <p className="text-sm text-slate-600">{displaySkills}</p>
+                </div>
+
+                <div>
+                  <p className="font-semibold text-slate-900">Sobre mí</p>
+                  <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm text-slate-800">
+                    {aboutText}
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
 
-          {/* Columna derecha */}
-          <div className="space-y-6">
-            <div>
-              <p className="text-gray-700 dark:text-gray-300">
-                <span className="font-medium">trabajos registrados :</span> {userData.jobsCount}
-              </p>
-            </div>
-
-            <div>
-              <p className="font-medium text-gray-900 dark:text-gray-100">Calificacion</p>
-              <div className="mt-1 text-amber-400 text-xl" aria-label={`${userData.rating} de 5`}>
-                {'★'.repeat(userData.rating)}
-                <span className="text-gray-600 dark:text-gray-500">{'★'.repeat(5 - userData.rating)}</span>
+              <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div className="flex flex-wrap items-center gap-2 text-sm text-slate-700">
+                  <span className="font-semibold">Trabajos registrados:</span>
+                  <span>{fixer.jobsCount ?? 0}</span>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 text-sm text-slate-700">
+                  <span className="font-semibold">Calificación:</span>
+                  <span className="text-amber-500 font-semibold">{formatRating(fixer.ratingAvg)}</span>
+                  <span className="text-xs text-slate-500">
+                    ({fixer.ratingCount ?? 0} reseñas)
+                  </span>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 text-sm text-slate-700">
+                  <span className="font-semibold">En Servineo desde:</span>
+                  <span>{fixer.memberSince ? new Date(fixer.memberSince).toLocaleDateString() : "—"}</span>
+                </div>
+                {fixer.whatsapp && (
+                  <a
+                    href={`https://wa.me/${fixer.whatsapp}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-green-600 px-4 font-semibold text-white shadow transition hover:bg-green-700"
+                  >
+                    Contactar por WhatsApp
+                  </a>
+                )}
               </div>
-            </div>
+            </section>
 
-            <div>
-              <p className="font-medium text-gray-900 dark:text-gray-100">En Servineo desde</p>
-              <p className="text-sm text-gray-500 dark:text-gray-300">{userData.memberSince}</p>
-            </div>
-
-            {/* --- Contenedor de Botones --- */}
-            <div className="pt-4 flex flex-wrap gap-4">
-              {/* Botón de WhatsApp */}
-              <a
-                href={`https://wa.me/${userData.whatsappNumber}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex h-14 items-center justify-center gap-2 rounded-xl bg-green-600 px-6 font-medium text-white shadow-card transition hover:bg-green-700"
-              >
-                {/* Logo de WhatsApp */}
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.487 5.235 3.487 8.413 0 6.557-5.338 11.892-11.894 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.886-.001 2.269.655 4.525 1.903 6.341l.225.404-1.152 3.341 3.437-1.132.379.223z" />
-                </svg>
-                contactar
-              </a>
-            </div>
-          </div>
-        </section>
+            <VisualPortfolioSection fixerId={fixerId!} isOwner={Boolean(isOwner)} showForms={Boolean(isOwner && editMode)} />
+            <WorkExperienceSection fixerId={fixerId!} isOwner={Boolean(isOwner)} showForms={Boolean(isOwner && editMode)} />
+          </>
+        )}
       </main>
     </>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={null}>
+      <AboutFixerPageContent />
+    </Suspense>
   );
 }

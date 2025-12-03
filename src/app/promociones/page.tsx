@@ -2,30 +2,17 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 
+const URL = "http://localhost:4000";
+const ID_OFERTA = "67b123456789abcdef012345";
+
 // --- TIPOS ---
 interface Promocion {
-  id: number;
+  id: string;
   descripcion: string;
   estado: "Activo" | "Inactivo";
 }
 
-// --- DATOS DE PRUEBA ---
-const datosIniciales: Promocion[] = [
-  { id: 1, descripcion: "¡ 10% de descuento para clientes nuevos !", estado: "Activo" },
-  { id: 2, descripcion: "Cotización en obra gratis", estado: "Activo" },
-  { id: 3, descripcion: "¡ 20% de descuento para clientes antiguos !", estado: "Activo" },
-  { id: 4, descripcion: "Limpieza de jardines: 2x1 este fin de semana", estado: "Activo" },
-  { id: 5, descripcion: "Revisión eléctrica básica gratuita", estado: "Inactivo" },
-  { id: 6, descripcion: "Descuento del 15% en plomería de emergencia", estado: "Activo" },
-  { id: 7, descripcion: "Instalación de aire acondicionado con 5% off", estado: "Activo" },
-  { id: 8, descripcion: "Consulta de diseño de interiores gratis", estado: "Activo" },
-  { id: 9, descripcion: "Mantenimiento de techos: 10% de descuento", estado: "Inactivo" },
-  { id: 10, descripcion: "Pintura de fachadas: Paga 3 paredes, pinta 4", estado: "Activo" },
-  { id: 11, descripcion: "Impermeabilización con garantía extendida", estado: "Activo" },
-  { id: 12, descripcion: "Pack de reparación de muebles de madera", estado: "Inactivo" },
-];
-
-// --- COMPONENTE MODAL (DISEÑO ACTUALIZADO SEGÚN IMAGEN) ---
+// --- COMPONENTE MODAL (CON BLOQUEO DE BOTÓN) ---
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -36,6 +23,9 @@ interface ModalProps {
 const ModalPromocion: React.FC<ModalProps> = ({ isOpen, onClose, onSave, promoEditar }) => {
   const [descripcion, setDescripcion] = useState("");
   const [estado, setEstado] = useState<"Activo" | "Inactivo">("Activo");
+
+  // Variable para verificar si sobrepasamos el límite
+  const isOverLimit = descripcion.length > 100;
 
   // Cargar datos si estamos editando
   useEffect(() => {
@@ -51,10 +41,16 @@ const ModalPromocion: React.FC<ModalProps> = ({ isOpen, onClose, onSave, promoEd
   if (!isOpen) return null;
 
   const handleSubmit = () => {
-    if (!descripcion.trim()) return alert("La descripción es obligatoria");
+    // 1. Validación: Verificar que no esté vacío
+    if (!descripcion.trim()) {
+      alert("Error: El campo de descripción no puede estar vacío.");
+      return;
+    }
     
+    // (Ya no necesitamos validar >100 aquí porque el botón estará bloqueado)
+
     const nuevaPromo: Promocion = {
-      id: promoEditar ? promoEditar.id : Date.now(),
+      id: promoEditar ? promoEditar.id : Date.now().toString(),
       descripcion,
       estado,
     };
@@ -63,10 +59,8 @@ const ModalPromocion: React.FC<ModalProps> = ({ isOpen, onClose, onSave, promoEd
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
-      {/* Contenedor del Modal */}
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg p-8 relative">
         
-        {/* Título: Azul y Grande */}
         <h2 className="text-3xl font-extrabold text-blue-600 mb-6">
           {promoEditar ? "Editar promoción." : "Crear nueva promoción."}
         </h2>
@@ -78,18 +72,27 @@ const ModalPromocion: React.FC<ModalProps> = ({ isOpen, onClose, onSave, promoEd
               Descripción promoción:
             </label>
             <textarea
-              className="w-full border border-gray-300 rounded-lg p-3 text-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none h-32"
+              className={`w-full border rounded-lg p-3 text-lg resize-none h-32 focus:ring-2 focus:outline-none ${
+                isOverLimit 
+                  ? "border-red-500 focus:ring-red-500 focus:border-red-500 bg-red-50" 
+                  : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+              }`}
               value={descripcion}
               onChange={(e) => setDescripcion(e.target.value)}
+              // Quitamos maxLength={100} para permitir escribir y ver que se bloquea el botón
+              placeholder="Escribe aquí la descripción..."
             />
+            {/* Contador de caracteres */}
+            <div className={`text-right text-sm mt-1 font-medium ${isOverLimit ? 'text-red-600 font-bold' : 'text-gray-500'}`}>
+              {descripcion.length}/100 caracteres
+            </div>
           </div>
           
-          {/* Radio Buttons para ¿Activa? */}
+          {/* Radio Buttons */}
           <div className="flex items-center gap-6">
             <label className="text-xl font-bold text-black">¿Activa?</label>
             
             <div className="flex items-center gap-6">
-              {/* Opción SI */}
               <label className="flex items-center gap-2 cursor-pointer">
                 <div className="relative flex items-center">
                   <input 
@@ -99,7 +102,6 @@ const ModalPromocion: React.FC<ModalProps> = ({ isOpen, onClose, onSave, promoEd
                     checked={estado === "Activo"}
                     onChange={() => setEstado("Activo")}
                   />
-                  {/* Pequeño punto interior para simular radio nativo customizado si se desea, o usar default */}
                   {estado === "Activo" && (
                     <div className="absolute inset-0 m-auto w-3 h-3 bg-black rounded-full pointer-events-none"></div>
                   )}
@@ -107,7 +109,6 @@ const ModalPromocion: React.FC<ModalProps> = ({ isOpen, onClose, onSave, promoEd
                 <span className="text-xl text-black">Si</span>
               </label>
 
-              {/* Opción NO */}
               <label className="flex items-center gap-2 cursor-pointer">
                 <div className="relative flex items-center">
                   <input 
@@ -127,7 +128,7 @@ const ModalPromocion: React.FC<ModalProps> = ({ isOpen, onClose, onSave, promoEd
           </div>
         </div>
 
-        {/* Botones de Acción (Atrás y Guardar) */}
+        {/* Botones de Acción */}
         <div className="flex justify-between gap-4 mt-8">
           <button 
             onClick={onClose} 
@@ -135,11 +136,18 @@ const ModalPromocion: React.FC<ModalProps> = ({ isOpen, onClose, onSave, promoEd
           >
             Atrás
           </button>
+          
+          {/* BOTÓN GUARDAR CON LÓGICA DE BLOQUEO */}
           <button 
             onClick={handleSubmit} 
-            className="w-1/2 py-3 bg-blue-600 text-white rounded-lg text-xl font-bold hover:bg-blue-700 transition shadow"
+            disabled={isOverLimit} // Se bloquea si pasa de 100
+            className={`w-1/2 py-3 rounded-lg text-xl font-bold transition shadow ${
+              isOverLimit 
+                ? "bg-gray-400 text-gray-100 cursor-not-allowed" // Estilo bloqueado
+                : "bg-blue-600 text-white hover:bg-blue-700"     // Estilo normal
+            }`}
           >
-            Guardar
+            {isOverLimit ? "Límite excedido" : "Guardar"}
           </button>
         </div>
       </div>
@@ -147,9 +155,10 @@ const ModalPromocion: React.FC<ModalProps> = ({ isOpen, onClose, onSave, promoEd
   );
 };
 
-// --- PÁGINA PRINCIPAL (Sin cambios mayores, solo integración) ---
+// --- PÁGINA PRINCIPAL (Sin cambios) ---
 export default function PromocionesPage() {
-  const [promociones, setPromociones] = useState<Promocion[]>(datosIniciales);
+  const [promociones, setPromociones] = useState<Promocion[]>([]);
+  const [promosEliminadas, setPromosEliminadas] = useState<string[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [promoAEditar, setPromoAEditar] = useState<Promocion | null>(null);
   const [paginaActual, setPaginaActual] = useState(1);
@@ -170,25 +179,100 @@ export default function PromocionesPage() {
     setIsModalOpen(true);
   };
 
-  const guardarDesdeModal = (promoGuardada: Promocion) => {
+  useEffect(() => {
+    const cargarPromos = async () => {
+      try {
+        const res = await fetch(`${URL}/api/los_vengadores/promociones/oferta/${ID_OFERTA}`);
+        const data = await res.json();
+    
+        const promosFormateadas = data.map((p: any) => ({
+          id: p._id,
+          descripcion: p.descripcion,
+          estado: p.activo ? "Activo" : "Inactivo",
+        }));
+    
+        setPromociones(promosFormateadas);
+      } catch (error) {
+        console.error("Error cargando promociones:", error);
+      }
+    };
+    
+    cargarPromos();
+  }, []);
+    
+
+  const eliminarPromocion = (id: number | string) => {
+    if (!confirm("¿Estás seguro de eliminar esta promoción?")) return;
+
+    if (id.toString().length === 24) {
+      setPromosEliminadas([...promosEliminadas, id.toString()]);
+    }
+
+    setPromociones(promociones.filter(p => p.id !== id));
+  };
+
+  const guardarDesdeModal = async (promoGuardada: Promocion) => {
     if (promoAEditar) {
-      setPromociones(promociones.map(p => p.id === promoGuardada.id ? promoGuardada : p));
+      setPromociones(prev =>
+        prev.map(p => (p.id === promoGuardada.id ? promoGuardada : p))
+      );
     } else {
-      setPromociones([promoGuardada, ...promociones]);
+      setPromociones(prev => [...prev, promoGuardada]);
     }
     setIsModalOpen(false);
   };
+    
+  const guardarCambiosEnBD = async () => {
+    try {
+        for (const id of promosEliminadas) {
+            await fetch(`${URL}/api/los_vengadores/promociones/${id}`, { method: "DELETE" });
+        }
+        setPromosEliminadas([]);
+    
+        const promocionesActualizadas: Promocion[] = [];
+    
+        for (const promo of promociones) {
+            if (promo.id.length === 24) {
+                await fetch(`${URL}/api/los_vengadores/promociones/${promo.id}/descripcion`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ descripcion: promo.descripcion }),
+                });
+                await fetch(`${URL}/api/los_vengadores/promociones/${promo.id}/estado`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ activo: promo.estado === "Activo" }),
+                });
+                promocionesActualizadas.push(promo);
+            } else {
+                const nueva = await crearNuevaPromocion(promo);
+                promocionesActualizadas.push(nueva);
+            }
+        }
+    
+        setPromociones(promocionesActualizadas);
+        alert("Promociones guardadas en la BD");
 
-  const eliminarPromocion = (id: number) => {
-    if (window.confirm("¿Estás seguro de eliminar esta promoción?")) {
-      const nuevasPromociones = promociones.filter((p) => p.id !== id);
-      setPromociones(nuevasPromociones);
-      const nuevoTotalPaginas = Math.ceil(nuevasPromociones.length / itemsPorPagina);
-      if (paginaActual > nuevoTotalPaginas && nuevoTotalPaginas > 0) {
-        setPaginaActual(nuevoTotalPaginas);
-      }
+    } catch (error) {
+        console.error("Error al guardar cambios:", error);
+        alert("Error al guardar los cambios en la base de datos.");
     }
   };
+    
+  const crearNuevaPromocion = async (promo: Promocion) => {
+    const res = await fetch(`${URL}/api/los_vengadores/promociones`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id_ofertaTrabajo: ID_OFERTA,
+        descripcion: promo.descripcion,
+        activo: promo.estado === "Activo",
+      }),
+    });
+    const data = await res.json();
+    return { ...promo, id: data._id };
+  };
+    
 
   return (
     <div className="min-h-screen bg-white p-6 md:p-10 font-sans">
@@ -247,7 +331,7 @@ export default function PromocionesPage() {
               Atrás
             </button>
           </Link>
-          <button onClick={() => alert("Guardado global simulado")} className="bg-blue-600 text-white font-bold py-3 px-10 rounded-lg hover:bg-blue-700 transition shadow-lg">
+          <button onClick={guardarCambiosEnBD} className="bg-blue-600 text-white font-bold py-3 px-10 rounded-lg hover:bg-blue-700 transition shadow-lg">
             Guardar
           </button>
         </div>

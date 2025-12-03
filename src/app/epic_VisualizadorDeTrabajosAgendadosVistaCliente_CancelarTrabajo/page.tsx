@@ -1,7 +1,7 @@
 "use client";
 // URL para acceder a esta página:
 //http://localhost:3000/epic_VisualizadorDeTrabajosAgendadosVistaCliente_CancelarTrabajo
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { Trabajo } from "./interfaces/Trabajo.interface";
 import { obtenerTrabajo } from "./services/trabajoService";
 import { useCancelarTrabajo } from "./hooks/useCancelarTrabajo";
@@ -10,7 +10,7 @@ import ModalCancelar from "./components/ModalCancelar";
 import BotonesAccion from "./components/BotonesAccion";
 import { useSearchParams,useRouter  } from "next/navigation";
 
-const CancelarTrabajoPage: React.FC = () => {
+const CancelarTrabajoPageContent: React.FC = () => {
   const sp = useSearchParams();
   const router = useRouter(); 
   const [trabajo, setTrabajo] = useState<Trabajo | null>(null);
@@ -135,4 +135,17 @@ useEffect(() => {
   );
 };
 
+const CancelarTrabajoPage: React.FC = () => {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-600">Cargando...</p>
+      </div>
+    }>
+      <CancelarTrabajoPageContent />
+    </Suspense>
+  );
+};
+
 export default CancelarTrabajoPage;
+

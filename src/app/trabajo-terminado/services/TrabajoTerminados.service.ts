@@ -38,7 +38,7 @@ function mapMongoToTrabajoTerminado(m: any): TrabajoTerminado {
 // =======================================
 // FETCH POR ID (llama directo al backend)
 // =======================================
-export async function fetchTrabajoById(id: string): Promise<TrabajoTerminado | null> {
+export async function fetchTrabajoById(id: string, origin?: string): Promise<TrabajoTerminado | null> {
   const url = `${BACKEND_URL}/${encodeURIComponent(id)}`;
   try {
     const res = await fetch(url, {
