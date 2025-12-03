@@ -141,6 +141,69 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
     };
   }, [currentStep]);
 
+  return (
+    <>
+  {/* Tooltip del paso */}
+  <div
+    ref={tooltipRef}
+    className="fixed z-60 bg-white rounded-lg shadow-lg border border-gray-300 max-w-sm w-full"
+    style={{
+      top: `${position.top}px`,
+      left: `${position.left}px`
+    }}
+  >
+    <div ref={stepRef}>
+      {/* Header */}
+      <div className="bg-blue-600 p-3 rounded-t-lg">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span>{step.icon}</span>
+            <h3 className="text-white font-semibold">{step.title}</h3>
+          </div>
+          <span className="bg-white/20 text-white px-2 py-1 rounded text-sm">
+            {currentStep + 1}/{totalSteps}
+          </span>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="p-3">
+        <p className="text-gray-700">{step.description}</p>
+      </div>
+
+      {/* Actions */}
+      <div className="flex justify-between items-center p-3 border-t border-gray-200">
+        <div className="flex gap-2">
+          <button
+            onClick={onPrev}
+            disabled={currentStep === 0}
+            className={`px-3 py-2 rounded font-medium ${
+              currentStep === 0
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-blue-100 text-blue-600 hover:bg-blue-200'
+            }`}
+          >
+            ← Anterior
+          </button>
+          <button
+            onClick={onNext}
+            className="px-3 py-2 bg-blue-600 text-white rounded font-medium hover:bg-blue-700"
+          >
+            {currentStep === totalSteps - 1 ? 'Finalizar' : 'Siguiente →'}
+          </button>
+        </div>
+        
+        <button
+          onClick={onSkip}
+          className="text-gray-500 hover:text-gray-700 font-medium text-sm"
+        >
+          Saltar
+        </button>
+      </div>
+    </div>
+  </div>
+</>
+  );
 };
 
 export default TutorialStep;
