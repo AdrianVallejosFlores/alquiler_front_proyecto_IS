@@ -32,6 +32,11 @@ export default function FixerOwnerActions({ fixerId, currentBio, skills }: Props
   const [status, setStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [saving, setSaving] = useState(false);
 
+  // Notificar a otras secciones que el modo edición está activo/inactivo
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('fixer-edit-mode', { detail: { open } }));
+  }, [open]);
+
   useEffect(() => {
     setBaseBio(currentBio ?? '');
     setBioDraft(currentBio ?? '');
