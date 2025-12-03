@@ -9,6 +9,7 @@ import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaFacebookF, FaInstagram, FaBookOp
 import { SiTiktok } from 'react-icons/si';
 import Modal from '../reutilizables/Modal';
 import Icono from '../Header/Icono';
+import LoginRequiredModal from '../LoginRequiredModal/LoginRequiredModal';
 
 // Contenido para cada modal (sin cambios)
 const modalContents = {
@@ -175,6 +176,7 @@ const Footer = () => {
   const [activeModal, setActiveModal] = useState<keyof typeof modalContents | null>(null);
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState<LanguageCode>('es');
+  const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);
   const languageMenuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -203,6 +205,32 @@ const Footer = () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [isLanguageMenuOpen]);
+
+  // ✅ NUEVO: Verificar si el usuario está autenticado
+  const isUserAuthenticated = () => {
+    // Verificar si hay token o sesión en localStorage
+    if (typeof window !== 'undefined') {
+      // Buscar tokens comunes del sistema
+      const token = localStorage.getItem('token') ||
+                    localStorage.getItem('authToken') ||
+                    localStorage.getItem('session') ||
+                    localStorage.getItem('user');
+      return !!token;
+    }
+    return false;
+  };
+
+  // ✅ NUEVO: Manejar el clic del botón "Guía de Usuario"
+  const handleTutorialClick = () => {
+    if (isUserAuthenticated()) {
+      // Si el usuario está autenticado, mostrar el tutorial
+      window.dispatchEvent(new CustomEvent('show-tutorial'));
+    } else {
+      // Si NO está autenticado, mostrar la modal de login requerido
+      setShowLoginRequiredModal(true);
+    }
+  };
+
   const showTutorial = () => {
     // Disparar evento personalizado para mostrar el tutorial
     window.dispatchEvent(new CustomEvent('show-tutorial'));
@@ -259,7 +287,7 @@ const Footer = () => {
                 {/* ✅ NUEVO BOTÓN: Guía de Usuario */}
                 <button 
                   type="button" 
-                  onClick={showTutorial}
+                  onClick={handleTutorialClick}
                   className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 text-left focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded flex items-center gap-2"
                 >
                   <span>Guía de Usuario</span>
@@ -399,6 +427,12 @@ const Footer = () => {
           {modalContents[activeModal].content}
         </Modal>
       )}
+
+      {/* ✅ NUEVO: Modal de Login Requerido */}
+      <LoginRequiredModal 
+        isOpen={showLoginRequiredModal} 
+        onClose={() => setShowLoginRequiredModal(false)} 
+      />
     </>
   );
 };
