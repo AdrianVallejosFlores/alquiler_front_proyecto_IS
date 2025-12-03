@@ -176,7 +176,7 @@ export default function RegistroImagen() {
       }
 
       setDatosFormulario(datosAdaptados);
-      console.log("✅ Datos adaptados para envío:", datosAdaptados);
+      //console.log("✅ Datos adaptados para envío:", datosAdaptados);
 
       if (isHttpUrl(datosAdaptados.fotoPerfil) && datosAdaptados.fotoPerfil != null) {
         setPreviewImage(datosAdaptados.fotoPerfil);

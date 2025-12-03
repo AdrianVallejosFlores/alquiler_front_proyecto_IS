@@ -28,7 +28,7 @@ export async function crearUsuario(usuario: UsuarioDocument) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(usuario)
   });
-  console.log("Respuesta del servidor:", res.body);
+  //console.log("Respuesta del servidor:", res.body);
   if (!res.ok) throw new Error("datos Incorrectos");
   return res.json();
 }
@@ -41,11 +41,11 @@ export async function loginUsuario(correoElectronico: string, password: string) 
     body: JSON.stringify({ correoElectronico, password })
   });
   
-  console.log("Status de respuesta:", res.status);
-  console.log("Respuesta del servidor:", res);
+  //console.log("Status de respuesta:", res.status);
+  //console.log("Respuesta del servidor:", res);
 
   const data = await res.json();
-  console.log("Datos de respuesta:", data);
+  //console.log("Datos de respuesta:", data);
 
   if (!res.ok) {
     // Pasar el status code y mensaje específico del backend
@@ -133,7 +133,7 @@ export async function obtenerMetodoAutenticacion(usuario: string) {
     cerrarSesion()
     return;
   }
-  console.log("Respuesta del servidor:", res.body);
+  //console.log("Respuesta del servidor:", res.body);
   if (!res.ok) throw new Error("datos Incorrectos");
   return res.json();
 }
@@ -298,7 +298,7 @@ export async function cambiarContrasenaHU3(payload: {
   // usar tu lector de token (sin tocarlo)
   const token = getAccessToken();
   if (!token) return { ok: false, message: "No hay sesión activa." };
-console.log(`socket ${socketId}`)
+//console.log(`socket ${socketId}`)
   try {
     const res = await fetch(`${API_URL}/api/teamsys/usuario/cambiar-contrasena`, {
       method: "PUT",

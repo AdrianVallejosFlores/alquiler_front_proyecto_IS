@@ -21,7 +21,7 @@ function Inner() {
         const errorDescription = searchParams.get('error_description');
         const state = searchParams.get('state');
 
-        console.log('📋 Parámetros recibidos:', { code, error, errorDescription, state });
+        //console.log('📋 Parámetros recibidos:', { code, error, errorDescription, state });
 
         // ✅ CORRECCIÓN: Mejor manejo de errores de Google
         if (error) {
@@ -29,7 +29,7 @@ function Inner() {
             ? `${error}: ${decodeURIComponent(errorDescription)}`
             : `Error de Google: ${error}`;
           
-          console.error('❌ Error de OAuth:', detailedError);
+          //console.error('❌ Error de OAuth:', detailedError);
           
           // Manejo específico de access_denied
           if (error === 'access_denied') {
@@ -54,7 +54,7 @@ function Inner() {
           }
         }
 
-        console.log(`🔐 Procesando ${authType} con Google...`);
+        //console.log(`🔐 Procesando ${authType} con Google...`);
 
         const backend = process.env.NEXT_PUBLIC_BACKEND_URL ?? 'https://alquiler-back-soft-war2.vercel.app/';
         
@@ -76,7 +76,7 @@ function Inner() {
         const responseText = await response.text();
         const data = responseText ? JSON.parse(responseText) : {};
 
-        console.log('📊 Respuesta del backend:', { status: response.status, data });
+        //console.log('📊 Respuesta del backend:', { status: response.status, data });
 
         if (!data.success) {
           if (data.message === 'usuario ya registrado') {

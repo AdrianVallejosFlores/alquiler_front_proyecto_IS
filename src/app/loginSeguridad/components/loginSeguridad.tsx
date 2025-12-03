@@ -101,11 +101,11 @@ const Token= sessionStorage.getItem("authToken")
        
 
 }else{
-console.log('verify-login payload ->', { userId, token }); // revisa en consola
+//console.log('verify-login payload ->', { userId, token }); // revisa en consola
  res = await verifyTwoFactorLogin(userId, token);
 }
 
-      console.log(res)
+      //console.log(res)
       if (res.success==true) {
 
          // para que se guarde la sesion de seguridad

@@ -49,7 +49,9 @@ export const MessageDesactivar: React.FC<MensajeDesactivarProps> = ({
         //sessionStorage.setItem("is2FA", "false");
         console.log("2FA desactivado con éxito.");
        // onContinue?.(); // Llamamos a onContinue después de la desactivación
+
       } else {
+        
         console.error("Error al desactivar 2FA.");
       }
     } catch (error) {

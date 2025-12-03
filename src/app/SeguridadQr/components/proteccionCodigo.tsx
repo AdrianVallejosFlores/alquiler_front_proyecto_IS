@@ -62,7 +62,7 @@ export const ProteccionCodigo: React.FC = () => {
     }
 
     try {
-      console.log('Verificando código:', codigo);
+      //console.log('Verificando código:', codigo);
       await new Promise(resolve => setTimeout(resolve, 1500));
       router.push('/'); // Cambia la ruta si quieres ir a otra página
     } catch (err) {
