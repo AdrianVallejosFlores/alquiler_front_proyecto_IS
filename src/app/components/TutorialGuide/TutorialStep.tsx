@@ -143,8 +143,8 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
 
   return (
     <>
-  {/* Tooltip del paso */}
-         <div
+      {/* Tooltip del paso */}
+      <div
         ref={tooltipRef}
         className="fixed z-60 bg-white rounded-xl shadow-2xl border border-blue-100 max-w-sm w-full transform transition-all duration-300"
         style={{
@@ -152,8 +152,7 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
           left: `${position.left}px`
         }}
       >
-
-            <div ref={stepRef}>
+        <div ref={stepRef}>
         {/* Header */}
         <div className="bg-linear-to-r from-[#11255a] to-[#52abff] p-4 rounded-t-xl">
           <div className="flex items-center justify-between">
@@ -167,12 +166,12 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
           </div>
         </div>
 
-         {/* Content */}
+        {/* Content */}
         <div className="p-4">
           <p className="text-gray-700 leading-relaxed">{step.description}</p>
         </div>
 
-       {/* Actions */}
+        {/* Actions */}
         <div className="flex justify-between items-center p-4 border-t border-gray-100">
           <div className="flex gap-2">
             <button
@@ -193,18 +192,17 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
               {currentStep === totalSteps - 1 ? 'Finalizar ' : 'Siguiente →'}
             </button>
           </div>
-
-        
-        <button
-          onClick={onSkip}
-          className="text-gray-500 hover:text-gray-700 font-medium text-sm"
-        >
-          Saltar
-        </button>
+          
+          <button
+            onClick={onSkip}
+            className="text-gray-500 hover:text-gray-700 font-medium text-sm hover:scale-105 transition-transform duration-200"
+          >
+            Saltar
+          </button>
+        </div>
+        </div>
       </div>
-    </div>
-  </div>
-</>
+    </>
   );
 };
 
