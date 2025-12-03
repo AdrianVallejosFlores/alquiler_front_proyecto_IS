@@ -7,7 +7,7 @@ import type { Horario as HorarioType } from "./Constantes";
 import ModalHorario from "./disponibilidad/components/ModalHorario";
 import { useClientSession } from '@/lib/auth/useSession';
 
-const URL = "http://localhost:4000" //"https://back-1kgu.onrender.com/";
+const URL = "https://back-tercersprint.onrender.com" //"https://back-1kgu.onrender.com/";
 
 
 // --- Props del Componente ---

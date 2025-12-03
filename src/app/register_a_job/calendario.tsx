@@ -5,14 +5,14 @@ import { mesesNombres, diasSemanaCortos } from "./Constantes";
 import Horarios from "./horarios";
 import { useClientSession } from '@/lib/auth/useSession';
 
-const URL = "http://localhost:4000" 
+const URL = "https://back-tercersprint.onrender.com" 
 
 
 
 const Calendario: React.FC = () => {
 
   const { user, ready } = useClientSession();
-  const ID_PROVEEDOR = user?.fixerId??"";
+  const ID_PROVEEDOR = user?.fixerId??"6916b53185e011ff86e0f2d7";
 
   const [proveedorNombre, setProveedorNombre] = useState<string>("");
   useEffect(() => {
