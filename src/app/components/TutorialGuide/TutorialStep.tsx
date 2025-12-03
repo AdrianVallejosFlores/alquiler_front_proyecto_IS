@@ -152,20 +152,20 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
           left: `${position.left}px`
         }}
       >
-        
-    <div ref={stepRef}>
-      {/* Header */}
-      <div className="bg-blue-600 p-3 rounded-t-lg">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span>{step.icon}</span>
-            <h3 className="text-white font-semibold">{step.title}</h3>
+
+            <div ref={stepRef}>
+        {/* Header */}
+        <div className="bg-linear-to-r from-[#11255a] to-[#52abff] p-4 rounded-t-xl">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">{step.icon}</span>
+              <h3 className="text-white font-semibold text-lg">{step.title}</h3>
+            </div>
+            <span className="bg-white/20 text-white/90 px-2 py-1 rounded-full text-sm font-medium">
+              {currentStep + 1}/{totalSteps}
+            </span>
           </div>
-          <span className="bg-white/20 text-white px-2 py-1 rounded text-sm">
-            {currentStep + 1}/{totalSteps}
-          </span>
         </div>
-      </div>
 
       {/* Content */}
       <div className="p-3">
