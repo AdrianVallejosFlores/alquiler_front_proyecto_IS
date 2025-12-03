@@ -144,14 +144,15 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
   return (
     <>
   {/* Tooltip del paso */}
-  <div
-    ref={tooltipRef}
-    className="fixed z-60 bg-white rounded-lg shadow-lg border border-gray-300 max-w-sm w-full"
-    style={{
-      top: `${position.top}px`,
-      left: `${position.left}px`
-    }}
-  >
+         <div
+        ref={tooltipRef}
+        className="fixed z-60 bg-white rounded-xl shadow-2xl border border-blue-100 max-w-sm w-full transform transition-all duration-300"
+        style={{
+          top: `${position.top}px`,
+          left: `${position.left}px`
+        }}
+      >
+        
     <div ref={stepRef}>
       {/* Header */}
       <div className="bg-blue-600 p-3 rounded-t-lg">
