@@ -33,9 +33,15 @@ const CompletionPanel: React.FC<CompletionPanelProps> = ({ onRestart, onClose })
               </div>
             </div>
             
+<<<<<<< HEAD
             <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-2xl border border-blue-100">
               <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
                 <span className="text-blue-600 text-xl font-bold">✓</span>
+=======
+            <div className="flex items-center gap-4 p-4 bg-green-50 rounded-2xl border border-green-100">
+              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                <span className="text-green-600 text-xl font-bold">✓</span>
+>>>>>>> origin/guiainteractiva-ricardoferminpari_3ersprint2corrida
               </div>
               <div className="flex-1">
                 <h4 className="font-semibold text-gray-800 text-lg">Como Fixer</h4>
@@ -60,7 +66,11 @@ const CompletionPanel: React.FC<CompletionPanelProps> = ({ onRestart, onClose })
           </div>
         </div>
 
+<<<<<<< HEAD
         {/* Footer */}
+=======
+        {/* Footer mejorado */}
+>>>>>>> origin/guiainteractiva-ricardoferminpari_3ersprint2corrida
         <div className="bg-gray-50 px-8 py-6 rounded-b-3xl text-center border-t border-gray-100">
           <p className="text-sm text-gray-500 mb-2">
             ¿Necesitas ayuda? Contacta a nuestro soporte

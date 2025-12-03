@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence, Variants } from "framer-motion";
 
 const slides = [
   {
@@ -27,6 +28,7 @@ const slides = [
 
 const CarruselInspirador: React.FC = () => {
   const [current, setCurrent] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
   const router = useRouter();
 
   const nextSlide = () => setCurrent((prev) => (prev + 1) % slides.length);
@@ -34,15 +36,15 @@ const CarruselInspirador: React.FC = () => {
     setCurrent((prev) => (prev - 1 + slides.length) % slides.length);
 
   useEffect(() => {
+    if (isPaused) return;
     const interval = setInterval(nextSlide, 6000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isPaused, current]);
 
-  // --- 🔹 Efecto scroll suave (más lento y 2500px hacia abajo) ---
   const handleVerMas = () => {
     const start = window.scrollY;
-    const end = start + 2500; // distancia más grande hacia abajo
-    const duration = 2500; // duración más larga = animación más visible
+    const end = start + 2500;
+    const duration = 2500;
     let startTime: number | null = null;
 
     const easeInOutQuad = (t: number) =>
@@ -60,61 +62,99 @@ const CarruselInspirador: React.FC = () => {
 
     requestAnimationFrame(scroll);
   };
-  // --- 🔹 Fin del efecto scroll ---
 
-  // --- 🔹 Redirección corregida ---
   const handlePorQueServineo = () => {
-    router.push("/porqueservineo"); // ✅ coincide con tu carpeta src/app/porqueservineo/page.tsx
+    router.push("/porqueservineo");
+  };
+
+  // Variants tipadas y con 'ease' como curvas Bézier (Easing[])
+  const textVariants: Variants = {
+    initial: { opacity: 0, y: 20 },
+    // [0.22, 1, 0.36, 1] ≈ easeOut cubic-bezier
+    animate: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] },
+    },
+    // [0.42, 0, 1, 1] ≈ easeIn cubic-bezier
+    exit: {
+      opacity: 0,
+      y: -20,
+      transition: { duration: 0.3, ease: [0.42, 0, 1, 1] },
+    },
   };
 
   return (
-    <section className="relative w-full h-[420px] overflow-hidden rounded-2xl shadow-lg bg-white flex">
-      {/* Imagen a la izquierda */}
-      <div className="relative w-1/2 h-full">
-        <Image
-          src={slides[current].image}
-          alt={slides[current].title}
-          fill
-          className="object-cover object-center transition-transform duration-[2000ms] ease-[cubic-bezier(0.4,0,0.2,1)]"
-        />
+    <section
+      className="
+        relative w-full overflow-hidden shadow-lg bg-white flex flex-col md:flex-row
+        h-auto md:h-[420px]
+        rounded-none md:rounded-2xl
+        !mt-0 !pt-0
+      "
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
+      <div className="relative w-full md:w-1/2 h-[300px] md:h-full !mt-0 !pt-0">
+        {slides.map((slide, index) => (
+          <Image
+            key={slide.image}
+            src={slide.image}
+            alt={slide.title}
+            fill
+            className={`
+              object-cover
+              transition-opacity duration-1000 ease-in-out 
+              ${index === current ? "opacity-100" : "opacity-0"}
+            `}
+            priority={index === 0}
+          />
+        ))}
       </div>
 
-      {/* Contenido a la derecha */}
-      <div className="w-1/2 flex flex-col justify-center items-center text-center px-8 bg-gradient-to-r from-gray-50 to-white">
-        <h2 className="text-2xl md:text-3xl font-bold mb-4 text-gray-800">
-          {slides[current].title}
-        </h2>
-        <p className="text-gray-600 text-lg mb-8 max-w-md">
-          {slides[current].description}
-        </p>
-
-        <div className="flex gap-4">
-          <button
-            onClick={handleVerMas}
-            className="bg-blue-600 hover:bg-blue-700 transition-all duration-300 text-white px-6 py-3 rounded-full shadow-md"
+      <div className="w-full md:w-1/2 flex flex-col justify-center items-center text-center px-6 md:px-8 py-6 md:py-0 bg-gradient-to-r from-gray-50 to-white overflow-hidden">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={current}
+            variants={textVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            className="w-full"
           >
-            Ver más
-          </button>
-          <button
-            onClick={handlePorQueServineo}
-            className="bg-blue-600 hover:bg-blue-700 transition-all duration-300 text-white px-6 py-3 rounded-full shadow-md"
-          >
-            ¿Por qué elegir Servineo?
-          </button>
-        </div>
+            <h2 className="text-xl md:text-3xl font-bold mb-4 text-gray-800">
+              {slides[current].title}
+            </h2>
+            <p className="text-gray-600 text-base md:text-lg mb-6 md:mb-8 max-w-md">
+              {slides[current].description}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto justify-center">
+              <button
+                onClick={handleVerMas}
+                className="bg-blue-600 hover:bg-blue-700 transition-all duration-300 text-white px-6 py-3 rounded-full shadow-md w-full sm:w-auto"
+              >
+                Ver más
+              </button>
+              <button
+                onClick={handlePorQueServineo}
+                className="bg-blue-600 hover:bg-blue-700 transition-all duration-300 text-white px-6 py-3 rounded-full shadow-md w-full sm:w-auto"
+              >
+                ¿Por qué escoger Servineo?
+              </button>
+            </div>
+          </motion.div>
+        </AnimatePresence>
       </div>
 
-      {/* Flechas de navegación */}
       <button
         onClick={prevSlide}
-        className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 p-3 rounded-full"
+        className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 p-3 rounded-full z-10"
       >
         <ChevronLeft className="text-white" />
       </button>
-
       <button
         onClick={nextSlide}
-        className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 p-3 rounded-full"
+        className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 p-3 rounded-full z-10"
       >
         <ChevronRight className="text-white" />
       </button>

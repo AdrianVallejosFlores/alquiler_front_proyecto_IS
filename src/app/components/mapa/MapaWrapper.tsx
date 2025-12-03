@@ -125,10 +125,10 @@ export default function MapaWrapper() {
       console.log("🔄 Intentando conectar con el backend...");
 
       const [resUbicaciones, resFixers] = await Promise.all([
-        fetch("http://localhost:4000/api/ubicaciones", {
+        fetch("https://alquiler-back-soft-war2.vercel.app/api/ubicaciones", {
           signal: AbortSignal.timeout(5000),
         }),
-        fetch("http://localhost:4000/api/fixers", {
+        fetch("http://localhost:4000/api/map-fixers", {
           signal: AbortSignal.timeout(5000),
         }),
       ]);

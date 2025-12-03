@@ -195,7 +195,11 @@ export default function FixerOwnerActions({ fixerId, currentBio, skills }: Props
             <h3 className="mb-3 text-base font-semibold text-slate-900">Mis habilidades personalizadas</h3>
             {skills.length === 0 ? (
               <p className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-500">
+<<<<<<< HEAD
                 Aún no registraste oficios. Agrega tipos de trabajo desde el flujo de "Convertirse en Fixer" para
+=======
+                Aún no registraste oficios. Agrega tipos de trabajo desde el flujo de Convertirse en Fixer para
+>>>>>>> origin/guiainteractiva-ricardoferminpari_3ersprint2corrida
                 personalizarlos aquí.
               </p>
             ) : (

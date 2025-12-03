@@ -13,6 +13,7 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
   targetElement,
   children 
 }) => {
+<<<<<<< HEAD
   const [elementRect, setElementRect] = useState<DOMRect | null>(null);
 
   useEffect(() => {
@@ -50,12 +51,44 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
       if (element) {
         element.classList.remove('tutorial-spotlight-active');
       }
+=======
+  const [spotlightStyle, setSpotlightStyle] = useState({});
+
+  useEffect(() => {
+    if (!isActive || !targetElement) {
+      setSpotlightStyle({});
+      return;
+    }
+
+    const updateSpotlight = () => {
+      const targetElementNode = document.querySelector(`[data-tutorial="${targetElement}"]`);
+      if (targetElementNode) {
+        const rect = targetElementNode.getBoundingClientRect();
+        
+        setSpotlightStyle({
+          '--spotlight-top': `${rect.top}px`,
+          '--spotlight-left': `${rect.left}px`,
+          '--spotlight-width': `${rect.width}px`,
+          '--spotlight-height': `${rect.height}px`,
+        } as React.CSSProperties);
+      }
+    };
+
+    updateSpotlight();
+    window.addEventListener('resize', updateSpotlight);
+    window.addEventListener('scroll', updateSpotlight);
+
+    return () => {
+      window.removeEventListener('resize', updateSpotlight);
+      window.removeEventListener('scroll', updateSpotlight);
+>>>>>>> origin/guiainteractiva-ricardoferminpari_3ersprint2corrida
     };
   }, [isActive, targetElement]);
 
   if (!isActive) return null;
 
   return (
+<<<<<<< HEAD
     <>
       {/* Overlay difuminado */}
       <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" />
@@ -80,6 +113,23 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
         </div>
       </div>
     </>
+=======
+    <div className="fixed inset-0 z-50">
+      {/* Fondo difuminado con spotlight */}
+      <div 
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-all duration-300 tutorial-overlay"
+        style={spotlightStyle}
+      >
+        {/* Spotlight effect - área clara alrededor del elemento */}
+        <div className="spotlight-area"></div>
+      </div>
+      
+      {/* Contenido del tutorial */}
+      <div className="absolute inset-0">
+        {children}
+      </div>
+    </div>
+>>>>>>> origin/guiainteractiva-ricardoferminpari_3ersprint2corrida
   );
 };
 

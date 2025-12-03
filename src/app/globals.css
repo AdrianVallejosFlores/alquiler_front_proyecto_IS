@@ -78,67 +78,45 @@ html {
   z-index: 10001;
 }
 
-/* CONTENIDO DEL TOOLTIP */
-.tutorial-content {
-  line-height: 1.6 !important;
-  color: #374151 !important;
-  padding: 1rem !important;
+/* Smooth transitions for tutorial */
+.tutorial-step-enter {
+  opacity: 0;
+  transform: scale(0.9);
 }
 
-/* BOTONES DEL TUTORIAL */
-.tutorial-button {
-  transition: all 0.2s ease-in-out !important;
-  border-radius: 8px !important;
-  font-weight: 500 !important;
+.tutorial-step-enter-active {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 300ms, transform 300ms;
 }
 
-.tutorial-button:hover {
-  transform: translateY(-1px) !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+.tutorial-step-exit {
+  opacity: 1;
+  transform: scale(1);
 }
 
-/* BOTÓN PRINCIPAL */
-.tutorial-primary-button {
-  background: linear-gradient(135deg, #52abff 0%, #11255a 100%) !important;
-  color: white !important;
-  border: none !important;
-}
-
-.tutorial-primary-button:hover {
-  background: linear-gradient(135deg, #3a9cff 0%, #0e1f4d 100%) !important;
-}
-
-/* BOTÓN SECUNDARIO */
-.tutorial-secondary-button {
-  background: #eff6ff !important;
-  color: #2563eb !important;
-  border: 1px solid #dbeafe !important;
-}
-
-.tutorial-secondary-button:hover {
-  background: #dbeafe !important;
-}
-
-/* BOTÓN DESHABILITADO */
-.tutorial-disabled-button {
-  background: #f3f4f6 !important;
-  color: #9ca3af !important;
-  cursor: not-allowed !important;
+.tutorial-step-exit-active {
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 300ms, transform 300ms;
 }
 
 /* ==================== */
 /* ESTILOS PARA EL VIDEO */
 /* ==================== */
 
+/* Estilos para el video responsivo */
 .aspect-video {
   aspect-ratio: 16 / 9;
 }
 
+/* Mejorar la apariencia del iframe de YouTube */
 iframe {
   border: none;
   border-radius: 12px;
 }
 
+/* Efectos hover para botones de video */
 .bg-red-600 {
   transition: all 0.3s ease;
 }
@@ -148,75 +126,52 @@ iframe {
   box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
 }
 
-/* ==================== */
-/* RESPONSIVE */
-/* ==================== */
-
+/* Mejorar la experiencia del video en móviles */
 @media (max-width: 768px) {
   .max-w-4xl {
     margin-left: 1rem;
     margin-right: 1rem;
   }
   
+  /* Ajustar el tamaño del video en móviles */
+  .aspect-video {
+    aspect-ratio: 16 / 9;
+  }
+}
+
+/* ==================== */
+/* ESTILOS ADICIONALES PARA MEJOR UX */
+/* ==================== */
+
+/* Mejorar el scroll suave para el tutorial */
+.tutorial-scroll {
+  scroll-behavior: smooth;
+}
+
+/* Asegurar que los elementos del tutorial sean accesibles */
+.tutorial-tooltip {
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(82, 171, 255, 0.2);
+}
+
+/* Mejorar la legibilidad del texto en el tutorial */
+.tutorial-content {
+  line-height: 1.6;
+}
+
+/* Efectos de hover para botones del tutorial */
+.tutorial-button {
+  transition: all 0.2s ease-in-out;
+}
+
+.tutorial-button:hover {
+  transform: translateY(-1px);
+}
+
+/* Responsive adjustments for tutorial steps */
+@media (max-width: 640px) {
   .tutorial-tooltip {
-    max-width: 90vw !important;
-    min-width: 280px !important;
-    margin: 0 1rem !important;
-  }
-  
-  .tutorial-led-glow {
-    border-width: 2px !important;
-    border-radius: 8px !important;
-  }
-}
-
-@media (max-width: 480px) {
-  .tutorial-tooltip {
-    min-width: 250px !important;
-    margin: 0 0.5rem !important;
-  }
-}
-
-/* ==================== */
-/* UTILITARIOS */
-/* ==================== */
-
-.tutorial-no-pointer {
-  pointer-events: none !important;
-}
-
-.tutorial-pointer-auto {
-  pointer-events: auto !important;
-}
-
-.tutorial-visible {
-  visibility: visible !important;
-  opacity: 1 !important;
-}
-
-.tutorial-hidden {
-  visibility: hidden !important;
-  opacity: 0 !important;
-}
-
-/* ==================== */
-/* ANIMACIONES SEGURAS */
-/* ==================== */
-
-@keyframes tutorial-fade-in {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes tutorial-slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
+    max-width: 90vw;
+    margin: 0 auto;
   }
 }

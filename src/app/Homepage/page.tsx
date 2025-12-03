@@ -1,4 +1,6 @@
-//src/app/Homepage/page.tsx
+// src/app/Homepage/page.tsx
+'use client'; // AGREGAR ESTO AL INICIO DEL ARCHIVO
+
 import Mapa from "../components/mapa/MapaWrapper";
 import CarruselOfertas from "../components/CarruselOfertas/CarruselOfertas";
 import HomeFixer from "../components/ListaCategorias/HomeFixer";
@@ -107,19 +109,31 @@ export default function Home() {
                 📺 <strong>Video explicativo:</strong> Conoce el proceso completo para registrarte como Fixer
               </p>
               <div className="flex flex-wrap justify-center gap-4 mt-4">
-                <a
-                  href="/convertirse-fixer"
+                {/* ✅ CAMBIADO: Botón con verificación de login */}
+                <button
+                  onClick={() => {
+                    // Verificar si está logueado (igual que el Header)
+                    const isLoggedIn = localStorage.getItem('auth_token') || localStorage.getItem('user');
+                    
+                    if (!isLoggedIn) {
+                      // Redirigir al login si no está logueado
+                      window.location.href = '/login?next=/convertirse-fixer';
+                    } else {
+                      // Ir al registro Fixer si está logueado
+                      window.location.href = '/convertirse-fixer';
+                    }
+                  }}
                   className="bg-linear-to-r from-[#52abff] to-[#11255a] text-white px-6 py-3 rounded-xl font-semibold hover:from-[#3a9cff] hover:to-[#0e1f4d] transition-all duration-200 transform hover:scale-105 shadow-lg"
                 >
-                  🛠️ Comenzar Registro
-                </a>
+                  🛠 Comenzar Registro
+                </button>
                 <a
                   href="https://youtu.be/5lGf_-xGDUs"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="bg-red-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-red-700 transition-all duration-200 transform hover:scale-105 shadow-lg flex items-center gap-2"
                 >
-                  <span>▶️</span> Ver en YouTube
+                  <span>▶</span> Ver en YouTube
                 </a>
               </div>
             </div>

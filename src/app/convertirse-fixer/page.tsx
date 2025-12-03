@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import type { CategoryDTO } from "@/lib/api/categories";
 import { getFixer } from "@/lib/api/fixer";
 import type { PaymentState } from "@/types/payment";
 import { getCategories as fetchCategories } from "@/lib/api/categories";
