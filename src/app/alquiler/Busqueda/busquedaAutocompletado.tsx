@@ -622,7 +622,12 @@ export default function BusquedaAutocompletado({
     // Helper: Title Case (capitalizar cada palabra)
     const titleCase = (t: string) => {
         if (!t) return "";
-        return t.toString().trim().replace(/\s+/g, ' ').split(' ').map((w) => (w.length === 0 ? '' : w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())).join(' ');
+        // Preservar exactamente los espacios que el usuario escribe.
+        // Capitalizamos cada secuencia de caracteres no espaciales, pero
+        // dejamos las secuencias de espacios intactas (incluyendo múltiples espacios).
+        return t.toString().replace(/\S+/g, (word) => {
+            return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+        });
     };
 
     const [query, setQuery] = useState(titleCase(valorInicial));
@@ -721,9 +726,9 @@ export default function BusquedaAutocompletado({
             clearTimeout(debounceSugerenciasLocalesRef.current);
         }
 
-        /**if (guardarEnHistorialFlag && mostrarHistorial) {
+        if (guardarEnHistorialFlag && mostrarHistorial) {
             guardarEnHistorial(textoLimpio);
-        }*/
+        }
 
         setMostrarSugerencias(false);
         setMostrarHistorialLocal(false);
@@ -822,26 +827,14 @@ export default function BusquedaAutocompletado({
 
             if (resultadosFinales.length > 0) {
                 setMensajeNoResultados("");
-
-                // PASO 1: Guardar en historial (CON AWAIT)
-                if (guardarEnHistorialFlag && mostrarHistorial) {
-                    await guardarEnHistorial(textoLimpio);
-                }
-
-                // PASO 2: Navegar (DESPUÉS de guardar)
                 onSearch(textoLimpio, resultadosFinales, actualizarUrl);
-
             } else {
                 setMensajeNoResultados(`No se encontraron resultados para "${textoLimpio}"`);
-
-                // PASO 1: Guardar el 404 (CON AWAIT)
+                onSearch(textoLimpio, [], actualizarUrl);
                 if (mostrarHistorial) {
                     console.log('💾 [HISTORIAL] Guardando término sin resultados (404) en historial:', textoLimpio);
-                    await guardarEnHistorial(textoLimpio); // <-- ¡LA CLAVE!
+                    guardarEnHistorial(textoLimpio);
                 }
-
-                // PASO 2: Navegar (DESPUÉS de guardar)
-                onSearch(textoLimpio, [], actualizarUrl);
             }
 
         } catch (error) {
@@ -885,9 +878,9 @@ export default function BusquedaAutocompletado({
         setMostrarHistorialLocal(false);
 
         // 🔥 SOLUCIÓN: Blur con timeout para asegurar que se ejecute
-        // 🔥 SOLUCIÓN MEJORADA: Múltiples métodos para asegurar el blur
-        console.log('🔴 [FOCUS] Forzando pérdida de focus después de selección...');
-
+// 🔥 SOLUCIÓN MEJORADA: Múltiples métodos para asegurar el blur
+    console.log('🔴 [FOCUS] Forzando pérdida de focus después de selección...');
+    
         // Método 1: Blur del input específico
         if (inputRef.current) {
             inputRef.current.blur();
@@ -923,7 +916,7 @@ export default function BusquedaAutocompletado({
     // 🔥 NUEVO: useEffect PARA SUGERENCIAS LOCALES EN TIEMPO REAL
     // ============================================================================
     useEffect(() => {
-         
+        /** 
         if (busquedaEnCurso.current) {
             console.log('🚫 [SUGERENCIAS] Omitido, búsqueda completa en curso.');
             return;
@@ -1003,14 +996,14 @@ export default function BusquedaAutocompletado({
             if (debounceSugerenciasLocalesRef.current) {
                 clearTimeout(debounceSugerenciasLocalesRef.current);
             }
-        };
+        };*/
     }, [query, inputFocused, datos, onSearch]);
 
     // ============================================================================
     // 🔥 NUEVO: useEffect PARA RESULTADOS LOCALES EN TIEMPO REAL  
     // ============================================================================
     useEffect(() => {
-         
+        /** 
         if (busquedaEnCurso.current) {
             console.log('🚫 [SUGERENCIAS-BACKEND] Cancelado.');
             return;
@@ -1089,15 +1082,62 @@ export default function BusquedaAutocompletado({
             if (debounceResultadosLocalesRef.current) {
                 clearTimeout(debounceResultadosLocalesRef.current);
             }
-        };
+        };*/
     }, [query, inputFocused, datos, campoBusqueda]);
+
+    // ==========================================================================
+    // 🔥 useEffect: Búsqueda dinámica al escribir (debounce)
+    // - Ejecuta la búsqueda completa automáticamente sin necesidad de Enter
+    // - Preserva los espacios visibles en el input, pero usa la versión "limpia"
+    //   para validar/enviar (ej. mínimo 2 caracteres)
+    // ==========================================================================
+    useEffect(() => {
+        if (!inputFocused) return;
+        if (desactivarBusquedaAutomatica.current) return;
+
+        const textoVisible = query; // conserva los espacios tal como los introduce el usuario
+        const textoLimpio = textoVisible.trim();
+
+        // Si está en curso una búsqueda completa, esperar
+        if (busquedaEnCurso.current) return;
+
+        // Si el texto limpio es muy corto, limpiar resultados y no buscar
+        if (textoLimpio.length < 2) {
+            if (debounceResultadosRef.current) {
+                clearTimeout(debounceResultadosRef.current);
+                debounceResultadosRef.current = null;
+            }
+            setResultados([]);
+            onSearch("", [], true);
+            return;
+        }
+
+        if (debounceResultadosRef.current) {
+            clearTimeout(debounceResultadosRef.current);
+        }
+
+        debounceResultadosRef.current = setTimeout(() => {
+            if (busquedaEnCurso.current) return;
+            // Ejecutar búsqueda completa con el texto tal como se ve en la UI
+            ejecutarBusquedaCompleta(textoVisible, true, false, true).catch((err) => {
+                console.error('Error búsqueda dinámica:', err);
+            });
+        }, 400);
+
+        return () => {
+            if (debounceResultadosRef.current) {
+                clearTimeout(debounceResultadosRef.current);
+                debounceResultadosRef.current = null;
+            }
+        };
+
+    }, [query, inputFocused, ejecutarBusquedaCompleta]);
 
     // 🔥 MODIFICADO: Manejar cambio en el input - solo mensajes informativos
     const manejarCambioInput = useCallback((nuevoValor: string) => {
         // Mostrar/guardar en Title Case mientras el usuario escribe
-        //const valorCapitalizado = titleCase(nuevoValor || "");
-        //setQuery(valorCapitalizado);
-        setQuery(nuevoValor);
+        const valorCapitalizado = titleCase(nuevoValor || "");
+        setQuery(valorCapitalizado);
 
         const textoLimpio = nuevoValor.trim();
 
@@ -1129,7 +1169,7 @@ export default function BusquedaAutocompletado({
 
             if (textoNormalizado.length < 1) {
                 console.log('⏸️ [AMAZON-SUGERENCIAS] Texto muy corto');
-
+                
             }
 
             console.log('🔄 [AMAZON-SUGERENCIAS] Llamando al servicio...');
@@ -1169,13 +1209,13 @@ export default function BusquedaAutocompletado({
         }
 
         const texto = query.trim();
-
+        
         // Buscar sugerencias con debounce
         debounceSugerenciasRef.current = setTimeout(async () => {
             try {
                 const textoNormalizado = normalizarGoogle(texto, "sugerencias");
                 const sugerenciasFinales = await buscarSugerencias(textoNormalizado);
-
+                
                 if (query.trim() === texto) {
                     setSugerencias(sugerenciasFinales);
                     if (sugerenciasFinales.length === 0) {
@@ -1279,7 +1319,7 @@ export default function BusquedaAutocompletado({
                 if (indiceSeleccionado !== -1) {
                     const terminoSeleccionado = itemsList[indiceSeleccionado];
 
-                    if (mostrarHistorialLocal) {
+                            if (mostrarHistorialLocal) {
                         const textoSeleccionado = seleccionarPorIndice(indiceSeleccionado);
                         if (textoSeleccionado) {
                             setQuery(titleCase(textoSeleccionado));
@@ -1380,224 +1420,218 @@ export default function BusquedaAutocompletado({
     }, [seleccionarDelHistorial, ejecutarBusquedaCompleta, setIndiceSeleccionado]);
 
     return (
-        <div
-            className="contenedor-busqueda"
-            ref={containerRef}
-            onMouseDown={() => {
-                // Si el usuario hace clic EN CUALQUIER LUGAR
-                // dentro del componente, cancelamos el blur.
-                if (blurTimeoutRef.current) {
-                    clearTimeout(blurTimeoutRef.current);
-                    blurTimeoutRef.current = null;
-                }
-            }}
-        >
-            <div className="busqueda-barra">
-                <Search className="icono-busqueda" size={20} />
-                <input
-                    ref={inputRef}
-                    type="text"
-                    placeholder={placeholder}
-                    value={query}
-                    onChange={(e) => {
-                        manejarCambioInput(e.target.value);
-                        setMostrarHistorialLocal(false);
-                    }}
-                    onMouseDown={() => {
-                        if (!inputFocused) {
-                            console.log('🖱️ [MOUSE-DOWN] Forzando estado de foco desde el input.');
-
+        <div className="busqueda-container" ref={containerRef} onMouseDown={() => {
+            // Si el usuario hace clic EN CUALQUIER LUGAR
+            // dentro del componente, cancelamos el blur.
+            if (blurTimeoutRef.current) {
+                clearTimeout(blurTimeoutRef.current);
+                blurTimeoutRef.current = null;
+            }
+        }}>
+            <div className="contenedor-busqueda">
+                <div className="busqueda-barra">
+                    <Search className="icono-busqueda" size={20} />
+                    <input
+                        ref={inputRef}
+                        type="text"
+                        placeholder={placeholder}
+                        value={query}
+                        onChange={(e) => {
+                            manejarCambioInput(e.target.value);
+                            setMostrarHistorialLocal(false);
+                        }}
+                        onMouseDown={() => {
+                            if (!inputFocused) {
+                                console.log('🖱️ [MOUSE-DOWN] Forzando estado de foco desde el input.');
+                                
+                                if (blurTimeoutRef.current) {
+                                    clearTimeout(blurTimeoutRef.current);
+                                    blurTimeoutRef.current = null;
+                                }
+                                manejarFocusInput();
+                            }
+                        }}
+                        onKeyDown={manejarKeyDown}
+                        onFocus={() => {
+                            // Limpia cualquier blur pendiente
                             if (blurTimeoutRef.current) {
                                 clearTimeout(blurTimeoutRef.current);
                                 blurTimeoutRef.current = null;
                             }
+
+
+                            justFocusedRef.current = true;
                             manejarFocusInput();
-                        }
-                    }}
-                    onKeyDown={manejarKeyDown}
-                    onFocus={() => {
-                        // Limpia cualquier blur pendiente
-                        if (blurTimeoutRef.current) {
-                            clearTimeout(blurTimeoutRef.current);
-                            blurTimeoutRef.current = null;
-                        }
+                            setTimeout(() => {
+                                justFocusedRef.current = false;
+                            }, 100);
+                        }}
+                        onBlur={() => {
 
-                        justFocusedRef.current = true;
-                        manejarFocusInput();
-                        setTimeout(() => {
-                            justFocusedRef.current = false;
-                        }, 100);
-                    }}
-                    onBlur={() => {
-                        if (justFocusedRef.current) {
-                            return;
-                        }
-
-                        if (blurTimeoutRef.current) {
-                            clearTimeout(blurTimeoutRef.current);
-                        }
-
-                        blurTimeoutRef.current = setTimeout(() => {
-                            if (document.activeElement === inputRef.current) {
-                                console.log('🏁 [BLUR] Blur cancelado, el foco sigue en el input (scroll).');
+                            if (justFocusedRef.current) {
                                 return;
                             }
 
-                            console.log('🏁 [BLUR] Blur real detectado. Cerrando menú.');
-                            setInputFocused(false);
-                        }, 200);
-                    }}
-                    maxLength={80}
-                    className="busqueda-input"
-                />
-                {query && (
-                    <button
-                        className="btn-limpiar"
-                        onClick={limpiarBusqueda}
-                        type="button"
-                    >
-                        <X size={16} />
-                    </button>
-                )}
-            </div>
 
-            <div className={`contador-caracteres ${query.length > 70 ? 'alerta' : ''}`}>
-                {query.length}/80 caracteres
-                {tieneCaracteresProblema(query) && <span className="caracteres-invalidos"> - Caracteres especiales se ignoran</span>}
-            </div>
+                            if (blurTimeoutRef.current) {
+                                clearTimeout(blurTimeoutRef.current);
+                            }
 
-            {/* ✅ HISTORIAL ✅ */}
-            {mostrarHistorialLocal && (
-                <ul className="caja-sugerencias" onMouseDown={(e) => {
-                    e.preventDefault(); // Mantiene el foco del navegador
+                            blurTimeoutRef.current = setTimeout(() => {
 
-                    // Cancela el timeout de blur
-                    if (blurTimeoutRef.current) {
-                        clearTimeout(blurTimeoutRef.current);
-                        blurTimeoutRef.current = null;
-                    }
-                }}>
+                                if (document.activeElement === inputRef.current) {
+                                    console.log('🏁 [BLUR] Blur cancelado, el foco sigue en el input (scroll).');
+                                    return;
+                                }
 
-                    <li className="sugerencias-header" onMouseDown={(e) => e.preventDefault()}>
-                        Búsquedas recientes
-                        {cargandoHistorial && (
-                            <span className="cargando-indicador">Cargando...</span>
-                        )}
-                    </li>
 
-                    {/* ✅ AQUÍ LA CONDICIÓN PARA MOSTRAR EL MENSAJE */}
-                    {!cargandoHistorial && historial.length === 0 ? (
-                        <li className="mensaje-historialon" onMouseDown={(e) => e.preventDefault()}>
-                            No hay búsquedas recientes
-                        </li>
-                    ) : (
-                        historial.slice(0, 5).map((item, i) => (
-                            <li
-                                key={i}
-                                className={`item-historial ${i === indiceSeleccionado ? 'seleccionado' : ''}`}
-                                onClick={() => manejarSeleccionHistorial(item)}
-                            >
-                                <div className="contenedor-texto-historial">
-                                    <Clock className="icono-historial" size={16} />
-                                    <span className="texto-historial">{item}</span>
-                                </div>
-
-                                <button
-                                    className="boton-eliminar-historial"
-                                    onMouseDown={(e) => e.preventDefault()}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        eliminarDelHistorial(item);
-                                    }}
-                                    title="Eliminar elemento"
-                                >
-                                    ✕
-                                </button>
-                            </li>
-                        ))
-                    )}
-
-                    {/* ✅ Solo mostrar limpiar si hay elementos */}
-                    {historial.length > 0 && (
-                        <li
-                            className="item-limpiar-todo"
-                            onMouseDown={(e) => e.preventDefault()}
-                            onClick={limpiarHistorialBackend}
+                                console.log('🏁 [BLUR] Blur real detectado. Cerrando menú.');
+                                setInputFocused(false);
+                            }, 200);
+                        }}
+                        maxLength={80}
+                        className="busqueda-input"
+                    />
+                    {query && (
+                        <button
+                            className="btn-limpiar"
+                            onClick={limpiarBusqueda}
+                            type="button"
                         >
-                            <Trash2 size={14} />
-                            Limpiar historial
-                        </li>
+                            <X size={16} />
+                        </button>
                     )}
-                </ul>
-            )}
+                </div>
 
-            {/* SUGERENCIAS */}
-            {mostrarSugerencias && (
-                <ul
-                    className="caja-sugerencias"
-                    onMouseDown={(e) => {
-                        e.preventDefault();
+                <div className={`contador-caracteres ${query.length > 70 ? 'alerta' : ''}`}>
+                    {query.length}/80 caracteres
+                    {tieneCaracteresProblema(query) && <span className="caracteres-invalidos"> - Caracteres especiales se ignoran</span>}
+                </div>
+
+                {/* ✅ HISTORIAL ✅ */}
+                {mostrarHistorialLocal && (
+                    <ul className="caja-sugerencias" onMouseDown={(e) => {
+                        e.preventDefault(); // Mantiene el foco del navegador
+
+                        // Cancela el timeout de blur
                         if (blurTimeoutRef.current) {
                             clearTimeout(blurTimeoutRef.current);
                             blurTimeoutRef.current = null;
                         }
-                    }}
-                >
-                    <li className="sugerencias-header">
-                        Sugerencias
-                    </li>
+                    }}>
 
-                    {mostrarLoadingSugerencias && (
-                        <li className="mensaje-sugerencia cargando">
-                            <div className="spinner"></div>
-                            Buscando sugerencias...
-                        </li>
-                    )}
-
-                    {!mostrarLoadingSugerencias && estadoSugerencias === "error" && (
-                        <li className="mensaje-error">
-                            <Search className="icono-sugerencia" size={16} />
-                            {mensaje}
-                        </li>
-                    )}
-
-                    {!mostrarLoadingSugerencias && estadoSugerencias !== "error" && (
-                        <>
-                            {sugerencias.length > 0 ? (
-                                sugerencias.map((s, i) => (
-                                    <li
-                                        key={i}
-                                        onClick={() => seleccionarSugerencia(s)}
-                                        className={i === indiceSeleccionado ? 'seleccionado' : ''}
-                                    >
-                                        <Search className="icono-sugerencia" size={16} />
-                                        {s}
-                                    </li>
-                                ))
-                            ) : mensajeNoResultados ? (
-                                <li className="mensaje-sugerencia">
-                                    <div className="icono-info">ℹ️</div>
-                                    {mensajeNoResultados}
-                                </li>
-                            ) : (
-                                <li className="mensaje-sugerencia">
-                                    <div className="icono-info">ℹ️</div>
-                                    Sin sugerencias
-                                </li>
+                        <li className="sugerencias-header" onMouseDown={(e) => e.preventDefault()}>
+                            Búsquedas recientes
+                            {cargandoHistorial && (
+                                <span className="cargando-indicador">Cargando...</span>
                             )}
-                        </>
-                    )}
-                </ul>
-            )}
+                        </li>
 
-            {/* Mostrar loading en área de resultados */}
-            {loadingResultados && (
-                <div className="cargando">
-                    <div className="spinner"></div>
-                    <span>Buscando resultados...</span>
-                </div>
-            )}
+                        {/* ✅ AQUÍ LA CONDICIÓN PARA MOSTRAR EL MENSAJE */}
+                        {!cargandoHistorial && historial.length === 0 ? (
+                            <li className="mensaje-historialon" onMouseDown={(e) => e.preventDefault()}>
+                                No hay búsquedas recientes
+                            </li>
+                        ) : (
+                            historial.slice(0, 5).map((item, i) => (
+                                <li
+                                    key={i}
+                                    className={`item-historial ${i === indiceSeleccionado ? 'seleccionado' : ''}`}
+                                    onClick={() => manejarSeleccionHistorial(item)}
+                                >
+                                    <div className="contenedor-texto-historial">
+                                        <Clock className="icono-historial" size={16} />
+                                        <span className="texto-historial">{item}</span>
+                                    </div>
 
+                                    <button
+                                        className="boton-eliminar-historial"
+                                        onMouseDown={(e) => e.preventDefault()}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            eliminarDelHistorial(item);
+                                        }}
+                                        title="Eliminar elemento"
+                                    >
+                                        ✕
+                                    </button>
+                                </li>
+                            ))
+                        )}
+
+                        {/* ✅ Solo mostrar limpiar si hay elementos */}
+                        {historial.length > 0 && (
+                            <li
+                                className="item-limpiar-todo"
+                                onMouseDown={(e) => e.preventDefault()}
+                                onClick={limpiarHistorialBackend}
+                            >
+                                <Trash2 size={14} />
+                                Limpiar historial
+                            </li>
+                        )}
+                    </ul>
+                )}
+
+                {/* SUGERENCIAS */}
+                {mostrarSugerencias && (
+                    <ul 
+                        className="caja-sugerencias"
+                        onMouseDown={(e) => {
+                            e.preventDefault(); 
+                            if (blurTimeoutRef.current) {
+                                clearTimeout(blurTimeoutRef.current);
+                                blurTimeoutRef.current = null;
+                            }
+                        }}
+                    >
+                        <li className="sugerencias-header">
+                            Sugerencias
+                        </li>
+
+                        {mostrarLoadingSugerencias && (
+                            <li className="mensaje-sugerencia cargando">
+                                <div className="spinner"></div>
+                                Buscando sugerencias...
+                            </li>
+                        )}
+
+                        {!mostrarLoadingSugerencias && estadoSugerencias === "error" && (
+                            <li className="mensaje-error">
+                                <Search className="icono-sugerencia" size={16} />
+                                {mensaje}
+                            </li>
+                        )}
+
+                        {!mostrarLoadingSugerencias && estadoSugerencias !== "error" && (
+                            <>
+                                {sugerencias.length > 0 ? (
+                                    sugerencias.map((s, i) => (
+                                        <li
+                                            key={i}
+                                            onClick={() => seleccionarSugerencia(s)}
+                                            className={i === indiceSeleccionado ? 'seleccionado' : ''}
+                                        >
+                                            <Search className="icono-sugerencia" size={16} />
+                                            {s}
+                                        </li>
+                                    ))
+                                ) : mensajeNoResultados ? (
+                                    <li className="mensaje-sugerencia">
+                                        <div className="icono-info">ℹ️</div>
+                                        {mensajeNoResultados}
+                                    </li>
+                                ) : (
+                                    <li className="mensaje-sugerencia">
+                                        <div className="icono-info">ℹ️</div>
+                                        Sin sugerencias
+                                    </li>
+                                )}
+                            </>
+                        )}
+                    </ul>
+                )}
+            </div>
         </div>
     );
 }

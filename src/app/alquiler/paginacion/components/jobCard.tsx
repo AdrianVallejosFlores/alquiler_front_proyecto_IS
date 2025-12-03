@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import React from 'react';
+import { HighlightedText } from './HighlightedText';
 
 interface JobCardProps {
   title: string;
@@ -13,6 +14,7 @@ interface JobCardProps {
   employmentTypeColor: string;
   rating?: number;
   onViewDetails?: () => void;
+  searchTerms?: string[];
 }
 
 const formatSalary = (salary?: string) => {
@@ -61,14 +63,27 @@ const JobCard: React.FC<JobCardProps> = ({
   employmentType,
   employmentTypeColor,
   rating = 0,
-  onViewDetails
+  onViewDetails,
+  searchTerms = []
 }) => {
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 flex flex-col h-full">
       {/* Encabezado con gradiente */}
       <div className="bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 p-6">
-        <h2 className="text-xl font-semibold text-white mb-2">{company}</h2>
-        <p className="text-white/90">{title}</p>
+        <h2 className="text-xl font-semibold text-white mb-2">
+          {searchTerms.length > 0 ? (
+            <HighlightedText text={company} searchTerms={searchTerms} />
+          ) : (
+            company
+          )}
+        </h2>
+        <p className="text-white/90">
+          {searchTerms.length > 0 ? (
+            <HighlightedText text={title} searchTerms={searchTerms} />
+          ) : (
+            title
+          )}
+        </p>
       </div>
 
       <div className="p-6 flex-grow">
@@ -104,7 +119,13 @@ const JobCard: React.FC<JobCardProps> = ({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
-          <span>{formatLocation(location)}</span>
+          <span>
+            {searchTerms.length > 0 ? (
+              <HighlightedText text={formatLocation(location)} searchTerms={searchTerms} />
+            ) : (
+              formatLocation(location)
+            )}
+          </span>
         </div>
 
         {/* Servicios y Precio */}
@@ -112,7 +133,13 @@ const JobCard: React.FC<JobCardProps> = ({
           <h3 className="text-sm font-semibold text-gray-900 mb-2">Servicios:</h3>
           <div className="p-3 bg-gray-50 rounded-lg">
             <div className="flex justify-between items-center">
-              <span className="text-gray-700">{service}</span>
+              <span className="text-gray-700">
+                {searchTerms.length > 0 ? (
+                  <HighlightedText text={service} searchTerms={searchTerms} />
+                ) : (
+                  service
+                )}
+              </span>
               <span className="font-medium text-blue-600">
                 {formatSalary(salaryRange)}
               </span>
