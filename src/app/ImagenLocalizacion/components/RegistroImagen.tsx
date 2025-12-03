@@ -3,9 +3,9 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
+import 'leaflet/dist/leaflet.css';
 import Modal from "react-modal";
 import type { LeafletMouseEvent } from 'leaflet';
-import Image from 'next/image';
 
 // Importar react-leaflet sólo en cliente (evita problemas de SSR)
 const MapContainer = dynamic(() => import("react-leaflet").then(m => m.MapContainer), { ssr: false });
@@ -13,13 +13,12 @@ const TileLayer     = dynamic(() => import("react-leaflet").then(m => m.TileLaye
 const Marker        = dynamic(() => import("react-leaflet").then(m => m.Marker),        { ssr: false });
 const Circle        = dynamic(() => import("react-leaflet").then(m => m.Circle),        { ssr: false });
 const useMapEvents = (await import("react-leaflet")).useMapEvents; 
-
 interface Location {
   lat: number;
   lng: number;
 }
 
-// Tipos
+// Pon estos tipos/helpers arriba del archivo (una sola vez)
 type DatosFormManual = {
   nombre?: string;
   apellido?: string;
@@ -29,14 +28,12 @@ type DatosFormManual = {
   terminosYCondiciones?: boolean;
   fotoPerfil?: string;
 };
-
 type DatosFormGoogle = {
   nombre?: string;
   correo?: string;
   correoElectronico?: string;
   fotoPerfil?: string;
 };
-
 type DatosFormulario = {
   nombre?: string;
   apellido?: string;
@@ -47,7 +44,6 @@ type DatosFormulario = {
   fotoPerfil?: string;
 };
 
-// ✅ CORRECCIÓN: Mover isHttpUrl fuera del componente y eliminar duplicado
 const isHttpUrl = (v: unknown): v is string =>
   typeof v === "string" && /^https?:\/\//i.test(v);
 
@@ -107,84 +103,91 @@ export default function RegistroImagen() {
   const [modalOpen, setModalOpen] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
   const [error, setError] = useState("");
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null); // URL (Google o blob)
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [ready, setReady] = useState(false);
 
   const DEFAULT_AVATAR = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
-  // Límites y tipos
+  const isHttpUrl = (v: unknown) => typeof v === "string" && /^https?:\/\//i.test(v);
+
+  // Límites y tipos (de la variante funcional)
   const maxSize = 1 * 1024 * 1024; // 1 MB
   const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
 
   // Setup Modal + Leaflet icons sólo en cliente
   useEffect(() => {
-    Modal.setAppElement("body");
-    (async () => {
-      const L = await import("leaflet");
+  Modal.setAppElement("body");
+  (async () => {
+    const L = await import("leaflet");
 
-      // 🔧 Tipado seguro: la propiedad puede existir o no
-      const proto = L.Icon.Default.prototype as unknown as {
-        _getIconUrl?: unknown;
-      };
-      delete proto._getIconUrl;
+    // 🔧 Tipado seguro: la propiedad puede existir o no
+    const proto = L.Icon.Default.prototype as unknown as {
+      _getIconUrl?: unknown;
+    };
+    delete proto._getIconUrl;
 
-      L.Icon.Default.mergeOptions({
-        iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-        iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-        shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-      });
+    L.Icon.Default.mergeOptions({
+      iconRetinaUrl:
+        "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+      iconUrl:
+        "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+      shadowUrl:
+        "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+    });
 
-      setReady(true);
-    })();
-  }, []);
+    setReady(true);
+  })();
+}, []);
+
 
   // Recuperar datos del sessionStorage (Google o formulario manual)
   useEffect(() => {
-    const raw = sessionStorage.getItem("datosUsuarioParcial");
-    if (!raw) {
-      console.warn("⚠️ No hay datos en sessionStorage.");
-      return;
+  const raw = sessionStorage.getItem("datosUsuarioParcial");
+  if (!raw) {
+    console.warn("⚠️ No hay datos en sessionStorage.");
+    return;
+  }
+
+  try {
+    const datos: unknown = JSON.parse(raw);
+    let datosAdaptados: DatosFormulario = {};
+
+    // Caso 1: formulario tradicional
+    if (esManual(datos)) {
+      datosAdaptados = {
+        nombre: datos.nombre ?? "",
+        apellido: datos.apellido ?? "",
+        telefono: datos.telefono ?? "",
+        correo: datos.email ?? "",
+        password: datos.contraseña ?? "",
+        terminosYCondiciones: !!datos.terminosYCondiciones,
+        fotoPerfil: datos.fotoPerfil,
+      };
+    }
+    // Caso 2: viene de Google
+    else if (esGoogle(datos)) {
+      const correoGoogle = datos.correo ?? datos.correoElectronico ?? "";
+      datosAdaptados = {
+        nombre: datos.nombre ?? "",
+        correo: correoGoogle,
+        fotoPerfil: datos.fotoPerfil,
+        terminosYCondiciones: false,
+      };
     }
 
-    try {
-      const datos: unknown = JSON.parse(raw);
-      let datosAdaptados: DatosFormulario = {};
+    setDatosFormulario(datosAdaptados);
+    console.log("✅ Datos adaptados para envío:", datosAdaptados);
 
-      // Caso 1: formulario tradicional
-      if (esManual(datos)) {
-        datosAdaptados = {
-          nombre: datos.nombre ?? "",
-          apellido: datos.apellido ?? "",
-          telefono: datos.telefono ?? "",
-          correo: datos.email ?? "",
-          password: datos.contraseña ?? "",
-          terminosYCondiciones: !!datos.terminosYCondiciones,
-          fotoPerfil: datos.fotoPerfil,
-        };
-      }
-      // Caso 2: viene de Google
-      else if (esGoogle(datos)) {
-        const correoGoogle = datos.correo ?? datos.correoElectronico ?? "";
-        datosAdaptados = {
-          nombre: datos.nombre ?? "",
-          correo: correoGoogle,
-          fotoPerfil: datos.fotoPerfil,
-          terminosYCondiciones: false,
-        };
-      }
-
-      setDatosFormulario(datosAdaptados);
-      //console.log("✅ Datos adaptados para envío:", datosAdaptados);
-
-      if (isHttpUrl(datosAdaptados.fotoPerfil) && datosAdaptados.fotoPerfil != null) {
-        setPreviewImage(datosAdaptados.fotoPerfil);
-      }
-    } catch (err) {
-      console.error("❌ Error al parsear sessionStorage:", err);
+    if (isHttpUrl(datosAdaptados.fotoPerfil) && datosAdaptados.fotoPerfil!=null) {
+      setPreviewImage(datosAdaptados.fotoPerfil);
     }
-  }, []);
+  } catch (err) {
+    console.error("❌ Error al parsear sessionStorage:", err);
+  }
+}, []);
+
 
   // Manejar imagen local (preview + validación)
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -223,104 +226,104 @@ export default function RegistroImagen() {
 
   // Subida a Cloudinary (unsigned) y registro en backend
   const handleContinuar = async (): Promise<void> => {
-    if (!accepted) {
-      setError("Debes aceptar los términos y condiciones.");
-      return;
+  if (!accepted) {
+    setError("Debes aceptar los términos y condiciones.");
+    return;
+  }
+  if (!ubicacion) {
+    setError("Selecciona tu ubicación en el mapa.");
+    return;
+  }
+  if (!datosFormulario?.correo || !String(datosFormulario.correo).trim()) {
+    setError("Falta el correo electrónico.");
+    return;
+  }
+
+  setLoading(true);
+  setError("");
+
+  // Tipos locales
+  type UsuarioPayload = {
+    nombre: string;
+    correo: string;
+    terminosYCondiciones: boolean;
+    fotoPerfil: string;
+    ubicacion: { type: "Point"; coordinates: [number, number] };
+    authProvider: "local" | "google";
+    rol: string;
+    apellido?: string;
+    telefono?: string;
+    password?: string;
+  };
+
+  type ApiResp =
+    | { success: true; data?: unknown }
+    | { success: false; error?: string; message?: string }
+    | { error?: string; message?: string }; // por si el backend no manda 'success'
+
+  type CloudinaryOk = { secure_url: string };
+  type CloudinaryErr = { error?: { message?: string } };
+  type CloudinaryResp = Partial<CloudinaryOk & CloudinaryErr>;
+
+  try {
+    const CLOUD_NAME = "ddjrzszrw";
+    const UPLOAD_PRESET = "servineo_unsigned";
+
+    async function uploadToCloudinary(fileOrUrl: File | string): Promise<string> {
+      const fd = new FormData();
+      fd.append("file", fileOrUrl);
+      fd.append("upload_preset", UPLOAD_PRESET);
+
+      const resp = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+        method: "POST",
+        body: fd,
+      });
+
+      const data = (await resp.json().catch(() => ({}))) as CloudinaryResp;
+
+      if (!resp.ok) {
+        const msg = data?.error?.message || resp.statusText;
+        throw new Error(`Cloudinary ${resp.status}: ${msg}`);
+      }
+      if (!data?.secure_url) {
+        throw new Error("Cloudinary no devolvió secure_url");
+      }
+      return String(data.secure_url);
     }
-    if (!ubicacion) {
-      setError("Selecciona tu ubicación en el mapa.");
-      return;
-    }
-    if (!datosFormulario?.correo || !String(datosFormulario.correo).trim()) {
-      setError("Falta el correo electrónico.");
+
+    // Resolver fotoPerfil a URL (no binario)
+    let fotoUrl: string;
+    if (file instanceof File) {
+      if (!allowedTypes.includes(file.type)) throw new Error("Formato no permitido");
+      if (file.size > maxSize) throw new Error("Archivo demasiado grande");
+      fotoUrl = await uploadToCloudinary(file);
+    } else if (isHttpUrl(previewImage)) {
+      fotoUrl = String(previewImage);
+    } else {
+      setError("Selecciona una imagen o usa tu foto de Google.");
       return;
     }
 
-    setLoading(true);
-    setError("");
-
-    // Tipos locales
-    type UsuarioPayload = {
-      nombre: string;
-      correo: string;
-      terminosYCondiciones: boolean;
-      fotoPerfil: string;
-      ubicacion: { type: "Point"; coordinates: [number, number] };
-      authProvider: "local" | "google";
-      rol: string;
-      apellido?: string;
-      telefono?: string;
-      password?: string;
+    const payload: UsuarioPayload = {
+      nombre: String(datosFormulario?.nombre ?? "").trim(),
+      correo: String(datosFormulario?.correo ?? "").trim(),
+      terminosYCondiciones: !!accepted,
+      fotoPerfil: fotoUrl,
+      ubicacion: {
+        type: "Point",
+        coordinates: [Number(ubicacion.lng), Number(ubicacion.lat)],
+      },
+      authProvider: "local",
+      rol: "requester",
+      ...(datosFormulario?.apellido ? { apellido: String(datosFormulario.apellido) } : {}),
+      ...(datosFormulario?.telefono ? { telefono: String(datosFormulario.telefono) } : {}),
+      ...(datosFormulario?.password ? { password: String(datosFormulario.password) } : {}),
     };
 
-    type ApiResp =
-      | { success: true; data?: unknown }
-      | { success: false; error?: string; message?: string }
-      | { error?: string; message?: string };
-
-    type CloudinaryOk = { secure_url: string };
-    type CloudinaryErr = { error?: { message?: string } };
-    type CloudinaryResp = Partial<CloudinaryOk & CloudinaryErr>;
-
-    try {
-      const CLOUD_NAME = "ddjrzszrw";
-      const UPLOAD_PRESET = "servineo_unsigned";
-
-      async function uploadToCloudinary(fileOrUrl: File | string): Promise<string> {
-        const fd = new FormData();
-        fd.append("file", fileOrUrl);
-        fd.append("upload_preset", UPLOAD_PRESET);
-
-        const resp = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
-          method: "POST",
-          body: fd,
-        });
-
-        const data = (await resp.json().catch(() => ({}))) as CloudinaryResp;
-
-        if (!resp.ok) {
-          const msg = data?.error?.message || resp.statusText;
-          throw new Error(`Cloudinary ${resp.status}: ${msg}`);
-        }
-        if (!data?.secure_url) {
-          throw new Error("Cloudinary no devolvió secure_url");
-        }
-        return String(data.secure_url);
-      }
-
-      // Resolver fotoPerfil a URL (no binario)
-      let fotoUrl: string;
-      if (file instanceof File) {
-        if (!allowedTypes.includes(file.type)) throw new Error("Formato no permitido");
-        if (file.size > maxSize) throw new Error("Archivo demasiado grande");
-        fotoUrl = await uploadToCloudinary(file);
-      } else if (isHttpUrl(previewImage)) {
-        fotoUrl = String(previewImage);
-      } else {
-        setError("Selecciona una imagen o usa tu foto de Google.");
-        return;
-      }
-
-      const payload: UsuarioPayload = {
-        nombre: String(datosFormulario?.nombre ?? "").trim(),
-        correo: String(datosFormulario?.correo ?? "").trim(),
-        terminosYCondiciones: !!accepted,
-        fotoPerfil: fotoUrl,
-        ubicacion: {
-          type: "Point",
-          coordinates: [Number(ubicacion.lng), Number(ubicacion.lat)],
-        },
-        authProvider: "local",
-        rol: "requester",
-        ...(datosFormulario?.apellido ? { apellido: String(datosFormulario.apellido) } : {}),
-        ...(datosFormulario?.telefono ? { telefono: String(datosFormulario.telefono) } : {}),
-        ...(datosFormulario?.password ? { password: String(datosFormulario.password) } : {}),
-      };
-
-      if (!/^https?:\/\//.test(payload.fotoPerfil)) {
-        setError("fotoPerfil debe ser una URL pública. Vuelve a seleccionar/subir la imagen.");
-        return;
-      }
+    if (!/^https?:\/\//.test(payload.fotoPerfil)) {
+      setError("fotoPerfil debe ser una URL pública. Vuelve a seleccionar/subir la imagen.");
+      return;
+    }
 
     const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:5000";
     const resp = await fetch(`${baseUrl}/api/teamsys/usuario`, {
@@ -360,19 +363,19 @@ export default function RegistroImagen() {
 };
 
   const isFormValid =
-    (file || previewImage) &&
-    ubicacion &&
-    accepted &&
-    datosFormulario?.correo;
+  (file || previewImage) &&
+  ubicacion &&
+  accepted &&
+  datosFormulario?.correo; 
 
   // Evitar render del mapa/modal hasta que Leaflet esté listo
   if (!ready) return null;
 
+  // 📐 UI: Mantiene el layout visual del segundo componente
   return (
     <div className="min-h-screen flex items-center justify-center bg-blue-600">
       <form className="flex flex-col gap-4 items-center border p-6 rounded-xl shadow-md w-11/12 sm:w-full max-w-md bg-white">
         <h2 className="text-lg sm:text-xl font-bold text-center">
-          Completa tu registro
         </h2>
 
         {/* Imagen + Mapa responsivo */}
@@ -380,22 +383,23 @@ export default function RegistroImagen() {
           {/* Bloque: Foto */}
           <div className="flex flex-col items-center">
             <div className="w-28 h-28 sm:w-32 sm:h-32 border rounded overflow-hidden">
-              <Image
+              <img
                 src={filePreview ?? previewImage ?? DEFAULT_AVATAR}
                 alt="preview"
-                width={128}
-                height={128}
                 className="w-full h-full object-cover"
               />
             </div>
 
-            <label
+            {/* Botón debajo de la imagen */}
+          <label
               htmlFor="fileInput"
               className="mt-3 inline-flex items-center justify-center px-4 py-1.5 rounded-full border-2 border-black text-black text-[13px] font-semibold bg-white hover:bg-black hover:text-white transition-colors cursor-pointer w-full sm:w-auto"
-            >
+    >
               Insertar tu foto de perfil
-            </label>
+              </label>
 
+
+            {/* input de archivo (único) */}
             <input
               type="file"
               accept=".jpg,.jpeg,.png"
@@ -405,26 +409,26 @@ export default function RegistroImagen() {
             />
           </div>
 
-          {/* Bloque: Mapa */}
-          <div className="flex flex-col items-center">
-            <div className="w-28 h-28 sm:w-32 sm:h-32 border rounded overflow-hidden">
-              <Image
-                src="https://cdn-icons-png.flaticon.com/512/854/854878.png"
-                alt="mapa decorativo"
-                width={128}
-                height={128}
-                className="w-full h-full object-cover"
-              />
-            </div>
+         {/* Bloque: Mapa */}
+<div className="flex flex-col items-center">
+  {/* Imagen estática del mapita */}
+  <div className="w-28 h-28 sm:w-32 sm:h-32 border rounded overflow-hidden">
+    <img
+      src="https://cdn-icons-png.flaticon.com/512/854/854878.png" // 🗺️ icono de mapa (puedes usar otro link)
+      alt="mapa decorativo"
+      className="w-full h-full object-cover"
+    />
+  </div>
 
-            <button
-              type="button"
-              onClick={() => setModalOpen(true)}
-              className="mt-3 inline-flex items-center justify-center px-4 py-1.5 rounded-full border-2 border-black text-black text-[13px] font-semibold bg-white hover:bg-black hover:text-white transition-colors w-full sm:w-auto"
-            >
-              Insertar tu ubicación
-            </button>
-          </div>
+  <button
+    type="button"
+    onClick={() => setModalOpen(true)}
+    className="mt-3 inline-flex items-center justify-center px-4 py-1.5 rounded-full border-2 border-black text-black text-[13px] font-semibold bg-white hover:bg-black hover:text-white transition-colors w-full sm:w-auto"
+  >
+    Insertar tu ubicación
+  </button>
+</div>
+
         </div>
 
         {/* Modal mapa grande */}
@@ -449,28 +453,30 @@ export default function RegistroImagen() {
             Confirmar
           </button>
         </Modal>
-
         {/* Modal de ÉXITO */}
-        <Modal
-          isOpen={successOpen}
-          onRequestClose={() => setSuccessOpen(false)}
-          className="outline-none"
-          overlayClassName="fixed inset-0 z-[60] bg-black/30 backdrop-blur-sm flex items-center justify-center"
-        >
-          <div className="relative rounded-[28px] border border-gray-300/70 bg-white shadow-lg px-10 py-8">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-500/15">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                    fill="currentColor" className="h-7 w-7 text-green-600">
-                <path fillRule="evenodd"
-                      d="M2.25 12a9.75 9.75 0 1119.5 0 9.75 9.75 0 01-19.5 0zm14.03-2.28a.75.75 0 10-1.06-1.06L10.5 13.38l-1.72-1.72a.75.75 0 10-1.06 1.06l2.25 2.25a.75.75 0 001.06 0l5.25-5.25z"
-                      clipRule="evenodd" />
-              </svg>
-            </div>
-            <p className="mt-4 text-center text-[15px] font-medium text-gray-800">
-              Cuenta registrada
-            </p>
-          </div>
-        </Modal>
+<Modal
+  isOpen={successOpen}
+  onRequestClose={() => setSuccessOpen(false)}
+  className="outline-none"
+  overlayClassName="fixed inset-0 z-[60] bg-black/30 backdrop-blur-sm flex items-center justify-center"
+
+>
+  <div className="relative rounded-[28px] border border-gray-300/70 bg-white shadow-lg px-10 py-8">
+    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-500/15">
+      {/* check */}
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+            fill="currentColor" className="h-7 w-7 text-green-600">
+        <path fillRule="evenodd"
+              d="M2.25 12a9.75 9.75 0 1119.5 0 9.75 9.75 0 01-19.5 0zm14.03-2.28a.75.75 0 10-1.06-1.06L10.5 13.38l-1.72-1.72a.75.75 0 10-1.06 1.06l2.25 2.25a.75.75 0 001.06 0l5.25-5.25z"
+              clipRule="evenodd" />
+      </svg>
+    </div>
+    <p className="mt-4 text-center text-[15px] font-medium text-gray-800">
+      Cuenta registrada
+    </p>
+  </div>
+</Modal>
+
 
         {/* Checkbox */}
         <div className="flex items-start space-x-2 w-full">
@@ -496,16 +502,17 @@ export default function RegistroImagen() {
         {error && <p className="text-red-500 text-sm">{error}</p>}
 
         <button
-          type="button"
-          onClick={handleContinuar}
-          disabled={!isFormValid || loading || successOpen}
-          className={`py-2 px-6 rounded-xl w-full text-white transition 
-            ${!isFormValid || loading || successOpen
+            type="button"
+            onClick={handleContinuar}
+            disabled={!isFormValid || loading || successOpen}
+                className={`py-2 px-6 rounded-xl w-full text-white transition 
+                ${!isFormValid || loading || successOpen
               ? 'bg-gray-400 cursor-not-allowed'
               : 'bg-blue-600 hover:bg-blue-700 cursor-pointer'}`}
-        >
-          {loading ? 'Registrando…' : 'Continuar'}
-        </button>
+>
+              {loading ? 'Registrando…' : 'Continuar'}
+          </button>
+
       </form>
     </div>
   );

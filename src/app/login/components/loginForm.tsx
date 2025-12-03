@@ -186,14 +186,14 @@ sessionStorage.clear()
                 }}
                 onBlur={() => manejarBlur('password')}
                 className={`w-full px-3 py-2 sm:py-3 text-sm sm:text-base border rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:border-transparent placeholder-gray-600 text-gray-950 ${
-                  (errores.password && tocados.password) || errorBackend
+                  (errores.password && tocados.contraseña) || errorBackend
                     ? 'border-red-300 focus:ring-red-500'
                     : 'border-gray-300 focus:ring-blue-500'
                 }`}
                 placeholder="Contraseña"
               />
               {/* Mostrar errores de validación frontend */}
-              {(errores.password && tocados.password) && (
+              {(errores.password && tocados.contraseña) && (
                 <p className="mt-1 text-xs sm:text-sm text-red-600">{errores.password}</p>
               )}
               {/* Mostrar TODOS los errores del backend aquí */}
@@ -217,6 +217,16 @@ sessionStorage.clear()
               {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
             </button>
           </div>
+           <p className="text-sm text-center mt-3">
+    <a
+      href="/auth/ini-link"
+      className="text-blue-600 hover:underline"
+    >
+    ¿Olvidaste tu contraseña?
+    </a>
+  </p>
+
+
 
           {/* Separador visual con "o" */}
           <div className="flex items-center justify-center my-4 sm:my-6">
@@ -236,11 +246,9 @@ sessionStorage.clear()
               type="button"
               className="w-full max-w-xs sm:max-w-sm bg-white text-black py-2 sm:py-3 px-4 border border-gray-300 rounded-2xl hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200 transition-colors duration-200 flex items-center justify-center gap-3 text-xs sm:text-sm"
             >
-              <Image
+              <img
                 src={AppleIcon.src}
                 alt="Registrarse con Apple"
-                width={16}
-                height={16}
                 className="w-4 h-4 sm:w-5 sm:h-5"
               />
               Registrarse con Apple
