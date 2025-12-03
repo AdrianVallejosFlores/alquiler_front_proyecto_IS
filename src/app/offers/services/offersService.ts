@@ -4,6 +4,7 @@ export type OfferStatus = 'active' | 'inactive' | 'deleted';
 
 export interface Offer {
   id: string;
+  _id: string;
   ownerId?: string;
   title: string;
   description: string;
@@ -37,6 +38,7 @@ function qs(params: Record<string, any>) {
 function normalize(o: any): Offer {
   return {
     id: String(o?.id ?? o?._id ?? ''),
+    _id: String(o?._id ?? ''),
     ownerId: o?.ownerId ?? undefined,
     title: o?.title ?? o?.descripcion ?? 'Oferta sin título',
     description: o?.description ?? o?.descripcion ?? '',
