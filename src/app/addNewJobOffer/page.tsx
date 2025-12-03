@@ -1,4 +1,4 @@
-/*
+
 'use client';
 
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
@@ -444,7 +444,6 @@ function AddOrEditOfferPageContent() {
   }
 
   return (
-<<<<<<< HEAD
     <main className="min-h-screen bg-white">
       <section className="flex justify-center px-4 py-10 pt-16">
         <form className="w-full max-w-3xl space-y-8">
@@ -467,59 +466,6 @@ function AddOrEditOfferPageContent() {
               />
               <div className="text-right text-xs text-slate-500">
                 {description.length}/{MAX_DESCRIPTION_LENGTH}
-=======
-    <main className="flex flex-col bg-white w-full min-h-screen">
-      <header className="flex justify-between items-center px-10 py-3 border-b border-gray-200">
-        <div className="flex items-center gap-4">
-          <div className="w-4 h-4 bg-gray-900 rounded-sm" />
-          <h1 className="text-lg font-bold text-gray-900">Servineo</h1>
-        </div>
-      </header>
-
-      <section className="flex justify-center p-5">
-        <form onSubmit={(e) => e.preventDefault()} className="flex flex-col w-[960px] space-y-6">
-          {/* DESCRIPCIÓN /}
-          <div className="p-4 max-w-[480px]">
-            <label className="block mb-2 text-gray-900 font-medium">Descripción</label>
-            <input
-              type="text"
-              value={descripcion}
-              onChange={(e) => setDescripcion(e.target.value)}
-              placeholder="Describe tu servicio en 100 caracteres o menos."
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              maxLength={100}
-              required
-            />
-            <div className="text-right text-xs text-gray-500 mt-1">{descripcion.length}/100</div>
-          </div>
-
-          {/* CATEGORÍA /}
-          <div className="p-4 max-w-[480px]">
-            <label className="block mb-2 text-gray-900 font-medium">Categoría</label>
-            <select
-              value={categoria}
-              onChange={(e) => setCategoria(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              required
-            >
-              <option>Seleccionar categoría</option>
-              <option>Plomería</option>
-              <option>Electricidad</option>
-              <option>Carpintería</option>
-              <option>Pintura</option>
-            </select>
-          </div>
-
-          {/* IMAGEN /}
-          <div className="p-4 max-w-[480px]">
-            <label className="block mb-2 text-gray-900 font-medium">
-              {esEdicion ? 'Imagen (opcional — si subes, reemplaza)' : 'Imagen (opcional)'}
-            </label>
-            {/* Si ya hay imagenes (edición), muéstralas /}
-            {esEdicion && imagenesExistentes?.length > 0 && (
-              <div className="mb-2 text-sm text-gray-600">
-                Actualmente: {imagenesExistentes.length} imagen(es) cargada(s).
->>>>>>> dev/recode-sprint3_v2
               </div>
             </div>
 
@@ -540,19 +486,11 @@ function AddOrEditOfferPageContent() {
             </div>
           </div>
 
-<<<<<<< HEAD
           <div className="space-y-4 rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
             <p className="text-base font-semibold text-slate-900">Adjuntar imagenes</p>
             <p className="text-sm text-slate-500">
               Sube imagenes para una mejor descripción de tu servicio (JPG o PNG, max 5MB).
             </p>
-=======
-          {/* MENSAJE /}
-          {mensaje && <p className="text-sm text-red-500">{mensaje}</p>}
-
-          {/* BOTONES /}
-          <div className="flex justify-between p-4">
->>>>>>> dev/recode-sprint3_v2
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
