@@ -68,8 +68,16 @@ export const CerrarSesiones: React.FC<CerrarSesionesProps> = ({ onCancel }) => {
       </div>
 
       {result && (
-        <StatusPanel ok={result.ok} text={result.text} onClose={() => setResult(null)} />
-      )}
+  <StatusPanel
+    ok={result.ok}
+    text={result.text}
+    onClose={() => {
+      setResult(null);
+      onCancel?.(); // ejecuta el mismo comportamiento que "Cancelar"
+    }}
+  />
+)}
+
     </>
   );
 };

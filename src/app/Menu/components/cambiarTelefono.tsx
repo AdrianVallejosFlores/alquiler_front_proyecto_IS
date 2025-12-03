@@ -5,12 +5,10 @@ import Image from 'next/image';
 import ExitoMessageIcon from '../assets/iconos8-exito-50png.jpg';
 import { cambiarTelefono } from '@/app/teamsys/services/UserService';
 
-
 interface CambiarTelefonoProps {
   onClose: () => void;
   userId: string;
   telefonoActual: string;
- 
 }
 
 export default function CambiarTelefono({ onClose, userId, telefonoActual }: CambiarTelefonoProps) {
@@ -22,25 +20,29 @@ export default function CambiarTelefono({ onClose, userId, telefonoActual }: Cam
 
   // Leer el último teléfono del sessionStorage al abrir el formulario
   useEffect(() => {
-  const user = sessionStorage.getItem('userData');
-  if (user) {
-    const usuario = JSON.parse(user);
-    setTelefonoActualInput(usuario.telefono || '');
-  } else {
-    setTelefonoActualInput(telefonoActual || '');
-  }
-}, []); // Se ejecuta solo al montar el componente
+    const user = sessionStorage.getItem('userData');
+    if (user) {
+      const usuario = JSON.parse(user);
+      setTelefonoActualInput(usuario.telefono || '');
+    } else {
+      setTelefonoActualInput(telefonoActual || '');
+    }
+  }, []); // Se ejecuta solo al montar el componente
 
-
-
-   const handleCerrarExito = () => {
+  const handleCerrarExito = () => {
     setMostrarExito(false);
     onClose();
   };
 
-  // Función para validar mientras se escribe
-  const validarNumero = (numero: string, otroTelefono?: string): string => {
-    if (numero.length === 0) {
+  // VALIDACIÓN: ahora recibe esActual (si true, no se obliga a completar)
+  const validarNumero = (numero: string, otroTelefono?: string, esActual = false): string => {
+    // Si es el campo actual y está vacío -> no es obligatorio
+    if (esActual && numero.length === 0) {
+      return '';
+    }
+
+    // Si NO es el campo actual y está vacío -> obligatorio
+    if (!esActual && numero.length === 0) {
       return 'El campo es obligatorio.';
     }
 
@@ -62,27 +64,29 @@ export default function CambiarTelefono({ onClose, userId, telefonoActual }: Cam
     return '';
   };
 
-  // Manejo del cambio en los inputs
+  // Manejo del cambio en los inputs (ahora acepta esActual)
   const handleChange = (
     value: string,
     setTelefono: React.Dispatch<React.SetStateAction<string>>,
     setError: React.Dispatch<React.SetStateAction<string>>,
-    otroTelefono?: string
+    otroTelefono?: string,
+    esActual = false
   ) => {
     const soloNumeros = value.replace(/\D/g, '').slice(0, 8);
     setTelefono(soloNumeros);
 
-    const mensajeError = validarNumero(soloNumeros, otroTelefono);
+    const mensajeError = validarNumero(soloNumeros, otroTelefono, esActual);
     setError(mensajeError);
   };
 
-  // Validar al perder el foco (onBlur)
+  // Validar al perder el foco (onBlur) (ahora acepta esActual)
   const handleBlur = (
     numero: string,
     setError: React.Dispatch<React.SetStateAction<string>>,
-    otroTelefono?: string
+    otroTelefono?: string,
+    esActual = false
   ) => {
-    const mensajeError = validarNumero(numero, otroTelefono);
+    const mensajeError = validarNumero(numero, otroTelefono, esActual);
     setError(mensajeError);
   };
 
@@ -90,42 +94,40 @@ export default function CambiarTelefono({ onClose, userId, telefonoActual }: Cam
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const errorTelActual = validarNumero(telefonoActualInput);
-    const errorTelNuevo = validarNumero(telefonoNuevo, telefonoActualInput);
+    // El teléfono actual ya no es obligatorio, por eso se pasa esActual = true
+    const errorTelActual = validarNumero(telefonoActualInput, undefined, true);
+    const errorTelNuevo = validarNumero(telefonoNuevo, telefonoActualInput, false);
 
     setErrorActual(errorTelActual);
     setErrorNuevo(errorTelNuevo);
 
     if (errorTelActual || errorTelNuevo) return;
 
-    try{
-    const resp= await cambiarTelefono(telefonoNuevo,userId)
+    try {
+      const resp = await cambiarTelefono(telefonoNuevo, userId);
 
-    if (!resp.success) {
-     setErrorNuevo(resp.message);
+      if (!resp.success) {
+        setErrorNuevo(resp.message);
         return;
-        }
+      }
 
-    // actualizando numero en el campo
-    setTelefonoActualInput(telefonoNuevo);
-    // Limpiamos input de teléfono nuevo y mostramos éxito
+      // actualizando numero en el campo
+      setTelefonoActualInput(telefonoNuevo);
+      // Limpiamos input de teléfono nuevo y mostramos éxito
       setTelefonoNuevo('');
       setMostrarExito(true);
 
-      const user=sessionStorage.getItem("userData")
-      if(user){
-      const usuario=JSON.parse(user)
-          usuario.telefono = telefonoNuevo; // reemplaza el teléfono antiguo
-          sessionStorage.setItem("userData", JSON.stringify(usuario)); // guarda la versión actualizada
-      
-        }
-
-    }catch(error){
-      setErrorNuevo("Error en el servidor");
-
+      const user = sessionStorage.getItem('userData');
+      if (user) {
+        const usuario = JSON.parse(user);
+        usuario.telefono = telefonoNuevo; // reemplaza el teléfono antiguo
+        sessionStorage.setItem('userData', JSON.stringify(usuario)); // guarda la versión actualizada
+      }
+    } catch (error) {
+      setErrorNuevo('Error en el servidor');
     }
-  }
-  
+  };
+
   return (
     <div className="fixed inset-0 bg-blue-500 flex items-center justify-center z-50 px-4">
       <div className="bg-white rounded-3xl border border-gray-300 shadow-xl w-full max-w-md p-6 flex flex-col items-center text-center animate-fade-in">
@@ -142,18 +144,17 @@ export default function CambiarTelefono({ onClose, userId, telefonoActual }: Cam
                     type="tel"
                     inputMode="numeric"
                     value={telefonoActualInput}
-                    readOnly
+                    readOnly={false} // puedes dejarlo editable si quieres que el usuario lo modifique
                     onChange={(e) =>
-                      handleChange(e.target.value, setTelefonoActualInput, setErrorActual)
-                      }
-                     onBlur={() =>
-                      handleBlur(telefonoActualInput, setErrorActual)
-                    }  
-
+                      handleChange(e.target.value, setTelefonoActualInput, setErrorActual, undefined, true)
+                    }
+                    onBlur={() =>
+                      handleBlur(telefonoActualInput, setErrorActual, undefined, true)
+                    }
                     className={`w-full px-3 py-2 sm:py-3 text-sm sm:text-base border rounded-2xl shadow-sm
                       focus:outline-none focus:ring-2 focus:border-transparent placeholder-gray-600 text-gray-950
                       ${errorActual ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'}`}
-                    placeholder="Teléfono actual (8 dígitos)"
+                    placeholder="Teléfono actual (8 dígitos) — opcional"
                     maxLength={8}
                   />
                   {errorActual && (
@@ -171,10 +172,10 @@ export default function CambiarTelefono({ onClose, userId, telefonoActual }: Cam
                     inputMode="numeric"
                     value={telefonoNuevo}
                     onChange={(e) =>
-                      handleChange(e.target.value, setTelefonoNuevo, setErrorNuevo, telefonoActualInput)
+                      handleChange(e.target.value, setTelefonoNuevo, setErrorNuevo, telefonoActualInput, false)
                     }
                     onBlur={() =>
-                      handleBlur(telefonoNuevo, setErrorNuevo, telefonoActualInput)
+                      handleBlur(telefonoNuevo, setErrorNuevo, telefonoActualInput, false)
                     }
                     className={`w-full px-3 py-2 sm:py-3 text-sm sm:text-base border rounded-2xl shadow-sm
                       focus:outline-none focus:ring-2 focus:border-transparent placeholder-gray-600 text-gray-950
@@ -201,16 +202,13 @@ export default function CambiarTelefono({ onClose, userId, telefonoActual }: Cam
                 <button
                   type="submit"
                   disabled={
-                    !telefonoActualInput ||
+                    // Ya no requerimos telefonoActualInput como obligatorio
                     !telefonoNuevo ||
                     !!errorActual ||
                     !!errorNuevo
                   }
                   className={`flex-1 py-2 rounded-2xl transition-colors duration-200 text-white focus:outline-none focus:ring-2 focus:ring-blue-300 ${
-                    telefonoActualInput &&
-                    telefonoNuevo &&
-                    !errorActual &&
-                    !errorNuevo
+                    telefonoNuevo && !errorActual && !errorNuevo
                       ? 'bg-blue-500 hover:bg-blue-600'
                       : 'bg-gray-300 cursor-not-allowed'
                   }`}

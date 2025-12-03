@@ -305,7 +305,7 @@ export default function SimpleProfileMenu() {
               onClick={() => setShowSesionesDispositivos(false)}
               className="absolute right-6 top-6 z-10 bg-white rounded-full w-9 h-9 flex items-center justify-center text-gray-700 shadow-md hover:bg-gray-100"
             >
-              ×
+            
             </button>
 
             {/* Contenido de sesiones y dispositivos */}
