@@ -445,6 +445,6 @@ export function useFiltros() {
     loadingEspecialidades,
     loadCiudadesByDepartamento,
     //conteo
-    conteos,
+    //conteos,
   };
 }
