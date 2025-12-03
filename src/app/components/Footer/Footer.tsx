@@ -180,12 +180,6 @@ const Footer = () => {
   const languageMenuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  // Función para mostrar la guía tutorial
-  const showTutorial = () => {
-    // Disparar evento personalizado para mostrar el tutorial
-    window.dispatchEvent(new CustomEvent('show-tutorial'));
-  };
-
   useEffect(() => {
     if (!isLanguageMenuOpen) {
       return;
@@ -212,7 +206,7 @@ const Footer = () => {
     };
   }, [isLanguageMenuOpen]);
 
-  // ✅ NUEVO: Verificar si el usuario está autenticado
+  // ✅ Verificar si el usuario está autenticado
   const isUserAuthenticated = () => {
     // Verificar si hay token o sesión en localStorage
     if (typeof window !== 'undefined') {
@@ -226,7 +220,7 @@ const Footer = () => {
     return false;
   };
 
-  // ✅ NUEVO: Manejar el clic del botón "Guía de Usuario"
+  // ✅ Manejar el clic del botón "Guía de Usuario"
   const handleTutorialClick = () => {
     if (isUserAuthenticated()) {
       // Si el usuario está autenticado, mostrar el tutorial
@@ -235,11 +229,6 @@ const Footer = () => {
       // Si NO está autenticado, mostrar la modal de login requerido
       setShowLoginRequiredModal(true);
     }
-  };
-
-  const showTutorial = () => {
-    // Disparar evento personalizado para mostrar el tutorial
-    window.dispatchEvent(new CustomEvent('show-tutorial'));
   };
 
   const selectedLanguage = languageOptions.find((option) => option.code === currentLanguage) ?? languageOptions[0];
@@ -290,7 +279,7 @@ const Footer = () => {
               <nav className="flex flex-col space-y-2 items-center md:items-start">
                 <a href="/convertir-fixer" className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">Convertir en fixer</a>
                 <button type="button" onClick={() => setActiveModal('howItWorks')} className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 text-left focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">¿Cómo funciona?</button>
-                {/* ✅ NUEVO BOTÓN: Guía de Usuario */}
+                {/* ✅ BOTÓN: Guía de Usuario */}
                 <button 
                   type="button" 
                   onClick={handleTutorialClick}
@@ -305,7 +294,7 @@ const Footer = () => {
 
              <div 
               className="space-y-4"
-              data-tutorial="support-section" // ✅ NUEVO: Para paso 2 del tutorial
+              data-tutorial="support-section" // ✅ Para paso 2 del tutorial
             >
               <h4 className="text-xl font-semibold font-heading">Soporte</h4>
               {/* ===== SECCIÓN "SOPORTE" ACTUALIZADA (CON MANUAL) ===== */}
@@ -434,7 +423,7 @@ const Footer = () => {
         </Modal>
       )}
 
-      {/* ✅ NUEVO: Modal de Login Requerido */}
+      {/* ✅ Modal de Login Requerido */}
       <LoginRequiredModal 
         isOpen={showLoginRequiredModal} 
         onClose={() => setShowLoginRequiredModal(false)} 
