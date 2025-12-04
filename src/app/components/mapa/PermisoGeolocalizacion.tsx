@@ -136,7 +136,7 @@ export default function PermisoGeolocalizacion({ isLoggedIn: propIsLoggedIn }: P
 
   return (
     // mantengo la posición que pediste; uso z-[1000] para Tailwind y evito que el contenedor bloquee clicks
-    <div className="fixed bottom-70 right-8 z-1000 flex flex-col items-end pointer-events-none">
+    <div className="fixed bottom-70  right-8 z-1000 flex flex-col items-end pointer-events-none">
       {mostrarTooltip && (
         <div className="mb-2 bg-gray-800 text-white text-sm rounded-lg py-2 px-3 max-w-xs shadow-lg relative pointer-events-auto">
           {getTooltipText()}

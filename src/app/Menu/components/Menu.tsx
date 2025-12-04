@@ -53,13 +53,7 @@ export default function SimpleProfileMenu() {
     setShowMensajeCerrarSesion(false);
     router.push("/");
   };
-const gestionarCitas = () => {
-    router.push("/booking/worker");
-  };
 
-const misCitas = () => {
-    router.push("/booking/agenda/citas-agendadas");
-  };
   const handleCancelLogout = () => {
     // Solo cerrar el modal (el useEffect tiene cleanup si había timer)
     setShowMensajeCerrarSesion(false);
@@ -119,7 +113,7 @@ const misCitas = () => {
           `${parsed.firstName ?? ""} ${parsed.lastName ?? ""}`.trim() ||
           "Usuario",
         correo: parsed.correo || parsed.email || "correo@desconocido.com",
-        fotoPerfil: `${parsed.fotoPerfil}` || "/images/default-profile.jpg",
+        fotoPerfil: `${parsed.fotoPerfil}` || "/default-avatar.png",
         telefono: parsed.telefono || ""
       });
     } catch (error) {
@@ -133,14 +127,14 @@ const misCitas = () => {
       {/* Datos del usuario */}
       <div className="flex items-center mb-4">
         <Image
-          src={user?.fotoPerfil || "/images/default-profile.jpg"}
+          src={user?.fotoPerfil || "/default-avatar.png"}
           alt="Foto de perfil"
           width={50}
           height={50}
           className="rounded-full object-cover border border-gray-300"
           unoptimized
           onError={(e) => {
-            (e.currentTarget as HTMLImageElement).src = "/images/default-profile.jpg";
+            (e.currentTarget as HTMLImageElement).src = "/default-avatar.png";
           }}
         />
         <div className="ml-3 truncate">
@@ -155,6 +149,20 @@ const misCitas = () => {
 
       <hr className="border-gray-300 mb-3" />
 
+      <button
+        onClick={() => router.push("/booking/agenda/citas-agendadas")}
+        className="text-base sm:text-base font-semibold text-gray-800 hover:bg-gray-100 rounded-2xl px-4 py-3 w-full text-left transition duration-150"
+      >
+        Mis Citas
+      </button>
+
+      <button
+        onClick={() => router.push("/booking/worker")}
+        className="text-base sm:text-base font-semibold text-gray-800 hover:bg-gray-100 rounded-2xl px-4 py-3 w-full text-left transition duration-150"
+      >
+        Gestionar Citas
+      </button>
+
       {/* Botón Configuración */}
       <button
         onClick={toggleSubMenu}
@@ -163,18 +171,6 @@ const misCitas = () => {
         Configuración
       </button>
 
-      <button
-        onClick={gestionarCitas}
-        className="text-base sm:text-base font-semibold text-gray-800 hover:bg-gray-100 rounded-2xl px-4 py-3 w-full text-left transition duration-150"
-      >
-        gestionar citas
-      </button>
-      <button
-        onClick={gestionarCitas}
-        className="text-base sm:text-base font-semibold text-gray-800 hover:bg-gray-100 rounded-2xl px-4 py-3 w-full text-left transition duration-150"
-      >
-        mis citas
-      </button>
       {/* Submenú */}
       {showSubMenu && (
         <div className="flex flex-col space-y-3 pl-4 mt-3 border-l-2 border-gray-200
