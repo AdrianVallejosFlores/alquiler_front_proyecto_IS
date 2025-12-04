@@ -154,7 +154,39 @@ export const DATA_MANUAL: Record<string, Category> = {
                 'Activa la geolocalización'
               ],
               actions: [
-                { label: 'Ir a búsqueda', href: '/#servicios', type: 'secondary' }
+                { 
+                  label: 'Ir a búsqueda', 
+                  onClick: () => {
+                    // Si ya estamos en la homepage, solo enfocar
+                    if (window.location.pathname === '/') {
+                      const searchInput = document.querySelector('[data-tutorial="search-bar"]') as HTMLInputElement;
+                      if (searchInput) {
+                        searchInput.focus();
+                        searchInput.select();
+                        searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      }
+                      // Scroll a servicios
+                      const serviciosSection = document.getElementById('servicios');
+                      if (serviciosSection) {
+                        serviciosSection.scrollIntoView({ behavior: 'smooth' });
+                      }
+                    } else {
+                      // Navegar a home y luego enfocar
+                      window.location.href = '/#servicios';
+                      // Usar un evento de carga para enfocar después
+                      window.addEventListener('load', () => {
+                        setTimeout(() => {
+                          const searchInput = document.querySelector('[data-tutorial="search-bar"]') as HTMLInputElement;
+                          if (searchInput) {
+                            searchInput.focus();
+                            searchInput.select();
+                          }
+                        }, 500);
+                      }, { once: true });
+                    }
+                  },
+                  type: 'secondary' 
+                }
               ]
             },
             {
@@ -501,7 +533,7 @@ export const DATA_MANUAL: Record<string, Category> = {
                         title: 'Canales de soporte',
                         description: 'Estamos disponibles para ayudarte.',
                         bullets: ['Chat en vivo (8am-10pm)', 'Email: soporte@servineo.com', 'WhatsApp'],
-                        actions: [{ label: 'Ir al centro de ayuda', href: '/help', type: 'secondary' }]
+                        actions: [{ label: 'Ir al centro de ayuda', href: 'https://wa.me/59160379823', type: 'secondary' }]
                     }
                 ] 
             } 
@@ -517,13 +549,19 @@ export const DATA_MANUAL: Record<string, Category> = {
                         id: 'tuto-cliente',
                         title: 'Para clientes',
                         description: 'Aprende visualmente a usar la plataforma.',
-                        bullets: ['Cómo buscar', 'Cómo contratar', 'Gestión de perfil']
+                        bullets: ['Cómo buscar', 'Cómo contratar', 'Gestión de perfil'],
+                        actions: [
+                          { label: 'Ver video tutorial', href: 'https://www.youtube.com/watch?v=5lGf_-xGDUs', type: 'primary' }
+                        ]
                     },
                     {
                         id: 'tuto-fixer',
                         title: 'Para fixers',
                         description: 'Guías para profesionales.',
-                        bullets: ['Perfil atractivo', 'Responder solicitudes', 'Gestionar trabajos']
+                        bullets: ['Perfil atractivo', 'Responder solicitudes', 'Gestionar trabajos'],
+                        actions: [
+                          { label: 'Ver video tutorial', href: 'https://www.youtube.com/watch?v=5lGf_-xGDUs', type: 'primary' }
+                        ]
                     }
                 ] 
             } 

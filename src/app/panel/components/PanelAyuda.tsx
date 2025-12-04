@@ -130,7 +130,6 @@ export default function PanelAyuda() {
           activeCategory={activeCategory}
           activePageId={activePageId}
           expandedSidebarItems={expandedSidebarItems}
-          onToggleFolder={toggleSidebarFolder}
           onSidebarClick={handleSidebarClick}
           isMobileMenuOpen={isMobileMenuOpen}     // Estado del menú
           closeMobileMenu={() => setIsMobileMenuOpen(false)} // Cerrar menú

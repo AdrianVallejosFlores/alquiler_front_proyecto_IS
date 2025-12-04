@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, HelpCircle, Phone, Home, Search as SearchIcon } from 'lucide-react';
 import Link from 'next/link';
+import { getToken, getStoredUser } from '@/lib/auth/session';
 import { PageData, AccordionItem } from './panelData';
 
 // Tipo extendido para resultados de búsqueda global
@@ -22,6 +23,7 @@ interface PanelContentProps {
 
 export default function PanelContent({ currentPage, query, searchResults }: PanelContentProps) {
   const [openMainAccordion, setOpenMainAccordion] = useState<string | null>(null);
+  const [becomeFixerHref, setBecomeFixerHref] = useState<string>('/convertirse-fixer');
 
   // Reset al cambiar de página
   useEffect(() => {
@@ -36,6 +38,18 @@ export default function PanelContent({ currentPage, query, searchResults }: Pane
         setOpenMainAccordion(null);
     }
   }, [query, searchResults]); // Se ejecuta cuando cambian los resultados
+
+  // Calcular el destino del botón "Registrarme como Fixer" igual que en el Header
+  useEffect(() => {
+    try {
+      const isLoggedIn = Boolean(getToken());
+      const fixerId = getStoredUser()?.fixerId ?? null;
+      const href = isLoggedIn ? (fixerId ? `/fixers/${fixerId}` : '/convertirse-fixer') : '/login?next=/convertirse-fixer';
+      setBecomeFixerHref(href);
+    } catch {
+      setBecomeFixerHref('/convertirse-fixer');
+    }
+  }, []);
 
   // --- RENDERIZADO DE ITEM (Reutilizable) ---
   const renderAccordionItem = (item: AccordionItem, contextKey: string, breadcrumb?: string) => {
@@ -107,7 +121,7 @@ export default function PanelContent({ currentPage, query, searchResults }: Pane
                             key={idx}
                             className="flex items-start gap-2 text-[#1140bc] text-sm"
                             >
-                            <span className="mt-1.5 w-1.5 h-1.5 bg-[#1366fd] rounded-full flex-shrink-0" />
+                            <span className="mt-1.5 w-1.5 h-1.5 bg-[#1366fd] rounded-full shrink-0" />
                             <span>{bullet}</span>
                             </li>
                         ))}
@@ -118,10 +132,11 @@ export default function PanelContent({ currentPage, query, searchResults }: Pane
                     {item.actions && item.actions.length > 0 && (
                     <div className="flex flex-wrap gap-3 mt-4">
                         {item.actions.map((action, idx) => {
+                        const baseHover = 'transition-colors transition-transform duration-200 transform hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#d8ecff]';
                         const btnClass =
-                            action.type === 'primary'
-                            ? 'px-4 py-2 font-semibold text-white bg-[#2a87ff] rounded-md hover:bg-[#52ABFF] transition-colors'
-                            : 'px-4 py-2 font-semibold text-[#2a87ff] border border-[#2a87ff] rounded-md hover:bg-[#EEF7FF] transition-colors';
+                          action.type === 'primary'
+                          ? `px-4 py-2 font-semibold text-white bg-[#2a87ff] rounded-md hover:bg-[#52ABFF] ${baseHover}`
+                          : `px-4 py-2 font-semibold text-[#2a87ff] border border-[#2a87ff] rounded-md hover:bg-[#EEF7FF] ${baseHover}`;
 
                         if (action.onClick) {
                             return (
@@ -130,8 +145,14 @@ export default function PanelContent({ currentPage, query, searchResults }: Pane
                             </button>
                             );
                         }
+                        // Si el botón es "Registrarme como Fixer" o apunta a /registro-fixer, usar la misma lógica que el Header
+                        const targetHref =
+                          (action.href === '/registro-fixer' || (action.label || '').toLowerCase().includes('registrarme como fixer'))
+                          ? becomeFixerHref
+                          : (action.href || '#');
+
                         return (
-                            <Link key={idx} href={action.href || '#'} className={btnClass}>
+                          <Link key={idx} href={targetHref} className={btnClass}>
                             {action.label}
                             </Link>
                         );
@@ -152,7 +173,7 @@ export default function PanelContent({ currentPage, query, searchResults }: Pane
         <main className="md:col-span-8 lg:col-span-9 min-h-[500px]">
             <div className="mb-6">
                 <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                    Resultados para: <span className="text-[#0c4fe9]">"{query}"</span>
+                  Resultados para: <span className="text-[#0c4fe9]">&quot;{query}&quot;</span>
                 </h2>
                 <p className="text-sm text-gray-500 mt-1">
                     Se encontraron {searchResults.length} resultados en toda la guía.
@@ -223,7 +244,7 @@ export default function PanelContent({ currentPage, query, searchResults }: Pane
             href="https://wa.me/59160379823"
             target="_blank"
             rel="noopener noreferrer"
-            className="px-4 py-2 font-semibold text-[#2a87ff] border border-[#2a87ff] rounded-md hover:bg-[#EEF7FF] transition-colors flex items-center gap-2"
+            className="px-4 py-2 font-semibold text-[#2a87ff] border border-[#2a87ff] rounded-md hover:bg-[#EEF7FF] transition duration-200 transform hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#d8ecff] flex items-center gap-2"
           >
             <Phone className="w-5 h-5" />
             Contactar soporte
@@ -231,7 +252,7 @@ export default function PanelContent({ currentPage, query, searchResults }: Pane
 
           <Link
             href="/"
-            className="px-4 py-2 font-semibold text-white bg-[#2a87ff] rounded-md hover:bg-[#52ABFF] transition-colors flex items-center gap-2"
+            className="px-4 py-2 font-semibold text-white bg-[#2a87ff] rounded-md hover:bg-[#52ABFF] transition duration-200 transform hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#d8ecff] flex items-center gap-2"
           >
             <Home className="w-5 h-5" />
             Volver al inicio

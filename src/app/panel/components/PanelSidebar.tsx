@@ -8,7 +8,6 @@ interface PanelSidebarProps {
   activeCategory: string;
   activePageId: string;
   expandedSidebarItems: string[];
-  onToggleFolder: (key: string) => void;
   onSidebarClick: (catKey: string, subItem?: CategoryItem) => void;
   isMobileMenuOpen: boolean; // Nuevo
   closeMobileMenu: () => void; // Nuevo
@@ -18,7 +17,6 @@ export default function PanelSidebar({
   activeCategory,
   activePageId,
   expandedSidebarItems,
-  onToggleFolder,
   onSidebarClick,
   isMobileMenuOpen,
   closeMobileMenu
