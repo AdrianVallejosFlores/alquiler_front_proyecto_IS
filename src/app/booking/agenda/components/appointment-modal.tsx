@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useAuth } from "@/context/AuthProvider";
 import { Calendar } from "./ui/calendar";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -64,8 +65,7 @@ export function AppointmentModal({
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<UISlot | null>(null);
   const [dateInput, setDateInput] = useState("");
-  const [confirmationTitle, setConfirmationTitle] = useState("");
-  const [confirmationMessage, setConfirmationMessage] = useState("");
+  
 
   // Disponibilidad
   const [availableSlots, setAvailableSlots] = useState<UISlot[]>([]);
@@ -78,7 +78,10 @@ export function AppointmentModal({
   const locationFormRef = useRef<HTMLDivElement | null>(null);
 
   // Confirmación
-  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+    const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+    const [confirmationTitle, setConfirmationTitle] = useState<string | undefined>(undefined);
+    const [confirmationMessage, setConfirmationMessage] = useState<string | undefined>(undefined);
+    const [confirmationSuccess, setConfirmationSuccess] = useState<boolean>(true);
   const [saving, setSaving] = useState(false);
 
   // Días feriados
@@ -330,14 +333,18 @@ export function AppointmentModal({
         console.log(" Actualizando cita existente:", appointmentId);
       }
 
+      const googleToken = typeof window !== 'undefined' ? localStorage.getItem('googleAccessToken') : null;
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (googleToken) headers["Authorization"] = `Bearer ${googleToken}`;
+
       const res = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify(payload),
       });
 
       const body = await res.json().catch(() => ({}));
-      
+
       if (!res.ok) {
         if (res.status === 409) return alert(body?.message || "Horario no disponible.");
         return alert(body?.message || `Error HTTP ${res.status}`);
@@ -349,66 +356,46 @@ export function AppointmentModal({
         ? `${API_URL}/api/devcode/citas/${appointmentId}`
         : `${API_URL}/api/devcode/citas`;
 
-      const method = isEditing ? "PUT" : "POST";
-
-      // Llamada principal al backend (crea o actualiza la cita)
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      const body = await res.json().catch(() => ({}));
-
-      if (!res.ok) {
-        if (res.status === 409) return alert(body?.message || "Horario no disponible.");
-        return alert(body?.message || `Error HTTP ${res.status}`);
-      }
-
-      // Enviar notificación según el caso
-      /*
-      let resultNotify;
-      if (isEditing) {
-        console.log("📨 Enviando notificación de actualización...");
-        resultNotify = await updateAndNotify(payload);
-      } else {
-        console.log("📨 Enviando notificación de creación...");
-        resultNotify = await createAndNotify(payload);
-      }
-        */
-
-      // Validar resultado de notificación
-      try {
-        if (isEditing) {
-          console.log("📨 Enviando notificación de actualización...");
-
-          await Promise.allSettled([
-            updateAndNotify(payload),
-            updateAndNotifyWhatsApp(payload),
-          ]);
+      // Mostrar mensaje de Google Calendar SOLO para usuarios logueados con Google
+      // Manejar el resultado de sincronización con Google Calendar (si se intentó)
+      let extraMessage = "";
+      let isSuccess = true;
+      const googleSync = body?.googleSync;
+      if (googleSync?.attempted && googleToken) {
+        if (googleSync.success) {
+          extraMessage = "\nSe actualizó correctamente en Google Calendar.";
         } else {
-          console.log("📨 Enviando notificación de creación...");
-
-          await Promise.allSettled([
-            createAndNotify(payload),
-            createAndNotifyWhatsApp(payload),
-          ]);
+          const errMsg = googleSync.error || (googleSync.details && JSON.stringify(googleSync.details)) || 'Error desconocido';
+          extraMessage = `\nError sincronizando con Google Calendar:\n${errMsg}`;
+          isSuccess = false;
         }
-
-        console.log("✅ Notificaciones procesadas (Gmail y WhatsApp)");
-      } catch (notifyError) {
-        console.warn("⚠️ Ocurrió un error al enviar las notificaciones:", notifyError);
       }
 
-      // Mostrar modal de confirmación y limpiar estado
+      console.log("DEBUG: googleToken:", googleToken);
+      console.log("DEBUG: googleSync:", googleSync);
+      console.log("DEBUG: extraMessage:", extraMessage);
+      console.log("DEBUG: isSuccess (local):", isSuccess);
+      
+      const finalConfirmationTitle = isEditing ? "Cita actualizada" : "Cita creada";
+      const finalConfirmationMessage = (isEditing ? "La cita se actualizó correctamente." : "Tu cita se ha creado correctamente.") + extraMessage;
+      const finalConfirmationSuccess = isSuccess;
+
+      console.log("DEBUG: finalConfirmationTitle:", finalConfirmationTitle);
+      console.log("DEBUG: finalConfirmationMessage:", finalConfirmationMessage);
+      console.log("DEBUG: finalConfirmationSuccess:", finalConfirmationSuccess);
+
+      setConfirmationTitle(finalConfirmationTitle);
+      setConfirmationMessage(finalConfirmationMessage);
+      setConfirmationSuccess(finalConfirmationSuccess);
       setShowConfirmationModal(true);
+
       onOpenChange(false);
       setSelectedTime(null);
       setSelectedSlot(null);
 
     } catch (err) {
       console.error(err);
-      alert("No se pudo crear o actualizar la cita");
+      alert("Error al crear la cita");
     } finally {
       setSaving(false);
     }
@@ -663,7 +650,7 @@ export function AppointmentModal({
         onClose={() => setShowConfirmationModal(false)}
         title={confirmationTitle}
         message={confirmationMessage}
-        success={true}
+        success={confirmationSuccess}
       />
 
     </Dialog>

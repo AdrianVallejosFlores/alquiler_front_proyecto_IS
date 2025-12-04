@@ -55,7 +55,13 @@ export default function ModalConfirmacion({
         </div>
 
         <h2 className="text-2xl font-bold mb-2">{title}</h2>
-        <p className="text-gray-600 mb-6">{message}</p>
+        <div className="text-gray-600 mb-6 whitespace-pre-wrap text-left">
+          {message?.split('\n').map((line, i) => (
+            <div key={i} className={line.includes('Google Calendar') ? (line.includes('correctamente') ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold') : ''}>
+              {line}
+            </div>
+          ))}
+        </div>
 
         <Button
           className={`${success ? "bg-blue-600 hover:bg-blue-700" : "bg-red-600 hover:bg-red-700"} w-full`}
