@@ -4,6 +4,7 @@ import FixerOwnerActions from "../components/FixerOwnerActions";
 import FixerSkillsList from "../components/FixerSkillsList";
 import Calendario from "@/app/agenda_proveedor/components/calendario";
 import TrabajosAgendadosWidget from "@/app/epic_VisualizadorDeTrabajosAgendadosVistaProveedor/page";
+import HistorialCalificaciones from "@/app/vendedor_ratings/page"
 
 // --- INTERFACES ---
 interface FixerSkill {
@@ -210,6 +211,15 @@ export default async function FixerDetailPage({ params }: PageProps) {
         >
           Trabajos Agendados
         </a>
+
+        <span className="mx-2">/</span>
+        <a
+          href="#seccion-calificaciones"
+          className="cursor-pointer text-slate-500 transition-colors hover:text-blue-600"
+        >
+          Calificaciones
+        </a>
+        
       </nav>
 
       {/* --- CAJA 1: Perfil --- */}
@@ -348,6 +358,14 @@ export default async function FixerDetailPage({ params }: PageProps) {
         className="mt-8 scroll-mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
       >
         <TrabajosAgendadosWidget proveedorId={id} />
+      </div>
+
+      {/* --- CAJA 4: Calificaciones --- */}
+      <div
+        id="seccion-calificaciones"
+        className="mt-8 scroll-mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+      >
+        <HistorialCalificaciones />
       </div>
 
       <FixerOwnerActions
