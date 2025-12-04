@@ -23,211 +23,68 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const stepRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
-  const originalStyle = useRef({
-    overflow: '',
-    position: '',
-    top: '',
-    width: '',
-    height: ''
-  });
-  const scrollY = useRef(0);
 
-  // Bloquear scroll COMPLETAMENTE en el body y html cuando el tutorial está activo
   useEffect(() => {
-    const blockScroll = () => {
-      // Guardar posición actual del scroll
-      scrollY.current = window.scrollY;
-      
-      // Guardar los valores originales del body
-      originalStyle.current = {
-        overflow: document.body.style.overflow,
-        position: document.body.style.position,
-        top: document.body.style.top,
-        width: document.body.style.width,
-        height: document.body.style.height
-      };
-      
-      // Bloquear scroll en body
-      document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${scrollY.current}px`;
-      document.body.style.width = '100%';
-      document.body.style.height = '100%';
-      
-      // También bloquear scroll en html
-      document.documentElement.style.overflow = 'hidden';
-      document.documentElement.style.position = 'relative';
-      document.documentElement.style.height = '100%';
-    };
+    const updatePosition = () => {
+      const targetElement = document.querySelector(`[data-tutorial="${step.targetElement}"]`);
+      if (targetElement && stepRef.current) {
+        const rect = targetElement.getBoundingClientRect();
+        const stepRect = stepRef.current.getBoundingClientRect();
+        
+        let top = rect.bottom + 10;
+        let left = rect.left;
 
-    const enableScroll = () => {
-      // Restaurar valores originales del body
-      document.body.style.overflow = originalStyle.current.overflow;
-      document.body.style.position = originalStyle.current.position;
-      document.body.style.top = originalStyle.current.top;
-      document.body.style.width = originalStyle.current.width;
-      document.body.style.height = originalStyle.current.height;
-      
-      // Restaurar valores originales del html
-      document.documentElement.style.overflow = '';
-      document.documentElement.style.position = '';
-      document.documentElement.style.height = '';
-      
-      // Restaurar la posición del scroll
-      window.scrollTo(0, scrollY.current);
-    };
+        // Ajustar posición según la preferencia y espacio disponible
+        if (step.position === 'top') {
+          top = rect.top - stepRect.height - 10;
+        }
 
-    // Bloquear scroll cuando el componente se monta
-    blockScroll();
+        // Asegurar que no se salga de la pantalla
+        if (top + stepRect.height > window.innerHeight) {
+          top = window.innerHeight - stepRect.height - 20;
+        }
+        if (top < 20) {
+          top = 20;
+        }
+        if (left + stepRect.width > window.innerWidth) {
+          left = window.innerWidth - stepRect.width - 20;
+        }
+        if (left < 20) {
+          left = 20;
+        }
 
-    // También prevenir scroll con rueda del mouse en toda la página
-    const preventScroll = (e: Event) => {
-      e.preventDefault();
-      e.stopPropagation();
-      return false;
-    };
-
-    // Agregar event listeners para bloquear todos los tipos de scroll
-    document.addEventListener('wheel', preventScroll, { passive: false });
-    document.addEventListener('touchmove', preventScroll, { passive: false });
-    document.addEventListener('scroll', preventScroll, { passive: false });
-    document.addEventListener('keydown', (e) => {
-      // Bloquear teclas de navegación (Page Up, Page Down, Space, Arrow keys)
-      if ([
-        'Space', ' ', 'PageUp', 'PageDown', 
-        'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'
-      ].includes(e.key)) {
-        e.preventDefault();
-        e.stopPropagation();
+        setPosition({ top, left });
       }
-    });
-
-    // Permitir scroll cuando el componente se desmonta
-    return () => {
-      enableScroll();
-      document.removeEventListener('wheel', preventScroll);
-      document.removeEventListener('touchmove', preventScroll);
-      document.removeEventListener('scroll', preventScroll);
     };
-  }, []);
 
-  // Scroll al elemento objetivo - solo al cambiar de paso
+    updatePosition();
+    window.addEventListener('resize', updatePosition);
+    window.addEventListener('scroll', updatePosition);
+
+    return () => {
+      window.removeEventListener('resize', updatePosition);
+      window.removeEventListener('scroll', updatePosition);
+    };
+  }, [step]);
+
+  // Scroll al elemento objetivo
   useEffect(() => {
     const targetElement = document.querySelector(`[data-tutorial="${step.targetElement}"]`);
     if (targetElement) {
-      // Permitir scroll momentáneamente
-      document.body.style.overflow = 'auto';
-      document.body.style.position = 'static';
-      document.body.style.top = '';
-
-      // Hacer scroll al elemento y centrarlo en la pantalla
-      setTimeout(() => {
-        targetElement.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'center',
-          inline: 'center'
-        });
-      }, 100);
-
-      // Si el elemento está muy abajo (video o footer), hacer scroll extra para centrarlo
-      setTimeout(() => {
-        const rect = targetElement.getBoundingClientRect();
-        const absoluteY = window.scrollY + rect.top;
-        const centerY = absoluteY - (window.innerHeight / 2) + (rect.height / 2);
-        window.scrollTo({ top: centerY, behavior: 'smooth' });
-      }, 400);
-
-      // Volver a bloquear después de un breve delay
-      setTimeout(() => {
-        document.body.style.overflow = 'hidden';
-        document.body.style.position = 'fixed';
-        document.body.style.top = `-${window.scrollY}px`;
-        scrollY.current = window.scrollY;
-      }, 700);
-
+      targetElement.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center',
+        inline: 'center'
+      });
+      
       // Resaltar el elemento objetivo
       targetElement.classList.add('tutorial-highlight');
-
+      
       return () => {
         targetElement.classList.remove('tutorial-highlight');
       };
     }
   }, [step.targetElement]);
-
-  // Efecto para calcular la posición del tooltip
-  useEffect(() => {
-    // Esperar un poco para que todo se estabilice
-    const timer = setTimeout(() => {
-      const updatePosition = () => {
-        const targetElement = document.querySelector(`[data-tutorial="${step.targetElement}"]`);
-        if (targetElement && stepRef.current) {
-          const rect = targetElement.getBoundingClientRect();
-          const stepRect = stepRef.current.getBoundingClientRect();
-          
-          console.log(`🔍 PASO ${currentStep + 1} (${step.targetElement}):`);
-          console.log(`📏 Elemento - top: ${rect.top}, left: ${rect.left}, width: ${rect.width}, height: ${rect.height}`);
-          console.log(`📐 Tooltip - width: ${stepRect.width}, height: ${stepRect.height}`);
-          
-          let top = rect.bottom + 10;
-          let left = rect.left;
-
-          // Ajustar posición según la preferencia y espacio disponible
-          if (step.position === 'top') {
-            top = rect.top - stepRect.height - 10;
-          }
-
-          // POSICIÓN FIJA ESPECÍFICA PARA EL PASO 6
-          if (step.targetElement === "support-section") {
-            console.log("🎯 CONFIGURANDO POSICIÓN FIJA PARA PASO 6");
-            
-            // Para el paso 6, siempre poner el tooltip a la DERECHA del elemento
-            // y centrado verticalmente con la sección de soporte
-            left = rect.right + 20;
-            
-            // Centrar verticalmente con la sección
-            const sectionCenter = rect.top + (rect.height / 2);
-            top = sectionCenter - (stepRect.height / 2);
-            
-            console.log(`📍 Posición calculada - top: ${top}, left: ${left}`);
-            
-            // Si no cabe a la derecha (se sale de la pantalla)
-            if (left + stepRect.width > window.innerWidth - 20) {
-              console.log("⚠️ No cabe a la derecha, moviendo a IZQUIERDA");
-              left = rect.left - stepRect.width - 20;
-            }
-            
-            // Si no cabe a la izquierda tampoco
-            if (left < 20) {
-              console.log("⚠️ No cabe a la izquierda, poniendo ARRIBA");
-              left = rect.left + (rect.width / 2) - (stepRect.width / 2);
-              top = rect.top - stepRect.height - 20;
-            }
-          }
-
-          // Asegurar que no se salga de la pantalla
-          if (top + stepRect.height > window.innerHeight - 20) {
-            top = window.innerHeight - stepRect.height - 20;
-          }
-          if (top < 20) {
-            top = 20;
-          }
-          if (left + stepRect.width > window.innerWidth - 20) {
-            left = window.innerWidth - stepRect.width - 20;
-          }
-          if (left < 20) {
-            left = 20;
-          }
-
-          console.log(`✅ POSICIÓN FINAL - top: ${top}, left: ${left}`);
-          setPosition({ top, left });
-        }
-      };
-
-      updatePosition();
-    }, 100); // Pequeño delay para estabilizar
-
-    return () => clearTimeout(timer);
-  }, [step, currentStep]);
 
   // Focus trap - mantener Tab dentro del tooltip
   useEffect(() => {
@@ -236,6 +93,7 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
 
       if (!tooltipRef.current) return;
 
+      // Obtener todos los elementos focusables dentro del tooltip
       const focusableElements = tooltipRef.current.querySelectorAll(
         'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
       );
@@ -248,11 +106,13 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
       const activeElement = document.activeElement as HTMLElement;
 
       if (e.shiftKey) {
+        // Shift + Tab - moverse hacia atras
         if (activeElement === firstElement) {
           e.preventDefault();
           lastElement.focus();
         }
       } else {
+        // Tab - moverse hacia adelante
         if (activeElement === lastElement) {
           e.preventDefault();
           firstElement.focus();
@@ -260,11 +120,14 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
       }
     };
 
+    // Solo agregar listener cuando el tooltip este montado
     const currentTooltip = tooltipRef.current;
     if (currentTooltip) {
       currentTooltip.addEventListener('keydown', handleKeyDown);
+      // Asegurar que el contenedor pueda recibir foco y enfocarlo primero
       currentTooltip.setAttribute('tabindex', '-1');
       currentTooltip.focus();
+      // Luego enfocar el primer botón disponible dentro del tooltip
       const firstButton = currentTooltip.querySelector('button');
       if (firstButton) {
         setTimeout(() => (firstButton as HTMLElement).focus(), 0);
@@ -280,16 +143,17 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
 
   return (
     <>
+      {/* Tooltip del paso */}
       <div
         ref={tooltipRef}
         className="fixed z-60 bg-white rounded-xl shadow-2xl border border-blue-100 max-w-sm w-full transform transition-all duration-300"
         style={{
           top: `${position.top}px`,
-          left: `${position.left}px`,
-          position: 'fixed'
+          left: `${position.left}px`
         }}
       >
         <div ref={stepRef}>
+        {/* Header */}
         <div className="bg-linear-to-r from-[#11255a] to-[#52abff] p-4 rounded-t-xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -302,10 +166,12 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
           </div>
         </div>
 
+        {/* Content */}
         <div className="p-4">
           <p className="text-gray-700 leading-relaxed">{step.description}</p>
         </div>
 
+        {/* Actions */}
         <div className="flex justify-between items-center p-4 border-t border-gray-100">
           <div className="flex gap-2">
             <button
