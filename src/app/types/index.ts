@@ -18,7 +18,43 @@ export interface Ubicacion {
   description?: string;
 }
 
+export interface ISessionResponse {
+  _id: string;
+  userId: string;
+  token: string;
+  refreshToken?: string;
+
+  deviceInfo: {
+    userAgent: string;
+    ip: string;
+    browser?: string;
+    os?: string;
+    device?: string;
+    deviceType?: string;
+    deviceVendor?: string;
+    deviceModel?: string;
+    cpuArch?: string;
+    engine?: string;
+    raw?: any;
+  };
+
+  location?: {
+    country?: string;
+    city?: string;
+    lat?: number;
+    lng?: number;
+  };
+
+  isActive: boolean;
+  lastActivity: string;      // Date en string ISO
+  expiresAt: string;         // Date en string ISO
+
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Fixer {
+  imagenPerfil: string;
   _id: string;
   nombre: string;
   posicion: {

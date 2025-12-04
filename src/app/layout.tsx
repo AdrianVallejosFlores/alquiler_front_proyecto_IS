@@ -1,16 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import "leaflet/dist/leaflet.css";
-// import type { Metadata } from "next"; // ⚠️ En 'use client' no puedes exportar metadata, si la necesitas, muévela a un layout.server.tsx o page.tsx
+// import "leaflet/dist/leaflet.css"; // Se usa el CDN en el <head> para evitar errores de SSR
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
 import Header from "./components/Header/Header";
-import NotificationBell from "../components/NotificationBell";
-
-// 1. IMPORTA EL PROVIDER (Ajusta la ruta si tu archivo está en otro lado)
-import { NotificationProvider } from "@/context/NotificationContext"; 
+import NotificationBell from "../components/NotificationBell"; 
+import { NotificationProvider } from "@/context/NotificationContext";
+import TutorialGuide from "./components/TutorialGuide/TutorialGuide";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -48,11 +46,14 @@ export default function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning={true}
       >
-        {/* 2. ENVUELVE TODO CON EL PROVIDER */}
+        {/* Envolvemos TODO con el NotificationProvider */}
         <NotificationProvider>
           
           {/* 🔴 Banner de offline */}
@@ -63,21 +64,23 @@ export default function RootLayout({
             </div>
           )}
 
-          {/* 🟦 Header */}
-          <div className="relative">
-            <Header />
+          {/* 🟦 Header Global */}
+          <Header />
 
-            {/* 🔔 Campanita NOTIFICACIONES — flotante en esquina derecha */}
-            <div className="fixed top-20 right-4 z-50">
-              {/* Ahora este componente SÍ funcionará porque está dentro del Provider */}
-              <NotificationBell />
-            </div>
+          {/* 🔔 Campanita NOTIFICACIONES (Flotante) */}
+          <div className="fixed top-20 right-4 z-50">
+            <NotificationBell />
           </div>
 
-          {/* Contenido principal */}
-          <div className="pt-16 sm:pt-20">
-            {children}
+          {/* 📦 Estructura principal (Layout flexible para footer pegajoso) */}
+          <div className="min-h-screen flex flex-col">
+            <main className="flex-1 pb-16 sm:pb-0 pt-16 sm:pt-20">
+              {children}
+            </main>
           </div>
+
+          {/* 🎓 Guía Tutorial (Sobrepuesta) */}
+          <TutorialGuide />
 
         </NotificationProvider>
       </body>

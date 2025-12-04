@@ -7,15 +7,38 @@ import VisualPortfolioBridge from "../../fixers/components/VisualPortfolioBridge
 // Importamos el componente de promociones
 import PromotionsSection from "../../fixers/components/PromotionsSection";
 
+// --- INTERFACES ---
+interface FixerSkill {
+  id?: string;
+  categoryId?: string;
+  name?: string;
+  description?: string;
+  customDescription?: string;
+  category?: { id: string; name: string };
+}
+interface FixerCategory {
+  id?: string;
+  name?: string;
+  description?: string;
+}
+interface FixerData {
+  name?: string;
+  city?: string;
+  jobsCount?: number | string;
+  ratingAvg?: number | string;
+  memberSince?: string;
+  createdAt?: string;
+  paymentMethods?: string[];
+  bio?: string;
+  whatsapp?: string;
+  photoUrl?: string;
+  skillsInfo?: FixerSkill[];
+  categoriesInfo?: FixerCategory[];
+  categories?: string[];
+}
 type PageProps = { params: Promise<{ id: string }> };
 
-function formatDate(iso?: string) {
-  if (!iso) return "N/D";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "N/D";
-  return d.toLocaleDateString();
-}
-
+// --- FUNCIONES AUXILIARES ---
 function calculateTimeSince(iso?: string) {
   if (!iso) return "N/D";
   const startDate = new Date(iso);
@@ -66,7 +89,9 @@ function Stars({ value }: { value: number }) {
       ))}
       {half ? <span>&#9734;</span> : null}
       {Array.from({ length: empty }).map((_, i) => (
-        <span key={`empty-${i}`} className="text-slate-300">&#9733;</span>
+        <span key={`empty-${i}`} className="text-slate-300">
+          &#9733;
+        </span>
       ))}
     </div>
   );
@@ -75,16 +100,19 @@ function Stars({ value }: { value: number }) {
 function whatsappLink(phone?: string, msg?: string) {
   if (!phone) return null;
   const digits = phone.replace(/[^\d]/g, "");
-  const text = encodeURIComponent(msg ?? "Hola, vi tu perfil en Servineo y me interesa contactarte.");
+  const text = encodeURIComponent(
+    msg ?? "Hola, vi tu perfil en Servineo y me interesa contactarte."
+  );
   return `https://wa.me/${digits}?text=${text}`;
 }
 
+// --- COMPONENTE PRINCIPAL ---
 export default async function FixerDetailPage({ params }: PageProps) {
   const { id } = await params;
-  let data: any = null;
+  let data: FixerData | null = null;
   try {
     const res = await getFixer(id);
-    data = res?.data ?? null;
+    data = (res?.data as FixerData) ?? null;
   } catch {}
 
   const name = data?.name ?? "Juan Pérez";
@@ -96,15 +124,22 @@ export default async function FixerDetailPage({ params }: PageProps) {
   
   const bio = data?.bio?.trim() || null;
   const hasBio = bio !== null && bio.length > 0;
-  
   const phone = data?.whatsapp ?? "+59170123456";
   const photoUrl =
-    data?.photoUrl ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=E5E7EB&color=111827&size=128`;
+    data?.photoUrl ??
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(
+      name
+    )}&background=E5E7EB&color=111827&size=128`;
 
   const defaultSkills = ["Carpintería", "Albañil", "Plomero"];
   const skillsInfo = Array.isArray(data?.skillsInfo) ? data.skillsInfo : [];
-  const categoriesInfo = Array.isArray(data?.categoriesInfo) ? data.categoriesInfo : [];
-  const rawCategories = Array.isArray(data?.categories) && data.categories.length ? data.categories : defaultSkills;
+  const categoriesInfo = Array.isArray(data?.categoriesInfo)
+    ? data.categoriesInfo
+    : [];
+  const rawCategories =
+    Array.isArray(data?.categories) && data.categories.length
+      ? data.categories
+      : defaultSkills;
 
   type SkillDisplay = {
     id: string;
@@ -115,46 +150,68 @@ export default async function FixerDetailPage({ params }: PageProps) {
   };
 
   const skillsDetails: SkillDisplay[] = skillsInfo.length
-    ? skillsInfo.map((skill: any) => {
-        const personal = (skill?.customDescription ?? "").trim();
-        return {
-          id: skill?.category?.id ?? skill?.categoryId ?? skill?.id ?? "",
-          name: skill?.category?.name ?? skill?.name ?? "Oficio",
-          general: (skill?.description ?? "").trim() || "Sin descripción disponible.",
-          personal: personal || undefined,
-          source: personal ? "personal" : "general",
-        };
-      })
+    ? skillsInfo.map((skill) => ({
+        id: skill?.category?.id ?? skill?.categoryId ?? skill?.id ?? "",
+        name: skill?.category?.name ?? skill?.name ?? "Oficio",
+        general:
+          (skill?.description ?? "").trim() || "Sin descripción disponible.",
+        personal: (skill?.customDescription ?? "").trim() || undefined,
+        source: (skill?.customDescription ?? "").trim()
+          ? "personal"
+          : "general",
+      }))
     : categoriesInfo.length
-    ? categoriesInfo.map((category: any) => ({
+    ? categoriesInfo.map((category) => ({
         id: category?.id ?? "",
         name: category?.name ?? "Oficio",
-        general: (category?.description ?? "").trim() || "Sin descripción disponible.",
-        personal: undefined,
+        general:
+          (category?.description ?? "").trim() || "Sin descripción disponible.",
         source: "general" as const,
       }))
     : rawCategories.map((name: string, index: number) => ({
         id: `${index}`,
         name,
         general: "Descripción no disponible.",
-        personal: undefined,
         source: "general" as const,
       }));
 
   const skillTags = Array.from(new Set(skillsDetails.map((item) => item.name)));
-
+  const mainProfession =
+    skillTags.length > 0 ? skillTags[0] : "Fixer Profesional";
   const wa = whatsappLink(phone);
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-6">
+    // Agregamos !scroll-smooth al contenedor principal
+    <div className="mx-auto max-w-5xl px-4 py-6 scroll-smooth">
       <nav className="mb-6 text-sm text-slate-500">
-        <Link href="/" className="hover:text-slate-800">Home</Link>
+        <Link href="/" className="hover:text-slate-800">
+          Home
+        </Link>
         <span className="mx-2">/</span>
-        <Link href="/convertirse-fixer" className="hover:text-slate-800">Convertirse en fixer</Link>
+        <Link href="/convertirse-fixer" className="hover:text-slate-800">
+          Convertirse en fixer
+        </Link>
         <span className="mx-2">/</span>
         <span className="text-slate-900">Sobre el fixer</span>
+
+        {/* Nuevos enlaces de navegación interna */}
+        <span className="mx-2">/</span>
+        <a
+          href="#seccion-disponibilidad"
+          className="cursor-pointer text-slate-500 transition-colors hover:text-blue-600"
+        >
+          Disponibilidad
+        </a>
+        <span className="mx-2">/</span>
+        <a
+          href="#seccion-trabajos"
+          className="cursor-pointer text-slate-500 transition-colors hover:text-blue-600"
+        >
+          Trabajos Agendados
+        </a>
       </nav>
 
+      {/* --- CAJA 1: Perfil --- */}
       <div className="grid grid-cols-1 gap-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:grid-cols-[160px_1fr]">
         <div className="flex flex-col items-center gap-4">
           <img
@@ -171,7 +228,9 @@ export default async function FixerDetailPage({ params }: PageProps) {
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           <div className="rounded-xl border border-slate-200 p-4">
             <div className="text-sm text-slate-500">Trabajos registrados</div>
-            <div className="text-2xl font-semibold text-slate-900">{jobsCount}</div>
+            <div className="text-2xl font-semibold text-slate-900">
+              {jobsCount}
+            </div>
           </div>
 
           <div className="rounded-xl border border-slate-200 p-4">
@@ -184,7 +243,9 @@ export default async function FixerDetailPage({ params }: PageProps) {
 
           <div className="rounded-xl border border-slate-200 p-4">
             <div className="text-sm text-slate-500">En servicio desde</div>
-            <div className="text-slate-900">{calculateTimeSince(memberSince)}</div>
+            <div className="text-slate-900">
+              {calculateTimeSince(memberSince)}
+            </div>
           </div>
 
           <div className="rounded-xl border border-slate-200 p-4 md:col-span-3">
@@ -215,12 +276,17 @@ export default async function FixerDetailPage({ params }: PageProps) {
           <div className="rounded-xl border border-slate-200 p-4 md:col-span-3">
             <div className="mb-2 text-sm text-slate-500">Sobre mí</div>
             {hasBio ? (
-              <div className="rounded-lg bg-slate-50 p-4 text-slate-800">{bio}</div>
+              <div className="rounded-lg bg-slate-50 p-4 text-slate-800">
+                {bio}
+              </div>
             ) : (
-              <div className="rounded-lg bg-amber-50 border border-amber-200 p-4 text-amber-800 text-sm">
-                <p className="font-medium mb-1">Este fixer aún no ha agregado una descripción personal.</p>
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+                <p className="mb-1 font-medium">
+                  Este fixer aún no ha agregado una descripción personal.
+                </p>
                 <p className="text-xs text-amber-700">
-                  Si eres el propietario de este perfil, puedes agregar información sobre ti en la sección de edición.
+                  Si eres el propietario de este perfil, puedes agregar
+                  información sobre ti en la sección de edición.
                 </p>
               </div>
             )}
@@ -270,7 +336,10 @@ export default async function FixerDetailPage({ params }: PageProps) {
             <span>Enviar WhatsApp</span>
           </a>
         ) : (
-          <button className="cursor-not-allowed rounded-full bg-slate-300 px-5 py-3 text-white opacity-70" disabled>
+          <button
+            className="cursor-not-allowed rounded-full bg-slate-300 px-5 py-3 text-white opacity-70"
+            disabled
+          >
             WhatsApp no disponible
           </button>
         )}

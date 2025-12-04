@@ -2,8 +2,13 @@
 import { Job } from '../interfaces/types';
 import { convertirAISO, normalizarEstado } from '../utils/helpers';
 
+<<<<<<< HEAD
 // API real del backend (ajusta host/puerto si tu backend corre en otro puerto)
 const API_URL = 'https://back-segundosprint-1.onrender.com/api/los_vengadores/trabajos';
+=======
+// Usamos la URL de producción (Vercel) corregida.
+const API_URL = 'https://alquiler-back-soft-war2.vercel.app/api/vengadores/trabajos';
+>>>>>>> development
 
 // Interfaz que representa la estructura del trabajo que viene del backend (MongoDB)
 interface TrabajoBackend {
@@ -36,9 +41,19 @@ function safeConvertToISO(fecha?: string, hora?: string): string {
   return `${fecha}T${hora}:00`;
 }
 
-/** 🔹 Obtiene trabajos del proveedor */
-export async function fetchTrabajosProveedor(): Promise<Job[]> {
-  const res = await fetch(`${API_URL}/proveedor`, { cache: 'no-store' });
+/** * HU 1.7 – Trabajos por PROVEEDOR 
+ * 🔹 Obtiene trabajos del proveedor usando query params
+ */
+export async function fetchTrabajosProveedor(proveedorId: string, estado?: string): Promise<Job[]> {
+  // Construimos la URL con parámetros de búsqueda (query params)
+  const url = new URL(`${API_URL}/proveedor`);
+  url.searchParams.set('proveedorId', proveedorId);
+  
+  if (estado) {
+    url.searchParams.set('estado', estado);
+  }
+
+  const res = await fetch(url.toString(), { cache: 'no-store' });
   if (!res.ok) throw new Error('Error al obtener trabajos del proveedor');
 
   const data: TrabajoBackend[] = await res.json();

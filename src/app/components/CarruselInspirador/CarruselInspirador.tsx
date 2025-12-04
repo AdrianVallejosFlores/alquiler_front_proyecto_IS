@@ -1,6 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { motion, AnimatePresence, Variants } from "framer-motion";
 
 const slides = [
   {
@@ -8,152 +11,185 @@ const slides = [
     image: "/img1.jpg",
     title: "Servicios de plomería a domicilio",
     description:
-      "Profesionales calificados listos para ayudarte con reparaciones y mantenimiento del hogar. Atendemos urgencias y proyectos grandes o pequeños.",
+      "Contamos con profesionales calificados para atender cualquier emergencia en tu hogar.",
   },
   {
     type: "normal",
     image: "/img2.jpg",
-    title: "Servicios de albañilería y construcción",
+    title: "Electricistas certificados",
     description:
-      "Expertos en remodelaciones, ampliaciones y trabajos estructurales con materiales de calidad y acabados profesionales.",
+      "Encuentra electricistas con experiencia y garantía de servicio.",
   },
   {
     type: "normal",
     image: "/img3.jpg",
-    title: "Carpinteros especializados en muebles y estructuras",
+    title: "Limpieza profesional",
     description:
-      "Diseñamos, reparamos y fabricamos muebles personalizados con precisión y dedicación artesanal.",
+      "Servicios de limpieza para hogares, oficinas y negocios con los mejores precios.",
   },
-
-  //  SLIDE DEL CHATBOT (imagen + texto azul + botón blanco)
+  // ⭐ SLIDE DEL CHATBOT (Agregado desde HEAD)
   {
     type: "chatbot",
     image: "/chatbot.jpeg",
     title: "¿Tienes dudas? Habla con nuestro Asistente Servineo",
     description:
-      "Ahora contamos con un chatbot que responde tus preguntas sobre servicios y disponibilidad en tiempo real. Interactúa ahora mismo con nuestro asistente en WhatsApp..",
+      "Ahora contamos con un chatbot que responde tus preguntas sobre servicios y disponibilidad en tiempo real. Interactúa ahora mismo con nuestro asistente en WhatsApp.",
   },
 ];
 
 export default function CarruselInspirador() {
   const [current, setCurrent] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-
-  useEffect(() => {
-    if (isPaused) return;
-    const interval = setInterval(() => {
-      nextSlide();
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [current, isPaused]);
+  const router = useRouter();
 
   const nextSlide = () => setCurrent((prev) => (prev + 1) % slides.length);
   const prevSlide = () =>
     setCurrent((prev) => (prev - 1 + slides.length) % slides.length);
 
+  useEffect(() => {
+    if (isPaused) return;
+    const interval = setInterval(nextSlide, 6000);
+    return () => clearInterval(interval);
+  }, [isPaused, current]);
+
+  const handleVerMas = () => {
+    const start = window.scrollY;
+    const end = start + 2500;
+    const duration = 2500;
+    let startTime: number | null = null;
+
+    const easeInOutQuad = (t: number) =>
+      t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+
+    const scroll = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const elapsed = timestamp - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const ease = easeInOutQuad(progress);
+      window.scrollTo(0, start + (end - start) * ease);
+
+      if (elapsed < duration) requestAnimationFrame(scroll);
+    };
+
+    requestAnimationFrame(scroll);
+  };
+
+  const handlePorQueServineo = () => {
+    router.push("/porqueservineo");
+  };
+
+  // Variants para animaciones de texto
+  const textVariants: Variants = {
+    initial: { opacity: 0, y: 20 },
+    animate: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] },
+    },
+    exit: {
+      opacity: 0,
+      y: -20,
+      transition: { duration: 0.3, ease: [0.42, 0, 1, 1] },
+    },
+  };
+
   return (
-    <div
-      className="relative w-full overflow-hidden rounded-2xl shadow-2xl bg-gradient-to-r from-blue-50 to-white border border-blue-100 mx-auto scroll-smooth"
+    <section
+      className="
+        relative w-full overflow-hidden shadow-lg bg-white flex flex-col md:flex-row
+        h-auto md:h-[420px]
+        rounded-none md:rounded-2xl
+        mt-0! pt-0!
+      "
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      {/* Contenedor de slides */}
-      <div
-        className="flex transition-transform duration-700 ease-in-out"
-        style={{ transform: `translateX(-${current * 100}%)` }}
-      >
+      {/* === IZQUIERDA: IMAGENES (Next/Image + Fade) === */}
+      <div className="relative w-full md:w-1/2 h-[300px] md:h-full !mt-0 !pt-0 bg-blue-50">
         {slides.map((slide, index) => (
-          <div
-            key={index}
-            className="flex flex-col md:flex-row items-center justify-center w-full flex-shrink-0 p-4"
-          >
-            {/* ⭐ SLIDES NORMALES ⭐ */}
-            {slide.type === "normal" && (
-              <>
-                {/* Imagen */}
-                <div className="w-full md:w-1/2 flex justify-center items-center bg-blue-100 rounded-2xl md:rounded-none md:rounded-l-2xl overflow-hidden p-2 md:p-4">
-                  <img
-                    src={slide.image}
-                    alt={slide.title}
-                    className="w-[95%] md:w-[90%] h-auto md:h-[460px] object-contain rounded-2xl shadow-md transition-transform duration-500 hover:scale-[1.03]"
-                  />
-                </div>
-
-                {/* Texto */}
-                <div className="w-full md:w-1/2 p-4 sm:p-8 flex flex-col justify-center items-center md:items-start text-center md:text-left">
-                  <h2 className="text-lg sm:text-2xl md:text-3xl font-bold mb-3 text-[#2a87ff]">
-                    {slide.title}
-                  </h2>
-
-                  <p className="text-gray-700 text-sm sm:text-base md:text-lg mb-4 max-w-[90%] md:max-w-none">
-                    {slide.description}
-                  </p>
-
-                  <a
-                    href="#trabajos-recientes"
-                    className="inline-block px-5 py-2 sm:px-6 sm:py-3 bg-[#2a87ff] text-white rounded-lg text-sm sm:text-base hover:bg-blue-600 transition"
-                  >
-                    Ver más
-                  </a>
-                </div>
-              </>
-            )}
-
-            {/* ⭐ SLIDE CHATBOT (azul + imagen + botón a WhatsApp) ⭐ */}
-            {slide.type === "chatbot" && (
-              <>
-                {/* Imagen del robot */}
-                <div className="w-full md:w-1/2 flex justify-center items-center bg-blue-100 rounded-2xl md:rounded-none md:rounded-l-2xl overflow-hidden p-2 md:p-4">
-                  <img
-                    src={slide.image}
-                    alt="Chatbot"
-                    className="w-[95%] md:w-[90%] h-auto md:h-[460px] object-contain rounded-2xl shadow-md"
-                  />
-                </div>
-
-                {/* Texto y botón */}
-                <div className="w-full md:w-1/2 p-4 sm:p-8 flex flex-col justify-center items-center md:items-start text-center md:text-left">
-
-                  <h2 className="text-lg sm:text-2xl md:text-3xl font-bold mb-3 text-[#2a87ff]">
-                    {slide.title}
-                  </h2>
-
-                  <p className="text-gray-700 text-sm sm:text-base md:text-lg mb-4 max-w-[90%] md:max-w-none">
-                    {slide.description}
-                  </p>
-
-                  {/* ⭐ Botón blanco que abre WhatsApp ⭐ */}
-                  <a
-                    href="https://wa.me/59160379823?text=Hola%20necesito%20ayuda"
-                    target="_blank"
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-white text-green-700 font-semibold rounded-full shadow-md hover:shadow-lg hover:scale-105 transition-transform"
-                  >
-                    🤖 Iniciar Chat con Servineo
-                  </a>
-                </div>
-              </>
-            )}
-          </div>
+          <Image
+            key={slide.image}
+            src={slide.image}
+            alt={slide.title}
+            fill
+            className={`
+              ${slide.type === "chatbot" ? "object-contain p-4" : "object-cover"} 
+              transition-opacity duration-1000 ease-in-out 
+              ${index === current ? "opacity-100" : "opacity-0"}
+            `}
+            priority={index === 0}
+          />
         ))}
       </div>
 
-      {/* Flechas */}
+      {/* === DERECHA: TEXTO Y BOTONES (Framer Motion) === */}
+      <div className="w-full md:w-1/2 flex flex-col justify-center items-center text-center px-6 md:px-8 py-6 md:py-0 bg-gradient-to-r from-gray-50 to-white overflow-hidden">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={current}
+            variants={textVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            className="w-full"
+          >
+            <h2 className="text-xl md:text-3xl font-bold mb-4 text-[#2a87ff]">
+              {slides[current].title}
+            </h2>
+            <p className="text-gray-600 text-base md:text-lg mb-6 md:mb-8 max-w-md mx-auto">
+              {slides[current].description}
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto justify-center items-center">
+              {/* LÓGICA CONDICIONAL DE BOTONES */}
+              {slides[current].type === "chatbot" ? (
+                // Botón especial para WhatsApp (del HEAD)
+                <a
+                  href="https://wa.me/59160379823?text=Hola%20necesito%20ayuda"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 text-white font-semibold rounded-full shadow-md hover:bg-green-700 hover:scale-105 transition-all"
+                >
+                  🤖 Iniciar Chat con Servineo
+                </a>
+              ) : (
+                // Botones normales (del ORIGIN)
+                <>
+                  <button
+                    onClick={handleVerMas}
+                    className="bg-blue-600 hover:bg-blue-700 transition-all duration-300 text-white px-6 py-3 rounded-full shadow-md w-full sm:w-auto"
+                  >
+                    Ver más
+                  </button>
+                  <button
+                    onClick={handlePorQueServineo}
+                    className="bg-white border border-blue-600 text-blue-600 hover:bg-blue-50 transition-all duration-300 px-6 py-3 rounded-full shadow-md w-full sm:w-auto"
+                  >
+                    ¿Por qué Servineo?
+                  </button>
+                </>
+              )}
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      {/* === FLECHAS DE NAVEGACIÓN === */}
       <button
         onClick={prevSlide}
-        className="absolute top-1/2 left-3 -translate-y-1/2 bg-white/80 text-[#2a87ff] rounded-full p-2 shadow-md transition-all duration-200 hover:scale-110 hover:bg-[#2a87ff] hover:text-white"
+        className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 p-3 rounded-full z-10 transition-colors"
       >
-        <ChevronLeft className="w-6 h-6" />
+        <ChevronLeft className="text-white w-6 h-6" />
       </button>
-
       <button
         onClick={nextSlide}
-        className="absolute top-1/2 right-3 -translate-y-1/2 bg-white/80 text-[#2a87ff] rounded-full p-2 shadow-md transition-all duration-200 hover:scale-110 hover:bg-[#2a87ff] hover:text-white"
+        className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 p-3 rounded-full z-10 transition-colors"
       >
-        <ChevronRight className="w-6 h-6" />
+        <ChevronRight className="text-white w-6 h-6" />
       </button>
-
-      {/* Indicadores */}
-      <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-2">
+      
+      {/* Indicadores (Puntos) */}
+      <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-2 z-10">
         {slides.map((_, i) => (
           <button
             key={i}
@@ -164,6 +200,6 @@ export default function CarruselInspirador() {
           />
         ))}
       </div>
-    </div>
+    </section>
   );
 }
