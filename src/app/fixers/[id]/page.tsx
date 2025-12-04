@@ -2,7 +2,7 @@ import { getFixer } from "@/lib/api/fixer";
 import Link from "next/link";
 import FixerOwnerActions from "../components/FixerOwnerActions";
 import FixerSkillsList from "../components/FixerSkillsList";
-import Calendario from "@/app/agenda_proveedor/components/calendario";
+import Calendario from "@/app/register_a_job/calendario";
 import TrabajosAgendadosWidget from "@/app/epic_VisualizadorDeTrabajosAgendadosVistaProveedor/page";
 import HistorialCalificaciones from "@/app/vendedor_ratings/page"
 
@@ -346,9 +346,6 @@ export default async function FixerDetailPage({ params }: PageProps) {
         className="mt-8 scroll-mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
       >
         <Calendario
-          proveedorId={id}
-          nombreProveedor={name}
-          profesionProveedor={mainProfession}
         />
       </div>
 
