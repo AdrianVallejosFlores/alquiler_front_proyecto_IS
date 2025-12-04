@@ -1,16 +1,22 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { useLoginForm } from '../hooks/useLoginForm';
 import AppleIcon from '../assets/icons8-apple-50.png';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { loginUsuario } from '@/app/teamsys/services/UserService';  
+import { useRouter, useSearchParams } from 'next/navigation';
+import { loginUsuario } from '@/app/teamsys/services/UserService';
 import { useGoogleAuth } from '../../google/hooks/useGoogleAuth';
 import { GoogleButton } from '../../google/components/GoogleButton';
+import { getFixerByUser } from '@/lib/api/fixer';
+import { STORAGE_KEYS, saveToStorage } from '@/app/convertirse-fixer/storage';
+import { persistSession, SESSION_EVENTS } from '@/lib/auth/session';
+import Image from 'next/image';
 
 export const LoginForm: React.FC = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const nextRoute = searchParams.get('next');
   const {
     datosFormulario,
     errores,
@@ -27,7 +33,10 @@ export const LoginForm: React.FC = () => {
   const handleGoogleClick = async () => {
     await handleGoogleAuth();
   };
-
+  useEffect(()=>{
+      
+sessionStorage.clear()
+    },[]);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorBackend(null);
@@ -38,57 +47,82 @@ export const LoginForm: React.FC = () => {
       return;
     }
 
-    console.log('Formulario válido, listo para enviar:', datosFormulario);
-
     try {
       const res = await loginUsuario(
         datosFormulario.email,
-        datosFormulario.contraseña
+        datosFormulario.password
       );
 
-      console.log('Login exitoso:', res);
-      
-      // Guardar token en localStorage/sessionStorage
-      if (res.token) {
-        localStorage.setItem('authToken', res.token);
-        // También puedes guardar datos del usuario si los necesitas
-        localStorage.setItem('userData', JSON.stringify(res.user));
+      if (res.data) {
+      const token = res.data.accessToken ?? res.data.token; 
+
+      if (token) sessionStorage.setItem('authToken', token);
+
+      sessionStorage.setItem('userData', JSON.stringify(res.data.user));
+    }
+      let fixerId: string | null = null;
+      if (res?.data?.user._id) {
+        try {
+          const fixer = await getFixerByUser(res.data.user._id);
+          fixerId = fixer?.id ?? null;
+        } catch {
+          fixerId = null;
+        }
       }
+
+      // Persistencia de datos y sesión (Lógica HEAD)
+      if (res?.data.user?._id) {
+        saveToStorage(STORAGE_KEYS.userId, res.data.user._id);
+      }
+      saveToStorage(STORAGE_KEYS.fixerId, fixerId);
+
+      const storedUser = {
+        ...(res.data.user ?? {}),
+        fixerId,
+      };
+      persistSession({ token: res.data.accessToken ?? res.data.token, user: storedUser });
+
+      // Disparar eventos de sesión (Ambas ramas)
+      if(res.data.user.twoFactorEnabled){
+        sessionStorage.setItem("checkSeguridad", "true");
+      router.push('/loginSeguridad')
+      return
+      }
+      window.dispatchEvent(new CustomEvent(SESSION_EVENTS.updated));
+      window.dispatchEvent(new CustomEvent(SESSION_EVENTS.login));
+      window.dispatchEvent(new CustomEvent("login-exitoso"));
+      sessionStorage.setItem("intentos","0" )
+      sessionStorage.setItem("login",'true')
       
-      // Disparar evento de login exitoso para que el Header se actualice
-      const eventLogin = new CustomEvent("login-exitoso");
-      window.dispatchEvent(eventLogin);
+      // Redirección: Usa 'next' si existe, si no va a Homepage (Sprint 2)
+      const normalizedNext = nextRoute?.trim();
+      const fallbackRoute = "/Homepage";
+      router.push(normalizedNext && normalizedNext !== "/login" ? normalizedNext : fallbackRoute);
       
-      // Redirigir a home
-      router.push('/');
     } catch (error: unknown) {
       console.error('Error completo al iniciar sesión:', error);
       
       let mensajeError = 'Error al iniciar sesión';
       
-      if (
-        error instanceof Error &&
-        (
+      if (error instanceof Error) {
+        if (
           error.message.includes('401') ||
           error.message.includes('Unauthorized') ||
           error.message.includes('contraseña') ||
           error.message.includes('password') ||
           error.message.includes('Credenciales')
-        )
-      ) {
-        mensajeError = 'Contraseña incorrecta.';
-      } else if (
-        error instanceof Error &&
-        (
+        ) {
+          mensajeError = 'Contraseña incorrecta.';
+        } else if (
           error.message.includes('404') ||
           error.message.includes('No encontrado') ||
           error.message.includes('Usuario') ||
           error.message.includes('user')
-        )
-      ) {
-        mensajeError = 'Usuario no encontrado. Verifica tu correo electrónico.';
-      } else if (error instanceof Error) {
-        mensajeError = error.message || 'Error al conectar con el servidor';
+        ) {
+          mensajeError = 'Usuario no encontrado. Verifica tu correo electrónico.';
+        } else {
+          mensajeError = error.message || 'Error al conectar con el servidor';
+        }
       } else {
         mensajeError = 'Error al conectar con el servidor';
       }
@@ -145,25 +179,25 @@ export const LoginForm: React.FC = () => {
                 id="password"
                 name="password"
                 type="password"
-                value={datosFormulario.contraseña}
+                value={datosFormulario.password}
                 onChange={(e) => {
-                  manejarCambio('contraseña', e.target.value);
+                  manejarCambio('password', e.target.value);
                   setErrorBackend(null);
                 }}
-                onBlur={() => manejarBlur('contraseña')}
+                onBlur={() => manejarBlur('password')}
                 className={`w-full px-3 py-2 sm:py-3 text-sm sm:text-base border rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:border-transparent placeholder-gray-600 text-gray-950 ${
-                  (errores.contraseña && tocados.contraseña) || errorBackend
+                  (errores.password && tocados.contraseña) || errorBackend
                     ? 'border-red-300 focus:ring-red-500'
                     : 'border-gray-300 focus:ring-blue-500'
                 }`}
                 placeholder="Contraseña"
               />
               {/* Mostrar errores de validación frontend */}
-              {(errores.contraseña && tocados.contraseña) && (
-                <p className="mt-1 text-xs sm:text-sm text-red-600">{errores.contraseña}</p>
+              {(errores.password && tocados.contraseña) && (
+                <p className="mt-1 text-xs sm:text-sm text-red-600">{errores.password}</p>
               )}
               {/* Mostrar TODOS los errores del backend aquí */}
-              {errorBackend && !errores.contraseña && (
+              {errorBackend && !errores.password && (
                 <p className="mt-1 text-xs sm:text-sm text-red-600">{errorBackend}</p>
               )}
             </div>
@@ -183,6 +217,16 @@ export const LoginForm: React.FC = () => {
               {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
             </button>
           </div>
+           <p className="text-sm text-center mt-3">
+    <a
+      href="/auth/ini-link"
+      className="text-blue-600 hover:underline"
+    >
+    ¿Olvidaste tu contraseña?
+    </a>
+  </p>
+
+
 
           {/* Separador visual con "o" */}
           <div className="flex items-center justify-center my-4 sm:my-6">

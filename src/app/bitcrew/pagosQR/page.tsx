@@ -82,7 +82,7 @@ const RecargaQR: React.FC = () => {
 
 
   //Para el backend enviarRecarga
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+  const API_URL = process.env.NEXT_PUBLIC_API_URL + "/api" || "http://localhost:5000/api";
   //const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://wallletback.vercel.app/api";
   //Para el backend enviarRecarga
   //Para el backend enviarRecarga
