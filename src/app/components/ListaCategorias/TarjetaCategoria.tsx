@@ -46,7 +46,7 @@ export default function TarjetaCategoria({ categoria, onClick }: Props) {
         hover:-translate-y-1
         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500
         hover:shadow-blue-300/50 focus-visible:shadow-blue-400/60
-        min-h-[160px] sm:min-h-[170px] md:min-h-[180px] lg:min-h-[190px]
+        min-h-40 sm:min-h-[170px] md:min-h-[180px] lg:min-h-[190px]
       "
     >
       {/* BLOQUE CENTRAL: ícono + textos -> centrado vertical real con my-auto */}
