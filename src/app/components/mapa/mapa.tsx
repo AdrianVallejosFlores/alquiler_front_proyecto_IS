@@ -67,7 +67,7 @@ function ActualizarVista({ ubicacion }: { ubicacion: Ubicacion | null }) {
 
 function LongPressHandler({ onLongPress }: { onLongPress: (lat: number, lng: number) => void }) {
   const map = useMap();
-  const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const handleContextMenu = (e: L.LeafletEvent) => {
