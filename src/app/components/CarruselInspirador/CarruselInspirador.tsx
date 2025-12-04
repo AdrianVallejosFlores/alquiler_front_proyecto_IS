@@ -67,16 +67,13 @@ const CarruselInspirador: React.FC = () => {
     router.push("/porqueservineo");
   };
 
-  // Variants tipadas y con 'ease' como curvas Bézier (Easing[])
   const textVariants: Variants = {
     initial: { opacity: 0, y: 20 },
-    // [0.22, 1, 0.36, 1] ≈ easeOut cubic-bezier
     animate: {
       opacity: 1,
       y: 0,
       transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] },
     },
-    // [0.42, 0, 1, 1] ≈ easeIn cubic-bezier
     exit: {
       opacity: 0,
       y: -20,
@@ -90,12 +87,12 @@ const CarruselInspirador: React.FC = () => {
         relative w-full overflow-hidden shadow-lg bg-white flex flex-col md:flex-row
         h-auto md:h-[420px]
         rounded-none md:rounded-2xl
-        !mt-0 !pt-0
+        mt-0! pt-0!
       "
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      <div className="relative w-full md:w-1/2 h-[300px] md:h-full !mt-0 !pt-0">
+      <div className="relative w-full md:w-1/2 h-[300px] md:h-full mt-0! pt-0!">
         {slides.map((slide, index) => (
           <Image
             key={slide.image}
@@ -112,7 +109,9 @@ const CarruselInspirador: React.FC = () => {
         ))}
       </div>
 
-      <div className="w-full md:w-1/2 flex flex-col justify-center items-center text-center px-6 md:px-8 py-6 md:py-0 bg-gradient-to-r from-gray-50 to-white overflow-hidden">
+      {/* TEXTO ALINEADO VERTICAL + HORIZONTAL */}
+      <div className="w-full md:w-1/2 flex justify-center items-center px-6 md:px-8 py-6 md:py-0 bg-linear-to-r from-gray-50 to-white overflow-hidden">
+
         <AnimatePresence mode="wait">
           <motion.div
             key={current}
@@ -120,14 +119,21 @@ const CarruselInspirador: React.FC = () => {
             initial="initial"
             animate="animate"
             exit="exit"
-            className="w-full"
+            className="
+              w-full h-full
+              flex flex-col justify-center items-center
+              text-center
+              max-w-lg
+            "
           >
             <h2 className="text-xl md:text-3xl font-bold mb-4 text-gray-800">
               {slides[current].title}
             </h2>
+
             <p className="text-gray-600 text-base md:text-lg mb-6 md:mb-8 max-w-md">
               {slides[current].description}
             </p>
+
             <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto justify-center">
               <button
                 onClick={handleVerMas}
@@ -135,6 +141,7 @@ const CarruselInspirador: React.FC = () => {
               >
                 Ver más
               </button>
+
               <button
                 onClick={handlePorQueServineo}
                 className="bg-blue-600 hover:bg-blue-700 transition-all duration-300 text-white px-6 py-3 rounded-full shadow-md w-full sm:w-auto"
@@ -152,6 +159,7 @@ const CarruselInspirador: React.FC = () => {
       >
         <ChevronLeft className="text-white" />
       </button>
+
       <button
         onClick={nextSlide}
         className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 p-3 rounded-full z-10"
@@ -163,3 +171,4 @@ const CarruselInspirador: React.FC = () => {
 };
 
 export default CarruselInspirador;
+
