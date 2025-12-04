@@ -8,8 +8,6 @@ import {
   X, 
   Home, 
   HelpCircle,
-  FileText, 
-  Search as SearchIcon, 
   Phone,
   ShieldCheck,
   User,
@@ -18,6 +16,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from "framer-motion";
+import { getToken, getStoredUser } from '@/lib/auth/session';
 
 // --- TIPOS DE DATOS ---
 type ActionButton = {
@@ -87,8 +86,8 @@ const DATA_MANUAL: Record<string, Category> = {
               '4. Contacta al fixer que necesitas'
           ],
           actions: [
-              { label: 'Crear cuenta', href: '/auth/register', type: 'primary' },
-              { label: 'Explorar servicios', href: '/servicios', type: 'secondary' }
+              { label: 'Crear cuenta', href: '/registro', type: 'primary' },
+              { label: 'Explorar servicios', href: '/#servicios', type: 'secondary' }
           ] 
         },
         { 
@@ -102,7 +101,14 @@ const DATA_MANUAL: Record<string, Category> = {
               'Mensajería directa con profesionales'
           ],
           actions: [
-              { label: 'Comenzar tour', onClick: () => alert("Iniciando tour..."), type: 'primary' }
+              { label: 'Comenzar tour', onClick: () => {
+                  try {
+                    window.dispatchEvent(new CustomEvent('show-tutorial'));
+                  } catch {
+                    // fallback simple por si no existe el listener
+                    console.log('Tutorial event dispatched');
+                  }
+                }, type: 'primary' }
           ]
         },
       ]
@@ -162,7 +168,7 @@ const DATA_MANUAL: Record<string, Category> = {
                 'Activa la geolocalización para mejores resultados'
               ],
               actions: [
-                { label: 'Ir a búsqueda', href: '/servicios', type: 'secondary' }
+                { label: 'Ir a búsqueda', href: '/#servicios', type: 'secondary' }
               ]
             },
             {
@@ -345,7 +351,7 @@ const DATA_MANUAL: Record<string, Category> = {
                     title: 'Registro como cliente',
                     description: 'Crear una cuenta es rápido y sencillo. Solo necesitas un correo electrónico o redes sociales.',
                     bullets: ['Usa correo válido', 'Contraseña segura', 'Verifica tu email'],
-                    actions: [{ label: 'Crear cuenta ahora', href: '/auth/register', type: 'primary' }]
+                    actions: [{ label: 'Crear cuenta ahora', href: '/registro', type: 'primary' }]
                 },
                 {
                     id: 'registro-fixer-prof',
@@ -509,7 +515,7 @@ const DATA_MANUAL: Record<string, Category> = {
                         title: 'Canales de soporte',
                         description: 'Estamos disponibles para ayudarte.',
                         bullets: ['Chat en vivo (8am-10pm)', 'Email: soporte@servineo.com', 'WhatsApp disponible'],
-                        actions: [{ label: 'Ir al centro de ayuda', href: '/help', type: 'secondary' }]
+                        actions: [{ label: 'Ir al centro de ayuda', href: 'https://wa.me/59160379823', type: 'secondary' }]
                     }
                 ] 
             } 
@@ -525,13 +531,19 @@ const DATA_MANUAL: Record<string, Category> = {
                         id: 'tuto-cliente',
                         title: 'Para clientes',
                         description: 'Aprende visualmente a usar la plataforma.',
-                        bullets: ['Cómo buscar', 'Cómo contratar', 'Cómo gestionar perfil']
+                bullets: ['Cómo buscar', 'Cómo contratar', 'Cómo gestionar perfil'],
+                actions: [
+                  { label: 'Ver video', href: 'https://www.youtube.com/watch?v=5lGf_-xGDUs', type: 'secondary' }
+                ]
                     },
                     {
                         id: 'tuto-fixer',
                         title: 'Para fixers',
                         description: 'Guías para profesionales.',
-                        bullets: ['Crear perfil atractivo', 'Responder solicitudes', 'Gestionar trabajos']
+                bullets: ['Crear perfil atractivo', 'Responder solicitudes', 'Gestionar trabajos'],
+                actions: [
+                  { label: 'Ver video', href: 'https://www.youtube.com/watch?v=5lGf_-xGDUs', type: 'secondary' }
+                ]
                     }
                 ] 
             } 
@@ -565,9 +577,24 @@ export default function PanelAyuda() {
   
   const [openMainAccordion, setOpenMainAccordion] = useState<string | null>(null);
   const [query, setQuery] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [fixerId, setFixerId] = useState<string | null>(null);
+
+  // Normaliza texto (minúsculas, sin acentos) para búsqueda robusta
+  const normalize = (s: string) =>
+    s
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/\p{Diacritic}/gu, '');
 
   // Reset de página al cambiar categoría padre si es necesario
   useEffect(() => {
+    try {
+      setIsLoggedIn(Boolean(getToken()));
+      const stored = getStoredUser();
+      setFixerId((stored as any)?.fixerId ?? null);
+    } catch {}
+
     const category = DATA_MANUAL[activeCategory];
     if (category?.directPageData) {
        setActivePageId('');
@@ -638,6 +665,29 @@ export default function PanelAyuda() {
   };
 
   const currentPage = getCurrentPageData();
+
+  // Filtrado de acordeones por búsqueda dentro de la página actual
+  const filteredAccordions = currentPage
+    ? currentPage.accordions.filter((item) => {
+        if (!query) return true;
+        const q = normalize(query);
+        const inTitle = normalize(item.title).includes(q);
+        const inDesc = normalize(item.description || '').includes(q);
+        const inBullets = (item.bullets || []).some((b) => normalize(b).includes(q));
+        return inTitle || inDesc || inBullets;
+      })
+    : [];
+
+  // Abrir automáticamente el primer resultado cuando hay búsqueda
+  useEffect(() => {
+    if (!currentPage) return;
+    if (!query) {
+      setOpenMainAccordion(null);
+      return;
+    }
+    const first = filteredAccordions[0];
+    if (first) setOpenMainAccordion(first.id);
+  }, [query, currentPage]);
 
   return (
     <div className="min-h-screen bg-white flex flex-col font-sans">
@@ -767,7 +817,12 @@ export default function PanelAyuda() {
                     
                     {/* Lista de Acordeones */}
                     <div className="space-y-4">
-                        {currentPage.accordions.map((item, index) => {
+                        {filteredAccordions.length === 0 && (
+                          <div className="bg-white rounded-xl border border-gray-200 p-6 text-center text-gray-500">
+                            No se encontraron resultados para {query}.
+                          </div>
+                        )}
+                        {filteredAccordions.map((item, index) => {
                             const isOpen = openMainAccordion === item.id;
 
                             return (
@@ -826,24 +881,42 @@ export default function PanelAyuda() {
                                                 )}
 
                                                 {item.actions && item.actions.length > 0 && (
-                                                    <div className="flex flex-wrap gap-4 mt-4">
-                                                        {item.actions.map((action, idx) => {
-                                                            const btnClass = action.type === 'primary' ? 'cta-button-primary' : 'cta-button-secondary';
-                                                            
-                                                            if (action.onClick) {
-                                                                return (
-                                                                    <button key={idx} onClick={action.onClick} className={btnClass}>
-                                                                        {action.label}
-                                                                    </button>
-                                                                );
-                                                            }
-                                                            return (
-                                                                <Link key={idx} href={action.href || '#'} className={btnClass}>
-                                                                    {action.label}
-                                                                </Link>
-                                                            );
-                                                        })}
-                                                    </div>
+                                                  <div className="flex flex-wrap gap-3 mt-4">
+                                                    {item.actions.map((action, idx) => {
+                                                      const btnClass = action.type === 'primary'
+                                                        ? 'px-4 py-2 font-semibold text-white bg-[#2a87ff] rounded-md hover:bg-[#52ABFF] transition-colors'
+                                                        : 'px-4 py-2 font-semibold text-[#2a87ff] border border-[#2a87ff] rounded-md hover:bg-[#EEF7FF] transition-colors';
+
+                                                      if (action.onClick) {
+                                                        return (
+                                                          <button key={idx} onClick={action.onClick} className={btnClass}>
+                                                            {action.label}
+                                                          </button>
+                                                        );
+                                                      }
+
+                                                      // Dinámica: misma funcionalidad que "Ser Fixer" del Header
+                                                      const fixerCtaHref = fixerId ? `/fixers/${fixerId}` : '/convertirse-fixer';
+                                                      const loginFixerRedirect = '/login?next=/convertirse-fixer';
+                                                      const fixerEntryHref = isLoggedIn ? fixerCtaHref : loginFixerRedirect;
+
+                                                      const hrefToUse = action.label === 'Registrarme como Fixer'
+                                                        ? fixerEntryHref
+                                                        : (action.href || '#');
+
+                                                      const isExternal = hrefToUse.startsWith('http');
+                                                      return (
+                                                        <Link
+                                                          key={idx}
+                                                          href={hrefToUse}
+                                                          className={btnClass}
+                                                          {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                                                        >
+                                                          {action.label}
+                                                        </Link>
+                                                      );
+                                                    })}
+                                                  </div>
                                                 )}
                                             </div>
                                         </motion.div>
@@ -867,12 +940,17 @@ export default function PanelAyuda() {
                     Nuestro equipo de soporte está listo para ayudarte con cualquier pregunta o problema.
                 </p>
                 <div className="flex flex-wrap gap-4">
-                    <button className="cta-button-secondary flex items-center gap-2">
-                        <Phone className="w-5 h-5"/>
-                        Contactar soporte
-                    </button>
+                    <Link
+                      href="https://wa.me/59160379823"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-4 py-2 font-semibold text-[#2a87ff] border border-[#2a87ff] rounded-md hover:bg-[#EEF7FF] transition-colors flex items-center gap-2"
+                    >
+                    <Phone className="w-5 h-5"/>
+                    Contactar soporte
+                  </Link>
                     
-                    <Link href="/" className="cta-button-primary flex items-center gap-2">
+                    <Link href="/" className="px-4 py-2 font-semibold text-white bg-[#2a87ff] rounded-md hover:bg-[#52ABFF] transition-colors flex items-center gap-2">
                         <Home className="w-5 h-5"/>
                         Volver al inicio
                     </Link>
@@ -883,29 +961,6 @@ export default function PanelAyuda() {
       </div>
 
       <style jsx>{`
-        .cta-button-primary {
-          @apply text-white font-medium rounded-lg text-sm px-5 py-2.5 mb-2 focus:ring-4 focus:outline-none transition-all inline-flex items-center justify-center;
-          background-color: #0c4fe9;
-        }
-        .cta-button-primary:hover {
-          background-color: #1140bc;
-        }
-        .cta-button-primary:focus {
-           --tw-ring-color: #89c9ff;
-        }
-
-        .cta-button-secondary {
-          @apply font-medium rounded-lg text-sm px-5 py-2.5 mb-2 border focus:ring-4 focus:outline-none transition-all inline-flex items-center justify-center bg-white;
-          color: #0c4fe9;
-          border-color: #0c4fe9;
-        }
-        .cta-button-secondary:hover {
-          background-color: #eef7ff;
-        }
-        .cta-button-secondary:focus {
-           --tw-ring-color: #d8ecff;
-        }
-        
         .custom-scrollbar::-webkit-scrollbar {
           width: 4px;
         }
