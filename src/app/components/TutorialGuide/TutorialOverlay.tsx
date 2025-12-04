@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 
 interface TutorialOverlayProps {
   isActive: boolean;
@@ -14,6 +14,7 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
   children 
 }) => {
   const [spotlightRect, setSpotlightRect] = useState<DOMRect | null>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!isActive || !targetElement) {
@@ -25,21 +26,45 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
       const targetElementNode = document.querySelector(`[data-tutorial="${targetElement}"]`);
       if (targetElementNode) {
         const rect = targetElementNode.getBoundingClientRect();
-        setSpotlightRect(rect);
+        
+        // AJUSTE ESPECIAL PARA EL PASO 6 (support-section)
+        if (targetElement === "support-section") {
+          // Para el paso 6, expandimos un poco el rectángulo para cubrir toda la sección
+          // y centrarlo mejor
+          const expandedRect = {
+            top: rect.top - 10, // 10px más arriba
+            bottom: rect.bottom + 10, // 10px más abajo
+            left: rect.left - 15, // 15px más a la izquierda
+            right: rect.right + 15, // 15px más a la derecha
+            width: rect.width + 30, // 30px más ancho
+            height: rect.height + 20, // 20px más alto
+            x: rect.left - 15,
+            y: rect.top - 10
+          };
+          
+          // Crear un DOMRect personalizado
+          const customRect = new DOMRect(
+            expandedRect.x,
+            expandedRect.y,
+            expandedRect.width,
+            expandedRect.height
+          );
+          
+          setSpotlightRect(customRect);
+        } else {
+          // Para los otros pasos, mantener el comportamiento normal
+          setSpotlightRect(rect);
+        }
         
         // Asegurar que el elemento objetivo sea completamente visible
         targetElementNode.classList.add('tutorial-highlight');
       }
     };
 
+    // Calcular posición inicial
     updateSpotlight();
-    window.addEventListener('resize', updateSpotlight);
-    window.addEventListener('scroll', updateSpotlight);
 
     return () => {
-      window.removeEventListener('resize', updateSpotlight);
-      window.removeEventListener('scroll', updateSpotlight);
-      
       // Limpiar la clase al desmontar
       const targetElementNode = document.querySelector(`[data-tutorial="${targetElement}"]`);
       if (targetElementNode) {
@@ -51,7 +76,7 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
   if (!isActive) return null;
 
   return (
-    <div className="fixed inset-0 z-50">
+    <div ref={overlayRef} className="fixed inset-0 z-50">
       {/* Fondo difuminado completo con "hueco" transparente */}
       <div 
         className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-all duration-300"
@@ -73,7 +98,7 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
         }
       />
       
-      {/* Borde resaltado alrededor del elemento - MUY VISIBLE */}
+      {/* Borde resaltado alrededor del elemento - CON AJUSTE PARA PASO 6 */}
       {spotlightRect && (
         <div 
           className="absolute pointer-events-none border-3 border-blue-500 rounded-lg bg-transparent"
