@@ -3,7 +3,7 @@ import { Job } from '../interfaces/types';
 import { convertirAISO, normalizarEstado } from '../utils/helpers';
 
 // API real del backend (ajusta host/puerto si tu backend corre en otro puerto)
-const API_URL = 'http://localhost:5000/api/los_vengadores/trabajos';
+const API_URL = 'https://back-segundosprint-1.onrender.com/api/los_vengadores/trabajos';
 
 // Interfaz que representa la estructura del trabajo que viene del backend (MongoDB)
 interface TrabajoBackend {

@@ -5,9 +5,10 @@ import React, { useState, useEffect } from "react";
 import { diasSemanaCompletos, mesesNombres } from "./Constantes";
 import type { Horario as HorarioType } from "./Constantes";
 import ModalHorario from "./disponibilidad/components/ModalHorario";
+import { useClientSession } from '@/lib/auth/useSession';
 
-const URL = "http://localhost:5000" //"https://back-1kgu.onrender.com/";
-const ID_PROVEEDOR = "6902c43438df4e88b6680640"; 
+const URL = "https://back-tercersprint.onrender.com" //"https://back-1kgu.onrender.com/";
+
 
 // --- Props del Componente ---
 interface HorarioProps {
@@ -42,6 +43,10 @@ function getFechaKey(fecha: Date): string {
 
 // --- Componente Principal ---
 const Horarios: React.FC<HorarioProps> = ({ fechaSeleccionada, onVolver }) => {
+  const { user, ready } = useClientSession();
+  const ID_PROVEEDOR = user?.fixerId??"";
+
+
   const fechaKey = getFechaKey(fechaSeleccionada);
   console.log(fechaKey)
   

@@ -1,6 +1,6 @@
 import { Trabajo, CancelarTrabajoRequest } from "../interfaces/Trabajo.interface";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/los_vengadores/trabajos';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://back-segundosprint-1.onrender.com/api/los_vengadores/trabajos';
 
 //Solo se usara si los datos que obtuvimos de la anterior hu no funciona
 export const obtenerTrabajo = async (parametro: any): Promise<Trabajo> => {

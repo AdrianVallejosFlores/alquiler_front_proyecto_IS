@@ -38,7 +38,7 @@ const BotonesAccion: React.FC<BotonesAccionProps> = ({
 
   // Envía la calificación Y LUEGO TERMINA EL TRABAJO
    
-  const API_URL = `http://localhost:5000/api/los_vengadores/trabajos/trabajo/${trabajoId}/calificar`;
+  const API_URL = `https://back-segundosprint-1.onrender.com/api/los_vengadores/trabajos/trabajo/${trabajoId}/calificar`;
 
   const handleEnviarClick = async (rating: number, comment: string) => {
     console.log("Datos a enviar:", { rating, comment });

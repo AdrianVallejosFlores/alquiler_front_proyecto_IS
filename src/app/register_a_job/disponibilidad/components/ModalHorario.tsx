@@ -1,11 +1,10 @@
+
 // src/app/register_a_job/disponibilidad/components/ModalHorario.tsx
-"use client";
+'use client'
 import React, { useState, useEffect } from "react";
 import type { Horario } from "../../Constantes";
 import TimePicker from "./TimePicker";
-
-
-const PROVEEDOR_ID = "6902c43438df4e88b6680640";
+import { useClientSession } from '@/lib/auth/useSession';
 // --- Props del Componente ---
 interface ModalHorarioProps {
   onClose: () => void;
@@ -16,6 +15,10 @@ interface ModalHorarioProps {
 // --- Componente ---
 const ModalHorario: React.FC<ModalHorarioProps> = ({ onClose, onSave, horarioInicial }) => {
   // Estado para manejar los datos del formulario
+
+  const { user, ready } = useClientSession();
+  const ID_PROVEEDOR = user?.fixerId??""; 
+
   const [horaInicio, setHoraInicio] = useState("00:00");
   const [horaFin, setHoraFin] = useState("00:00");
 
@@ -36,7 +39,7 @@ const ModalHorario: React.FC<ModalHorarioProps> = ({ onClose, onSave, horarioIni
     // Creamos el objeto horario para enviarlo al componente padre
     const horarioAGuardar: Horario = {
         id: horarioInicial ? horarioInicial.id : "",
-        proveedorId:PROVEEDOR_ID, // 0 si es nuevo, para que el padre le asigne ID
+        proveedorId:ID_PROVEEDOR, // 0 si es nuevo, para que el padre le asigne ID
         horaInicio,
         horaFin
     };
@@ -80,5 +83,7 @@ const ModalHorario: React.FC<ModalHorarioProps> = ({ onClose, onSave, horarioIni
     </div>
   );
 };
+
+
 
 export default ModalHorario;

@@ -152,7 +152,7 @@ export default function VendorRatingsPage() {
   const RATINGS_PER_PAGE = 6; // Máximo de calificaciones por página
   const REVIEWS_PER_VIEW = 3; // Número de calificaciones visibles en el scroll
 
-  const API_URL = "http://localhost:5000/api/los_vengadores/trabajos/proveedor/6902c43438df4e88b6680640/calificaciones";
+  const API_URL = "https://back-segundosprint-1.onrender.com/api/los_vengadores/trabajos/proveedor/6902c43438df4e88b6680640/calificaciones";
 
   useEffect(() => {
     const fetchRatings = async () => {
@@ -319,7 +319,7 @@ export default function VendorRatingsPage() {
         {/* Pie de página con Navegación y Paginación */}
         <div className="flex justify-between items-center mt-6">
           <Link
-            href="/perfil_proveedor_provisional"
+            href="/Homepage"
             className="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
           >
             <ChevronLeft className="w-5 h-5 mr-1" />

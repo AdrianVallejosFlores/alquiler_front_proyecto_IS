@@ -1,7 +1,7 @@
 // src/app/epic_VerDetallesEstadoCancelado/services/api.ts
 import { SolicitudClienteDetalle } from '../interfaces/SolicitudCliente.interface';
 
-const API_URL = 'http://localhost:5000/api/los_vengadores/trabajos';
+const API_URL = 'https://back-segundosprint-1.onrender.com/api/los_vengadores/trabajos';
 
 export const fetchTrabajoDetalleReal = async (id: string): Promise<SolicitudClienteDetalle | null> => {
   // Usamos el endpoint que creamos en el backend que trae todo

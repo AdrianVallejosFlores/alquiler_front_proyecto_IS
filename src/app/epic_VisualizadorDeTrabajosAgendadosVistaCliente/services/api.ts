@@ -2,7 +2,7 @@
 import { Job } from '../interfaces/types';
 import { convertirAISO, normalizarEstado } from '../utils/helpers';
 
-const API_URL = 'http://localhost:5000/api/los_vengadores/trabajos';
+const API_URL = 'https://back-segundosprint-1.onrender.com/api/los_vengadores/trabajos';
 
 // 🔹 Actualizar la interfaz para incluir campos de cancelación
 interface BackendTrabajo {
