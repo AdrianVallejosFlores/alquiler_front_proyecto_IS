@@ -2,6 +2,9 @@ export interface ISolicitud {
   horaInicio: string; // "HH:MM"
   horaFin: string;    // "HH:MM"
   date: string;       // "YYYY-MM-DD"
+  descripcion: string; // Descripción del trabajo
+  costo: number;      // Costo en Bs
+  categoria: string;  // categoría del trabajo
 }
 
 export interface IFranjaDisponible {
