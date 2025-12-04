@@ -9,7 +9,7 @@ interface AgendarCitaButtonProps {
 
 export default function AgendarCitaButton({ proveedorId, servicioId }: AgendarCitaButtonProps) {
   const [open, setOpen] = useState(false);
-  const clienteId = "6927e784567c50dddae45310"; 
+  const clienteId = "690c2c510c736bec44e473e9"; 
   
   return (
     <>

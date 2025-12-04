@@ -32,7 +32,7 @@ const CitasAgendadas = () => {
   const [error, setError] = useState<string | null>(null);
 
   // cliente fijo en tu código original
-  const clienteId = "6927e784567c50dddae45310";
+  const clienteId = "690c2c510c736bec44e473e9";
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
   const fetchCitas = async () => {
@@ -160,17 +160,15 @@ const CitasAgendadas = () => {
             setModalOpen(open);
             if (!open) {
               setSelectedCita(null);
+              // refrescar lista después de cerrar (posible cambio)
               fetchCitas();
             }
           }}
           patientName={selectedCita?.proveedorId?.nombre ?? "Proveedor"}
-
-          // ⬇️ HARD CODE AQUÍ
-          providerId="6927e823567c50dddae45313"
-
+          providerId={selectedCita?.proveedorId?._id ?? ""}
           servicioId={selectedCita?.servicioId?._id ?? ""}
           clienteId={selectedCita?.clienteId ?? clienteId}
-
+          // AÑADE ESTAS PROPS PARA EDITAR:
           initialAppointment={mapToInitial(selectedCita)}
           isEditing={true}
           appointmentId={selectedCita?._id}

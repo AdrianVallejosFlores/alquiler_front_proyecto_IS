@@ -3,7 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { NotificationProvider } from "./context/NotificationContext";
-import GoogleSignInButton from "../../components/GoogleSignInButton";
 
 // ⬅️ IMPORTA TU COMPONENTE
 import VentanaPrueba from "../booking/agenda/components/EnvConfigModal";
@@ -30,13 +29,6 @@ export default function BookingLayout({
 }) {
   return (
     <NotificationProvider>
-      {/* ⬇️ CONTENIDO */}
-      <div className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <div style={{ display: "flex", justifyContent: "flex-end", padding: 12 }}>
-          {/* <GoogleSignInButton /> */}
-        </div>
-        {children}
-      </div>
 
       {/* ⬇️ FLOTANTE GLOBAL EN TODAS LAS PÁGINAS DE BOOKING */}
       <VentanaPrueba />
