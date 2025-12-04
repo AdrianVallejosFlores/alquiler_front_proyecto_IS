@@ -86,16 +86,11 @@ const CarruselInspirador: React.FC = () => {
 
   return (
     <section
-      className="
-        relative w-full overflow-hidden shadow-lg bg-white flex flex-col md:flex-row
-        h-auto md:h-[420px]
-        rounded-none md:rounded-2xl
-        !mt-0 !pt-0
-      "
+      className="relative w-full overflow-hidden shadow-lg bg-white flex flex-col md:flex-row h-auto md:h-[420px] rounded-none md:rounded-2xl mt-0! pt-0!"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      <div className="relative w-full md:w-1/2 h-[300px] md:h-full !mt-0 !pt-0">
+      <div className="relative w-full md:w-1/2 h-[300px] md:h-full mt-0! pt-0!">
         {slides.map((slide, index) => (
           <Image
             key={slide.image}
@@ -112,7 +107,7 @@ const CarruselInspirador: React.FC = () => {
         ))}
       </div>
 
-      <div className="w-full md:w-1/2 flex flex-col justify-center items-center text-center px-6 md:px-8 py-6 md:py-0 bg-gradient-to-r from-gray-50 to-white overflow-hidden">
+      <div className="w-full md:w-1/2 flex flex-col justify-center items-center text-center px-6 md:px-8 py-6 md:py-0 bg-linear-to-r from-gray-50 to-white overflow-hidden">
         <AnimatePresence mode="wait">
           <motion.div
             key={current}

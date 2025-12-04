@@ -2,9 +2,7 @@
 
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
 import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaFacebookF, FaInstagram, FaBookOpen } from 'react-icons/fa';
 import { SiTiktok } from 'react-icons/si';
 import Modal from '../reutilizables/Modal';
@@ -159,8 +157,7 @@ const openMailClientOrGmail = (subjectText = 'Contacto desde Servineo', bodyText
 const Footer = () => {
   const [activeModal, setActiveModal] = useState<keyof typeof modalContents | null>(null);
   const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);
-  const router = useRouter();
-  const { lang, setLang, t } = useLanguage();
+  const { t } = useLanguage();
 
   // ✅ NUEVO: Verificar si el usuario está autenticado
   const isUserAuthenticated = () => {
@@ -185,11 +182,6 @@ const Footer = () => {
       // Si NO está autenticado, mostrar la modal de login requerido
       setShowLoginRequiredModal(true);
     }
-  };
-
-  const showTutorial = () => {
-    // Disparar evento personalizado para mostrar el tutorial
-    window.dispatchEvent(new CustomEvent('show-tutorial'));
   };
 
   const handleCloseModal = () => {
@@ -303,7 +295,7 @@ const Footer = () => {
           </div>
 
           <div className="border-t border-[#1140bc] mt-8 pt-8 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <p className="text-sm text-[#89c9ff]">© {new Date().getFullYear()} Servineo. {lang === 'es' ? 'Todos los derechos reservados.' : 'All rights reserved.'}</p>
+            <p className="text-sm text-[#89c9ff]">© {new Date().getFullYear()} Servineo. {t('all_rights_reserved')}</p>
             <div className="flex flex-wrap justify-center gap-4 w-full md:w-auto">
               <button type="button" onClick={() => setActiveModal('privacy')} className="w-full md:w-auto text-sm transition transform duration-200 ease-in-out hover:text-[#52abff] hover:scale-105 border border-[#1140bc] px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#52abff]">Política de privacidad</button>
               <button type="button" onClick={() => setActiveModal('terms')} className="w-full md:w-auto text-sm transition transform duration-200 ease-in-out hover:text-[#52abff] hover:scale-105 border border-[#1140bc] px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#52abff]">Términos de uso</button>
