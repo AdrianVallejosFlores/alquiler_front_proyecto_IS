@@ -8,8 +8,9 @@ import WorkExperienceSection from "./components/WorkExperienceSection";
 import VisualPortfolioSection from "./components/VisualPortfolioSection";
 import { useClientSession } from "@/lib/auth/useSession";
 import { getFixer, getFixerByUser, type FixerDTO } from "@/lib/api/fixer";
+import "./components/global.css"; // Importa los estilos de Tailwind
 
-const formatRating = (rating?: number) => (rating ? rating.toFixed(1) : "—");
+const formatRating = (rating?: number) => (rating ? rating.toFixed(1) : "�?");
 
 function AboutFixerPageContent() {
   const { user, ready } = useClientSession();
@@ -146,13 +147,11 @@ function AboutFixerPageContent() {
                 <div className="flex flex-wrap items-center gap-2 text-sm text-slate-700">
                   <span className="font-semibold">Calificación:</span>
                   <span className="text-amber-500 font-semibold">{formatRating(fixer.ratingAvg)}</span>
-                  <span className="text-xs text-slate-500">
-                    ({fixer.ratingCount ?? 0} reseñas)
-                  </span>
+                  <span className="text-xs text-slate-500">({fixer.ratingCount ?? 0} reseñas)</span>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 text-sm text-slate-700">
                   <span className="font-semibold">En Servineo desde:</span>
-                  <span>{fixer.memberSince ? new Date(fixer.memberSince).toLocaleDateString() : "—"}</span>
+                  <span>{fixer.memberSince ? new Date(fixer.memberSince).toLocaleDateString() : "?"}</span>
                 </div>
                 {fixer.whatsapp && (
                   <a

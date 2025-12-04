@@ -4,15 +4,38 @@ import FixerOwnerActions from "../components/FixerOwnerActions";
 import FixerSkillsList from "../components/FixerSkillsList";
 import WorkExperienceBridge from "../../fixers/components/WorkExperienceBridge";
 import VisualPortfolioBridge from "../../fixers/components/VisualPortfolioBridge";
+import Calendario from "@/app/agenda_proveedor/components/calendario";
+import TrabajosAgendadosWidget from "@/app/epic_VisualizadorDeTrabajosAgendadosVistaProveedor/page";
 
-type PageProps = { params: Promise<{ id: string }> };
-
-function formatDate(iso?: string) {
-  if (!iso) return "N/D";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "N/D";
-  return d.toLocaleDateString();
+interface FixerSkill {
+  id?: string;
+  categoryId?: string;
+  name?: string;
+  description?: string;
+  customDescription?: string;
+  category?: { id: string; name: string };
 }
+interface FixerCategory {
+  id?: string;
+  name?: string;
+  description?: string;
+}
+interface FixerData {
+  name?: string;
+  city?: string;
+  jobsCount?: number | string;
+  ratingAvg?: number | string;
+  memberSince?: string;
+  createdAt?: string;
+  paymentMethods?: string[];
+  bio?: string;
+  whatsapp?: string;
+  photoUrl?: string;
+  skillsInfo?: FixerSkill[];
+  categoriesInfo?: FixerCategory[];
+  categories?: string[];
+}
+type PageProps = { params: Promise<{ id: string }> };
 
 function calculateTimeSince(iso?: string) {
   if (!iso) return "N/D";
@@ -64,7 +87,9 @@ function Stars({ value }: { value: number }) {
       ))}
       {half ? <span>&#9734;</span> : null}
       {Array.from({ length: empty }).map((_, i) => (
-        <span key={`empty-${i}`} className="text-slate-300">&#9733;</span>
+        <span key={`empty-${i}`} className="text-slate-300">
+          &#9733;
+        </span>
       ))}
     </div>
   );
@@ -79,10 +104,10 @@ function whatsappLink(phone?: string, msg?: string) {
 
 export default async function FixerDetailPage({ params }: PageProps) {
   const { id } = await params;
-  let data: any = null;
+  let data: FixerData | null = null;
   try {
     const res = await getFixer(id);
-    data = res?.data ?? null;
+    data = (res?.data as FixerData) ?? null;
   } catch {}
 
   const name = data?.name ?? "Juan Pérez";
@@ -91,14 +116,13 @@ export default async function FixerDetailPage({ params }: PageProps) {
   const rating = Number(data?.ratingAvg ?? 4.4);
   const memberSince = data?.memberSince ?? data?.createdAt ?? new Date(2019, 7, 28).toISOString();
   const methods: string[] = Array.isArray(data?.paymentMethods) ? data.paymentMethods : ["cash", "qr", "card"];
-  
-  // ✅ Bug 1.1.1 RESUELTO: Mostrar bio real o mensaje específico del fixer
+
   const bio = data?.bio?.trim() || null;
   const hasBio = bio !== null && bio.length > 0;
-  
   const phone = data?.whatsapp ?? "+59170123456";
   const photoUrl =
-    data?.photoUrl ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=E5E7EB&color=111827&size=128`;
+    data?.photoUrl ??
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=E5E7EB&color=111827&size=128`;
 
   const defaultSkills = ["Carpintería", "Albañil", "Plomero"];
   const skillsInfo = Array.isArray(data?.skillsInfo) ? data.skillsInfo : [];
@@ -114,53 +138,57 @@ export default async function FixerDetailPage({ params }: PageProps) {
   };
 
   const skillsDetails: SkillDisplay[] = skillsInfo.length
-    ? skillsInfo.map((skill: any) => {
-        const personal = (skill?.customDescription ?? "").trim();
-        return {
-          id: skill?.category?.id ?? skill?.categoryId ?? skill?.id ?? "",
-          name: skill?.category?.name ?? skill?.name ?? "Oficio",
-          general: (skill?.description ?? "").trim() || "Sin descripción disponible.",
-          personal: personal || undefined,
-          source: personal ? "personal" : "general",
-        };
-      })
+    ? skillsInfo.map((skill) => ({
+        id: skill?.category?.id ?? skill?.categoryId ?? skill?.id ?? "",
+        name: skill?.category?.name ?? skill?.name ?? "Oficio",
+        general: (skill?.description ?? "").trim() || "Sin descripción disponible.",
+        personal: (skill?.customDescription ?? "").trim() || undefined,
+        source: (skill?.customDescription ?? "").trim() ? "personal" : "general",
+      }))
     : categoriesInfo.length
-    ? categoriesInfo.map((category: any) => ({
+    ? categoriesInfo.map((category) => ({
         id: category?.id ?? "",
         name: category?.name ?? "Oficio",
         general: (category?.description ?? "").trim() || "Sin descripción disponible.",
-        personal: undefined,
         source: "general" as const,
       }))
     : rawCategories.map((name: string, index: number) => ({
         id: `${index}`,
         name,
         general: "Descripción no disponible.",
-        personal: undefined,
         source: "general" as const,
       }));
 
   const skillTags = Array.from(new Set(skillsDetails.map((item) => item.name)));
-
+  const mainProfession = skillTags.length > 0 ? skillTags[0] : "Fixer Profesional";
   const wa = whatsappLink(phone);
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-6">
+    <div className="mx-auto max-w-5xl px-4 py-6 scroll-smooth">
       <nav className="mb-6 text-sm text-slate-500">
-        <Link href="/" className="hover:text-slate-800">Home</Link>
+        <Link href="/" className="hover:text-slate-800">
+          Home
+        </Link>
         <span className="mx-2">/</span>
-        <Link href="/convertirse-fixer" className="hover:text-slate-800">Convertirse en fixer</Link>
+        <Link href="/convertirse-fixer" className="hover:text-slate-800">
+          Convertirse en fixer
+        </Link>
         <span className="mx-2">/</span>
         <span className="text-slate-900">Sobre el fixer</span>
+
+        <span className="mx-2">/</span>
+        <a href="#seccion-disponibilidad" className="cursor-pointer text-slate-500 transition-colors hover:text-blue-600">
+          Disponibilidad
+        </a>
+        <span className="mx-2">/</span>
+        <a href="#seccion-trabajos" className="cursor-pointer text-slate-500 transition-colors hover:text-blue-600">
+          Trabajos Agendados
+        </a>
       </nav>
 
       <div className="grid grid-cols-1 gap-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:grid-cols-[160px_1fr]">
         <div className="flex flex-col items-center gap-4">
-          <img
-            src={photoUrl}
-            alt={`Foto de ${name}`}
-            className="h-36 w-36 rounded-full object-cover ring-1 ring-slate-200"
-          />
+          <img src={photoUrl} alt={`Foto de ${name}`} className="h-36 w-36 rounded-full object-cover ring-1 ring-slate-200" />
           <div className="text-center">
             <div className="text-xl font-semibold text-slate-900">{name}</div>
             <div className="text-slate-500">{city}</div>
@@ -188,9 +216,7 @@ export default async function FixerDetailPage({ params }: PageProps) {
 
           <div className="rounded-xl border border-slate-200 p-4 md:col-span-3">
             <div className="mb-1 text-sm text-slate-500">Rubros</div>
-            <div className="text-slate-900">
-              {skillTags.length ? skillTags.join(", ") : "Sin información"}
-            </div>
+            <div className="text-slate-900">{skillTags.length ? skillTags.join(", ") : "Sin información"}</div>
           </div>
 
           <div className="rounded-xl border border-slate-200 p-4 md:col-span-3">
@@ -198,10 +224,7 @@ export default async function FixerDetailPage({ params }: PageProps) {
             <div className="text-slate-900">
               {methods.length
                 ? methods.map((m) => (
-                    <span
-                      key={m}
-                      className="mr-2 inline-block rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-700"
-                    >
+                    <span key={m} className="mr-2 inline-block rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-700">
                       {m === "cash" ? "Efectivo" : m === "qr" ? "QR" : "Tarjeta"}
                     </span>
                   ))
@@ -209,14 +232,13 @@ export default async function FixerDetailPage({ params }: PageProps) {
             </div>
           </div>
 
-          {/* ✅ Bug 1.1.1 RESUELTO: Mostrar bio real o mensaje personalizado */}
           <div className="rounded-xl border border-slate-200 p-4 md:col-span-3">
             <div className="mb-2 text-sm text-slate-500">Sobre mí</div>
             {hasBio ? (
               <div className="rounded-lg bg-slate-50 p-4 text-slate-800">{bio}</div>
             ) : (
-              <div className="rounded-lg bg-amber-50 border border-amber-200 p-4 text-amber-800 text-sm">
-                <p className="font-medium mb-1">Este fixer aún no ha agregado una descripción personal.</p>
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+                <p className="mb-1 font-medium">Este fixer aún no ha agregado una descripción personal.</p>
                 <p className="text-xs text-amber-700">
                   Si eres el propietario de este perfil, puedes agregar información sobre ti en la sección de edición.
                 </p>
@@ -248,13 +270,7 @@ export default async function FixerDetailPage({ params }: PageProps) {
             className="inline-flex items-center gap-2 rounded-full bg-[#25D366] px-5 py-3 font-medium text-white shadow hover:brightness-95"
           >
             <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white text-[#25D366]">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                className="h-4 w-4"
-                aria-hidden="true"
-              >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4" aria-hidden="true">
                 <path d="M17.472 14.382c-.297-.149-1.758-.867-2.027-.967-.27-.099-.466-.148-.663.15-.198.297-.762.966-.934 1.164-.173.198-.347.223-.644.075-.297-.149-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.173.198-.297.298-.495.099-.198.05-.371-.025-.52-.075-.149-.663-1.602-.909-2.198-.24-.576-.484-.498-.663-.508-.173-.009-.371-.011-.57-.011-.198 0-.52.074-.792.371-.272.297-1.042 1.016-1.042 2.479 0 1.462 1.067 2.875 1.216 3.074.149.198 2.105 3.215 5.102 4.505.714.308 1.27.493 1.704.63.716.228 1.367.196 1.883.119.574-.085 1.758-.718 2.006-1.413.248-.695.248-1.29.173-1.413-.074-.123-.272-.198-.57-.347z" />
                 <path d="M12.004 2c-5.514 0-9.999 4.486-9.999 10 0 1.767.465 3.498 1.349 5.032L2 22l5.115-1.349c1.486.811 3.154 1.239 4.889 1.239 5.514 0 10-4.486 10-10S17.518 2 12.004 2zm0 18.182c-1.57 0-3.117-.411-4.48-1.188l-.321-.183-3.034.8.808-2.958-.209-.304c-.798-1.165-1.22-2.523-1.22-3.967 0-3.875 3.148-7.023 7.023-7.023 3.874 0 7.022 3.148 7.022 7.023s-3.148 7.8-7.022 7.8z" />
               </svg>
@@ -267,6 +283,21 @@ export default async function FixerDetailPage({ params }: PageProps) {
           </button>
         )}
       </div>
+
+      <div
+        id="seccion-disponibilidad"
+        className="mt-8 scroll-mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+      >
+        <Calendario proveedorId={id} nombreProveedor={name} profesionProveedor={mainProfession} />
+      </div>
+
+      <div
+        id="seccion-trabajos"
+        className="mt-8 scroll-mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+      >
+        <TrabajosAgendadosWidget proveedorId={id} />
+      </div>
+
       <FixerOwnerActions
         fixerId={id}
         currentBio={bio}
