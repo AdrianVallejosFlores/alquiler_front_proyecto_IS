@@ -119,25 +119,35 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
       document.body.style.overflow = 'auto';
       document.body.style.position = 'static';
       document.body.style.top = '';
-      
-      // Hacer scroll al elemento
-      targetElement.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'center',
-        inline: 'center'
-      });
-      
+
+      // Hacer scroll al elemento y centrarlo en la pantalla
+      setTimeout(() => {
+        targetElement.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center',
+          inline: 'center'
+        });
+      }, 100);
+
+      // Si el elemento está muy abajo (video o footer), hacer scroll extra para centrarlo
+      setTimeout(() => {
+        const rect = targetElement.getBoundingClientRect();
+        const absoluteY = window.scrollY + rect.top;
+        const centerY = absoluteY - (window.innerHeight / 2) + (rect.height / 2);
+        window.scrollTo({ top: centerY, behavior: 'smooth' });
+      }, 400);
+
       // Volver a bloquear después de un breve delay
       setTimeout(() => {
         document.body.style.overflow = 'hidden';
         document.body.style.position = 'fixed';
         document.body.style.top = `-${window.scrollY}px`;
         scrollY.current = window.scrollY;
-      }, 500);
-      
+      }, 700);
+
       // Resaltar el elemento objetivo
       targetElement.classList.add('tutorial-highlight');
-      
+
       return () => {
         targetElement.classList.remove('tutorial-highlight');
       };
