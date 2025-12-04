@@ -5,6 +5,8 @@ import FixerSkillsList from "../components/FixerSkillsList";
 import Calendario from "@/app/register_a_job/calendario";
 import TrabajosAgendadosWidget from "@/app/epic_VisualizadorDeTrabajosAgendadosVistaProveedor/page";
 import HistorialCalificaciones from "@/app/vendedor_ratings/page"
+import React from "react";
+import PromotionsSection from "../components/PromotionsSection";
 
 // --- INTERFACES ---
 interface FixerSkill {
@@ -219,7 +221,6 @@ export default async function FixerDetailPage({ params }: PageProps) {
         >
           Calificaciones
         </a>
-        
       </nav>
 
       {/* --- CAJA 1: Perfil --- */}
@@ -345,8 +346,7 @@ export default async function FixerDetailPage({ params }: PageProps) {
         id="seccion-disponibilidad"
         className="mt-8 scroll-mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
       >
-        <Calendario
-        />
+        <Calendario />
       </div>
 
       {/* --- CAJA 3: Historial de Trabajos --- */}
@@ -363,6 +363,11 @@ export default async function FixerDetailPage({ params }: PageProps) {
         className="mt-8 scroll-mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
       >
         <HistorialCalificaciones />
+      </div>
+
+      {/* --- CAJA 5: Promociones (igual que antes, abajo y responsive) --- */}
+      <div className="mt-12 mb-8">
+        <PromotionsSection fixerId={id} />
       </div>
 
       <FixerOwnerActions
