@@ -5,21 +5,7 @@ import Link from "next/link";
 export default function GestionCitasPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex flex-col">
-      {/* HEADER */}
-      <header className="flex justify-between items-center px-6 py-4 border-b shadow-sm bg-white">
-        <h1 className="text-2xl font-bold text-blue-700">Servineo</h1>
-        <nav className="flex gap-6 text-blue-700 font-medium">
-          <Link href="/agenda/citas-agendadas" className="hover:underline">
-            Mis Citas
-          </Link>
-          <Link href="/worker/cancelacion" className="hover:underline">
-            Cancelar Varias Citas
-          </Link>
-          <Link href="/worker/registrarHorarios" className="hover:underline">
-            Horarios Laborales
-          </Link>
-        </nav>
-      </header>
+
 
       <main className="flex flex-col items-center justify-center py-24">
         <h2 className="text-3xl font-bold text-blue-800 mb-4">Gestión de Citas</h2>

@@ -149,6 +149,20 @@ export default function SimpleProfileMenu() {
 
       <hr className="border-gray-300 mb-3" />
 
+      <button
+        onClick={() => router.push("/booking/agenda/citas-agendadas")}
+        className="text-base sm:text-base font-semibold text-gray-800 hover:bg-gray-100 rounded-2xl px-4 py-3 w-full text-left transition duration-150"
+      >
+        Mis Citas
+      </button>
+
+      <button
+        onClick={() => router.push("/booking/worker")}
+        className="text-base sm:text-base font-semibold text-gray-800 hover:bg-gray-100 rounded-2xl px-4 py-3 w-full text-left transition duration-150"
+      >
+        Gestionar Citas
+      </button>
+
       {/* Botón Configuración */}
       <button
         onClick={toggleSubMenu}
