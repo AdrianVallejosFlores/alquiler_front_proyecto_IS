@@ -2,9 +2,7 @@
 
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
 import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaFacebookF, FaInstagram, FaBookOpen } from 'react-icons/fa';
 import { SiTiktok } from 'react-icons/si';
 import Modal from '../reutilizables/Modal';
@@ -115,23 +113,6 @@ const modalContents = {
   }
 };
 
-const languageOptions = [
-  {
-    code: 'es',
-    label: 'Español',
-    flagSrc: '/flags/es.svg',
-    flagAlt: 'Bandera de España'
-  },
-  {
-    code: 'en',
-    label: 'English',
-    flagSrc: '/flags/us.svg',
-    flagAlt: 'United States flag'
-  }
-] as const;
-
-type LanguageCode = typeof languageOptions[number]['code'];
-
 // Dirección de contacto usada en todo el footer
 const CONTACT_EMAIL = 'servineobol@gmail.com';
 
@@ -175,37 +156,8 @@ const openMailClientOrGmail = (subjectText = 'Contacto desde Servineo', bodyText
 
 const Footer = () => {
   const [activeModal, setActiveModal] = useState<keyof typeof modalContents | null>(null);
-  const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
   const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);
-  const languageMenuRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
-  const { lang, setLang, t } = useLanguage();
-
-  useEffect(() => {
-    if (!isLanguageMenuOpen) {
-      return;
-    }
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (languageMenuRef.current && !languageMenuRef.current.contains(event.target as Node)) {
-        setIsLanguageMenuOpen(false);
-      }
-    };
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsLanguageMenuOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isLanguageMenuOpen]);
+  const { t } = useLanguage();
 
   // ✅ NUEVO: Verificar si el usuario está autenticado
   const isUserAuthenticated = () => {
@@ -231,13 +183,6 @@ const Footer = () => {
       setShowLoginRequiredModal(true);
     }
   };
-
-  const showTutorial = () => {
-    // Disparar evento personalizado para mostrar el tutorial
-    window.dispatchEvent(new CustomEvent('show-tutorial'));
-  };
-
-  const selectedLanguage = languageOptions.find((option) => option.code === lang) ?? languageOptions[0];
 
   const handleCloseModal = () => {
     setActiveModal(null);
@@ -350,65 +295,11 @@ const Footer = () => {
           </div>
 
           <div className="border-t border-[#1140bc] mt-8 pt-8 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-                <p className="text-sm text-[#89c9ff]">© {new Date().getFullYear()} Servineo. {lang === 'es' ? 'Todos los derechos reservados.' : 'All rights reserved.'}</p>
-            <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
-              <div className="relative w-full md:w-auto" ref={languageMenuRef}>
-                <button
-                  type="button"
-                  onClick={() => setIsLanguageMenuOpen((prev) => !prev)}
-                  className="w-full md:w-auto flex items-center justify-center gap-2 text-sm border border-[#1140bc] px-4 py-2 rounded-md transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] focus:ring-offset-2 focus:ring-offset-[#11255a]"
-                  aria-haspopup="listbox"
-                  aria-expanded={isLanguageMenuOpen}
-                >
-                  <Image
-                    src={selectedLanguage.flagSrc}
-                    alt={selectedLanguage.flagAlt}
-                    width={24}
-                    height={18}
-                    className="h-4 w-6 rounded-sm object-cover"
-                  />
-                  <span>{selectedLanguage.label}</span>
-                  <span className="text-xs" aria-hidden>▾</span>
-                </button>
-                {isLanguageMenuOpen && (
-                  <div className="absolute left-0 bottom-full mb-2 w-full md:w-40 rounded-md border border-[#1140bc] bg-[#0e2358] shadow-lg z-10">
-                    <ul role="listbox" aria-label="Seleccionar idioma">
-                      {languageOptions.map((option) => (
-                        <li key={option.code}>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setLang(option.code as any);
-                              setIsLanguageMenuOpen(false);
-                            }}
-                            className={`flex w-full items-center gap-2 px-4 py-2 text-sm transition transform duration-150 ease-in-out hover:scale-105 ${
-                              option.code === lang
-                                ? 'bg-[#1140bc] text-[#d8ecff]'
-                                : 'text-[#d8ecff] hover:bg-[#173a87]'
-                            }`}
-                            role="option"
-                            aria-selected={option.code === lang}
-                          >
-                            <Image
-                              src={option.flagSrc}
-                              alt={option.flagAlt}
-                              width={24}
-                              height={18}
-                              className="h-4 w-6 rounded-sm object-cover"
-                            />
-                            <span>{option.label}</span>
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-              <div className="flex flex-wrap justify-center gap-4 w-full md:w-auto">
-                <button type="button" onClick={() => setActiveModal('privacy')} className="w-full md:w-auto text-sm transition transform duration-200 ease-in-out hover:text-[#52abff] hover:scale-105 border border-[#1140bc] px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#52abff]">Política de privacidad</button>
-                <button type="button" onClick={() => setActiveModal('terms')} className="w-full md:w-auto text-sm transition transform duration-200 ease-in-out hover:text-[#52abff] hover:scale-105 border border-[#1140bc] px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#52abff]">Términos de uso</button>
-                <button type="button" onClick={() => setActiveModal('cookies')} className="w-full md:w-auto text-sm transition transform duration-200 ease-in-out hover:text-[#52abff] hover:scale-105 border border-[#1140bc] px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#52abff]">Política de cookies</button>
-              </div>
+            <p className="text-sm text-[#89c9ff]">© {new Date().getFullYear()} Servineo. {t('all_rights_reserved')}</p>
+            <div className="flex flex-wrap justify-center gap-4 w-full md:w-auto">
+              <button type="button" onClick={() => setActiveModal('privacy')} className="w-full md:w-auto text-sm transition transform duration-200 ease-in-out hover:text-[#52abff] hover:scale-105 border border-[#1140bc] px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#52abff]">Política de privacidad</button>
+              <button type="button" onClick={() => setActiveModal('terms')} className="w-full md:w-auto text-sm transition transform duration-200 ease-in-out hover:text-[#52abff] hover:scale-105 border border-[#1140bc] px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#52abff]">Términos de uso</button>
+              <button type="button" onClick={() => setActiveModal('cookies')} className="w-full md:w-auto text-sm transition transform duration-200 ease-in-out hover:text-[#52abff] hover:scale-105 border border-[#1140bc] px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#52abff]">Política de cookies</button>
             </div>
           </div>
         </div>

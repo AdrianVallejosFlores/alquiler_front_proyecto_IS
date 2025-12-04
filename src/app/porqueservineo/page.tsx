@@ -113,11 +113,11 @@ const PorQueServineoPage: React.FC = () => {
   return (
     <main className="w-full flex flex-col items-center justify-center bg-gray-50 text-center overflow-x-hidden">
       {/* 🔹 Header fijo */}
-      <section className="fixed top-0 left-0 right-0 z-40 bg-gradient-to-r from-blue-600 to-purple-700 text-white pt-20 pb-8 w-full shadow-lg">
+      <section className="fixed top-0 left-0 right-0 z-40 bg-linear-to-r from-blue-600 to-purple-700 text-white pt-20 pb-8 w-full shadow-lg">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-center flex-wrap">
             <div
-              className="flex-shrink-0 mr-4 md:mr-8 cursor-pointer transition-transform hover:scale-105"
+              className="shrink-0 mr-4 md:mr-8 cursor-pointer transition-transform hover:scale-105"
               onClick={() => router.push("/")}
               title="Volver al inicio"
             >
@@ -144,7 +144,7 @@ const PorQueServineoPage: React.FC = () => {
       </section>
 
       {/* 🔹 Espaciador */}
-      <div className="h-[220px] md:h-[240px]"></div>
+      <div className="h-[220px] md:h-60"></div>
 
       {/* 🔹 Contenido principal */}
       <section className="w-full max-w-7xl px-3 sm:px-4 md:px-6 py-16 space-y-24 text-left">
@@ -233,7 +233,7 @@ const PorQueServineoPage: React.FC = () => {
       <ComparisonTable />
 
       {/* 🔹 Footer */}
-      <section className="w-full py-16 flex flex-col items-center bg-gradient-to-r from-blue-600 to-purple-700 text-white">
+      <section className="w-full py-16 flex flex-col items-center bg-linear-to-r from-blue-600 to-purple-700 text-white">
         <h2 className="text-2xl sm:text-3xl font-semibold mb-8">
           ¿Listo para Unirte a SERVINEO?
         </h2>
