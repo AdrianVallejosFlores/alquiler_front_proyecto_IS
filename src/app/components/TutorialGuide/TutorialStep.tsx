@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { TutorialStep as TutorialStepType } from './types';
 
 interface TutorialStepProps {
@@ -23,207 +23,245 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const stepRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
-  const originalStyle = useRef({
-    overflow: '',
-    position: '',
-    top: '',
-    width: '',
-    height: ''
-  });
   const scrollY = useRef(0);
+  const isInitialized = useRef(false);
 
-  // Bloquear scroll COMPLETAMENTE en el body y html cuando el tutorial está activo
+  // Función para calcular posición del tooltip
+  const calculateTooltipPosition = useCallback(() => {
+    const targetElement = document.querySelector(`[data-tutorial="${step.targetElement}"]`);
+    if (targetElement && stepRef.current) {
+      const rect = targetElement.getBoundingClientRect();
+      const stepRect = stepRef.current.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      
+      console.log(`📏 Calculando tooltip para: ${step.targetElement}`);
+      console.log(`📍 Elemento - top: ${rect.top}, left: ${rect.left}, width: ${rect.width}, height: ${rect.height}`);
+      console.log(`📐 Tooltip - width: ${stepRect.width}, height: ${stepRect.height}`);
+      
+      // Inicializar variables
+      let top: number;
+      let left: number;
+      
+      // POSICIÓN ESPECIAL PARA PASO 6
+      if (step.targetElement === "support-section") {
+        console.log("🎯 POSICIÓN ESPECIAL PASO 6 - MEJOR VISIBILIDAD");
+        
+        // ESTRATEGIA MEJORADA: El elemento está a la derecha (según logs: left: 1104px)
+        // El tooltip debe ir a la IZQUIERDA pero BIEN POSICIONADO
+        
+        // 1. Calcular posición a la izquierda del elemento
+        left = rect.left - stepRect.width - 30;
+        
+        // 2. Centrar verticalmente con la parte visible de la sección
+        const visibleTop = Math.max(rect.top, 100);
+        const visibleBottom = Math.min(rect.bottom, viewportHeight - 100);
+        const visibleHeight = visibleBottom - visibleTop;
+        
+        if (visibleHeight > stepRect.height) {
+          // Hay espacio para centrar
+          top = visibleTop + (visibleHeight / 2) - (stepRect.height / 2);
+        } else {
+          // Poco espacio, poner en el centro del elemento
+          top = rect.top + (rect.height / 2) - (stepRect.height / 2);
+        }
+        
+        console.log(`📊 Visible area: top=${visibleTop}, bottom=${visibleBottom}, height=${visibleHeight}`);
+        console.log(`📍 Posición inicial: left=${left}, top=${top}`);
+        
+        // 3. Si no cabe a la izquierda (muy cerca del borde), ajustar
+        if (left < 20) {
+          console.log("⬅️ Demasiado a la izquierda, ajustando...");
+          left = 20; // Mínimo margen
+          
+          // Intentar poner arriba del elemento
+          if (rect.top > stepRect.height + 50) {
+            top = rect.top - stepRect.height - 30;
+            left = rect.left + (rect.width / 2) - (stepRect.width / 2);
+            console.log("⬆️ Poniendo arriba del elemento");
+          }
+        }
+        
+        // 4. Si el tooltip cubre mucho el elemento, mover más arriba/abajo
+        const tooltipBottom = top + stepRect.height;
+        if (tooltipBottom > rect.top && top < rect.bottom) {
+          console.log("🔄 Tooltip cubre elemento, ajustando posición...");
+          
+          // Intentar poner debajo si hay espacio
+          if (rect.bottom + stepRect.height + 30 < viewportHeight - 50) {
+            top = rect.bottom + 30;
+            left = rect.left + (rect.width / 2) - (stepRect.width / 2);
+            console.log("⬇️ Moviendo debajo del elemento");
+          }
+        }
+      } else {
+        // Para otros pasos: lógica normal
+        top = rect.bottom + 20;
+        left = rect.left;
+        
+        if (step.position === 'top') {
+          top = rect.top - stepRect.height - 20;
+        } else if (step.position === 'left') {
+          left = rect.left - stepRect.width - 20;
+          top = rect.top + (rect.height / 2) - (stepRect.height / 2);
+        } else if (step.position === 'right') {
+          left = rect.right + 20;
+          top = rect.top + (rect.height / 2) - (stepRect.height / 2);
+        }
+      }
+      
+      // Asegurar que esté dentro de la pantalla
+      const margin = 20;
+      if (top < margin) top = margin;
+      if (top + stepRect.height > viewportHeight - margin) {
+        top = viewportHeight - stepRect.height - margin;
+      }
+      if (left < margin) left = margin;
+      if (left + stepRect.width > viewportWidth - margin) {
+        left = viewportWidth - stepRect.width - margin;
+      }
+      
+      console.log(`✅ Tooltip posicionado: top=${Math.round(top)}, left=${Math.round(left)}`);
+      setPosition({ top, left });
+    }
+  }, [step.targetElement, step.position]);
+
+  // EFECTO PRINCIPAL: Scroll al elemento y setup
   useEffect(() => {
-    const blockScroll = () => {
-      // Guardar posición actual del scroll
+    console.log(`🚀 INICIANDO PASO ${currentStep + 1}: ${step.targetElement}`);
+    isInitialized.current = false;
+
+    const initializeStep = () => {
+      const targetElement = document.querySelector(`[data-tutorial="${step.targetElement}"]`);
+      
+      if (!targetElement) {
+        console.error(`❌ Elemento no encontrado: ${step.targetElement}`);
+        return;
+      }
+
+      console.log(`✅ Elemento encontrado, haciendo scroll...`);
+      
+      // 1. GUARDAR posición actual del scroll
       scrollY.current = window.scrollY;
       
-      // Guardar los valores originales del body
-      originalStyle.current = {
-        overflow: document.body.style.overflow,
-        position: document.body.style.position,
-        top: document.body.style.top,
-        width: document.body.style.width,
-        height: document.body.style.height
-      };
+      // 2. ESPECIAL PARA PASO 6: Mostrar toda la sección de soporte
+      if (step.targetElement === "support-section") {
+        console.log("🎯 CONFIGURACIÓN ESPECIAL PARA PASO 6");
+        
+        // Convertir a HTMLElement
+        const htmlElement = targetElement as HTMLElement;
+        
+        // Para el paso 6, mostrar la sección completa
+        // Calcular posición para que se vea bien
+        const rect = htmlElement.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        
+        if (rect.height > viewportHeight * 0.8) {
+          // Sección muy grande, mostrar desde el inicio
+          htmlElement.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start',
+            inline: 'nearest'
+          });
+        } else {
+          // Sección normal, centrar
+          htmlElement.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center',
+            inline: 'center'
+          });
+        }
+        
+        // Pequeño ajuste después del scroll
+        setTimeout(() => {
+          const newRect = htmlElement.getBoundingClientRect();
+          console.log(`📏 Después del scroll - top: ${newRect.top}, visible: ${newRect.top > 50 && newRect.bottom < viewportHeight - 50 ? 'SÍ' : 'NO'}`);
+          
+          // Si no se ve completamente, ajustar
+          if (newRect.top < 50 || newRect.bottom > viewportHeight - 50) {
+            const scrollAdjust = htmlElement.offsetTop - 80;
+            window.scrollTo({
+              top: scrollAdjust,
+              behavior: 'smooth'
+            });
+            console.log(`🔧 Ajustando scroll a: ${scrollAdjust}px`);
+          }
+        }, 500);
+      } else {
+        // 3. PARA OTROS PASOS: Scroll normal al centro
+        targetElement.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center',
+          inline: 'center'
+        });
+      }
       
-      // Bloquear scroll en body
-      document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${scrollY.current}px`;
-      document.body.style.width = '100%';
-      document.body.style.height = '100%';
+      // 4. Resaltar el elemento
+      targetElement.classList.add('tutorial-highlight');
       
-      // También bloquear scroll en html
-      document.documentElement.style.overflow = 'hidden';
-      document.documentElement.style.position = 'relative';
-      document.documentElement.style.height = '100%';
+      // 5. Esperar a que termine el scroll y luego bloquear
+      setTimeout(() => {
+        console.log(`🔒 Aplicando bloqueo de scroll...`);
+        
+        // Bloquear scroll
+        document.body.style.overflow = 'hidden';
+        document.documentElement.style.overflow = 'hidden';
+        
+        // Calcular posición del tooltip
+        calculateTooltipPosition();
+        
+        isInitialized.current = true;
+      }, 1000); // Más tiempo para el paso 6
     };
 
-    const enableScroll = () => {
-      // Restaurar valores originales del body
-      document.body.style.overflow = originalStyle.current.overflow;
-      document.body.style.position = originalStyle.current.position;
-      document.body.style.top = originalStyle.current.top;
-      document.body.style.width = originalStyle.current.width;
-      document.body.style.height = originalStyle.current.height;
+    initializeStep();
+
+    return () => {
+      // Cleanup
+      const targetElement = document.querySelector(`[data-tutorial="${step.targetElement}"]`);
+      if (targetElement) {
+        targetElement.classList.remove('tutorial-highlight');
+      }
       
-      // Restaurar valores originales del html
+      // Restaurar scroll temporalmente
+      document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
-      document.documentElement.style.position = '';
-      document.documentElement.style.height = '';
-      
-      // Restaurar la posición del scroll
-      window.scrollTo(0, scrollY.current);
     };
+  }, [step.targetElement, currentStep, calculateTooltipPosition]);
 
-    // Bloquear scroll cuando el componente se monta
-    blockScroll();
-
-    // También prevenir scroll con rueda del mouse en toda la página
+  // Bloquear eventos de scroll/wheel
+  useEffect(() => {
     const preventScroll = (e: Event) => {
       e.preventDefault();
       e.stopPropagation();
       return false;
     };
-
-    // Agregar event listeners para bloquear todos los tipos de scroll
-    document.addEventListener('wheel', preventScroll, { passive: false });
-    document.addEventListener('touchmove', preventScroll, { passive: false });
-    document.addEventListener('scroll', preventScroll, { passive: false });
-    document.addEventListener('keydown', (e) => {
-      // Bloquear teclas de navegación (Page Up, Page Down, Space, Arrow keys)
-      if ([
-        'Space', ' ', 'PageUp', 'PageDown', 
-        'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'
-      ].includes(e.key)) {
+    
+    const preventKeyScroll = (e: KeyboardEvent) => {
+      const scrollKeys = [' ', 'Spacebar', 'PageUp', 'PageDown', 'ArrowUp', 'ArrowDown'];
+      if (scrollKeys.includes(e.key)) {
         e.preventDefault();
         e.stopPropagation();
       }
-    });
-
-    // Permitir scroll cuando el componente se desmonta
-    return () => {
-      enableScroll();
-      document.removeEventListener('wheel', preventScroll);
-      document.removeEventListener('touchmove', preventScroll);
-      document.removeEventListener('scroll', preventScroll);
     };
-  }, []);
-
-  // Scroll al elemento objetivo - solo al cambiar de paso
-  useEffect(() => {
-    const targetElement = document.querySelector(`[data-tutorial="${step.targetElement}"]`);
-    if (targetElement) {
-      // Permitir scroll momentáneamente
-      document.body.style.overflow = 'auto';
-      document.body.style.position = 'static';
-      document.body.style.top = '';
-      
-      // Hacer scroll al elemento
-      targetElement.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'center',
-        inline: 'center'
-      });
-      
-      // Volver a bloquear después de un breve delay
-      setTimeout(() => {
-        document.body.style.overflow = 'hidden';
-        document.body.style.position = 'fixed';
-        document.body.style.top = `-${window.scrollY}px`;
-        scrollY.current = window.scrollY;
-      }, 500);
-      
-      // Resaltar el elemento objetivo
-      targetElement.classList.add('tutorial-highlight');
-      
-      return () => {
-        targetElement.classList.remove('tutorial-highlight');
-      };
+    
+    if (isInitialized.current) {
+      window.addEventListener('wheel', preventScroll, { passive: false });
+      window.addEventListener('touchmove', preventScroll, { passive: false });
+      window.addEventListener('keydown', preventKeyScroll);
     }
-  }, [step.targetElement]);
+    
+    return () => {
+      window.removeEventListener('wheel', preventScroll);
+      window.removeEventListener('touchmove', preventScroll);
+      window.removeEventListener('keydown', preventKeyScroll);
+    };
+  }, [currentStep]);
 
-  // Efecto para calcular la posición del tooltip
-  useEffect(() => {
-    // Esperar un poco para que todo se estabilice
-    const timer = setTimeout(() => {
-      const updatePosition = () => {
-        const targetElement = document.querySelector(`[data-tutorial="${step.targetElement}"]`);
-        if (targetElement && stepRef.current) {
-          const rect = targetElement.getBoundingClientRect();
-          const stepRect = stepRef.current.getBoundingClientRect();
-          
-          console.log(`🔍 PASO ${currentStep + 1} (${step.targetElement}):`);
-          console.log(`📏 Elemento - top: ${rect.top}, left: ${rect.left}, width: ${rect.width}, height: ${rect.height}`);
-          console.log(`📐 Tooltip - width: ${stepRect.width}, height: ${stepRect.height}`);
-          
-          let top = rect.bottom + 10;
-          let left = rect.left;
-
-          // Ajustar posición según la preferencia y espacio disponible
-          if (step.position === 'top') {
-            top = rect.top - stepRect.height - 10;
-          }
-
-          // POSICIÓN FIJA ESPECÍFICA PARA EL PASO 6
-          if (step.targetElement === "support-section") {
-            console.log("🎯 CONFIGURANDO POSICIÓN FIJA PARA PASO 6");
-            
-            // Para el paso 6, siempre poner el tooltip a la DERECHA del elemento
-            // y centrado verticalmente con la sección de soporte
-            left = rect.right + 20;
-            
-            // Centrar verticalmente con la sección
-            const sectionCenter = rect.top + (rect.height / 2);
-            top = sectionCenter - (stepRect.height / 2);
-            
-            console.log(`📍 Posición calculada - top: ${top}, left: ${left}`);
-            
-            // Si no cabe a la derecha (se sale de la pantalla)
-            if (left + stepRect.width > window.innerWidth - 20) {
-              console.log("⚠️ No cabe a la derecha, moviendo a IZQUIERDA");
-              left = rect.left - stepRect.width - 20;
-            }
-            
-            // Si no cabe a la izquierda tampoco
-            if (left < 20) {
-              console.log("⚠️ No cabe a la izquierda, poniendo ARRIBA");
-              left = rect.left + (rect.width / 2) - (stepRect.width / 2);
-              top = rect.top - stepRect.height - 20;
-            }
-          }
-
-          // Asegurar que no se salga de la pantalla
-          if (top + stepRect.height > window.innerHeight - 20) {
-            top = window.innerHeight - stepRect.height - 20;
-          }
-          if (top < 20) {
-            top = 20;
-          }
-          if (left + stepRect.width > window.innerWidth - 20) {
-            left = window.innerWidth - stepRect.width - 20;
-          }
-          if (left < 20) {
-            left = 20;
-          }
-
-          console.log(`✅ POSICIÓN FINAL - top: ${top}, left: ${left}`);
-          setPosition({ top, left });
-        }
-      };
-
-      updatePosition();
-    }, 100); // Pequeño delay para estabilizar
-
-    return () => clearTimeout(timer);
-  }, [step, currentStep]);
-
-  // Focus trap - mantener Tab dentro del tooltip
+  // Focus trap
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key !== 'Tab') return;
-
       if (!tooltipRef.current) return;
 
       const focusableElements = tooltipRef.current.querySelectorAll(
@@ -252,13 +290,13 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
 
     const currentTooltip = tooltipRef.current;
     if (currentTooltip) {
-      currentTooltip.addEventListener('keydown', handleKeyDown);
-      currentTooltip.setAttribute('tabindex', '-1');
-      currentTooltip.focus();
-      const firstButton = currentTooltip.querySelector('button');
-      if (firstButton) {
-        setTimeout(() => (firstButton as HTMLElement).focus(), 0);
-      }
+      setTimeout(() => {
+        currentTooltip.addEventListener('keydown', handleKeyDown);
+        const firstButton = currentTooltip.querySelector('button');
+        if (firstButton) {
+          (firstButton as HTMLElement).focus();
+        }
+      }, 500);
     }
 
     return () => {
@@ -268,18 +306,23 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
     };
   }, [currentStep]);
 
+  // Handler para botones
+  const handleAction = (action: () => void) => {
+    document.body.style.overflow = '';
+    document.documentElement.style.overflow = '';
+    action();
+  };
+
   return (
-    <>
-      <div
-        ref={tooltipRef}
-        className="fixed z-60 bg-white rounded-xl shadow-2xl border border-blue-100 max-w-sm w-full transform transition-all duration-300"
-        style={{
-          top: `${position.top}px`,
-          left: `${position.left}px`,
-          position: 'fixed'
-        }}
-      >
-        <div ref={stepRef}>
+    <div
+      ref={tooltipRef}
+      className="fixed z-60 bg-white rounded-xl shadow-2xl border border-blue-100 max-w-sm w-full"
+      style={{
+        top: `${position.top}px`,
+        left: `${position.left}px`,
+      }}
+    >
+      <div ref={stepRef}>
         <div className="bg-linear-to-r from-[#11255a] to-[#52abff] p-4 rounded-t-xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -299,7 +342,7 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
         <div className="flex justify-between items-center p-4 border-t border-gray-100">
           <div className="flex gap-2">
             <button
-              onClick={onPrev}
+              onClick={() => handleAction(onPrev)}
               disabled={currentStep === 0}
               className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
                 currentStep === 0
@@ -310,7 +353,7 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
               ← Anterior
             </button>
             <button
-              onClick={onNext}
+              onClick={() => handleAction(onNext)}
               className="px-4 py-2 bg-linear-to-r from-[#52abff] to-[#11255a] text-white rounded-lg font-medium hover:from-[#3a9cff] hover:to-[#0e1f4d] transition-all duration-200 transform hover:scale-105"
             >
               {currentStep === totalSteps - 1 ? 'Finalizar ' : 'Siguiente →'}
@@ -318,15 +361,14 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
           </div>
           
           <button
-            onClick={onSkip}
+            onClick={() => handleAction(onSkip)}
             className="text-gray-500 hover:text-gray-700 font-medium text-sm hover:scale-105 transition-transform duration-200"
           >
             Saltar
           </button>
         </div>
-        </div>
       </div>
-    </>
+    </div>
   );
 };
 

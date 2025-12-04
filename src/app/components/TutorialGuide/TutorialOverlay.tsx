@@ -22,8 +22,8 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
     bottom: number;
   } | null>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
-  const animationFrameId = useRef<number | null>(null); // ✅ CORREGIDO: Valor inicial null
-  const hasCalculatedRef = useRef<boolean>(false); // ✅ CORREGIDO: Valor inicial false
+  const animationFrameId = useRef<number | null>(null);
+  const hasCalculatedRef = useRef<boolean>(false);
 
   // Función para calcular el spotlight de manera ESTABLE
   const calculateSpotlight = useCallback(() => {
@@ -36,43 +36,19 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
     
     // Para el PASO 6 específicamente
     if (targetElement === "support-section") {
-      console.log("🎯 CALCULANDO SPOTLIGHT ESTABLE PARA PASO 6");
-      console.log(`📏 Posición actual - top: ${rect.top}, left: ${rect.left}`);
+      console.log("🎯 CALCULANDO SPOTLIGHT PARA PASO 6");
+      console.log(`📏 Posición actual - top: ${rect.top}, left: ${rect.left}, width: ${rect.width}, height: ${rect.height}`);
       
-      // MEDICIÓN PRECISA: Obtener la posición del contenido REAL
-      const contentElements = targetElementNode.querySelectorAll('li, a, button, span');
-      let contentRect = rect;
+      // Para el paso 6, hacer un spotlight más compacto alrededor del contenido real
+      // Usar el rectángulo del elemento pero con menos padding
       
-      if (contentElements.length > 0) {
-        // Calcular el bounding box de TODO el contenido
-        let minTop = Infinity, minLeft = Infinity, maxBottom = -Infinity, maxRight = -Infinity;
-        
-        contentElements.forEach(el => {
-          const elRect = el.getBoundingClientRect();
-          minTop = Math.min(minTop, elRect.top);
-          minLeft = Math.min(minLeft, elRect.left);
-          maxBottom = Math.max(maxBottom, elRect.bottom);
-          maxRight = Math.max(maxRight, elRect.right);
-        });
-        
-        contentRect = new DOMRect(
-          minLeft,
-          minTop,
-          maxRight - minLeft,
-          maxBottom - minTop
-        );
-        
-        console.log("✅ Usando bounding box del contenido real");
-      }
-      
-      // Crear rectángulo EXPANDIDO para cubrir bien
       return {
-        top: contentRect.top - 25,
-        left: contentRect.left - 30,
-        width: Math.max(contentRect.width, 300) + 60,  // Mínimo 300px + padding
-        height: Math.max(contentRect.height, 200) + 50, // Mínimo 200px + padding
-        right: contentRect.left + Math.max(contentRect.width, 300) + 60 - 30,
-        bottom: contentRect.top + Math.max(contentRect.height, 200) + 50 - 25
+        top: rect.top - 15,           // Menos padding arriba
+        left: rect.left - 20,         // Menos padding izquierda
+        width: rect.width + 40,       // Padding total 40px
+        height: rect.height + 30,     // Padding total 30px
+        right: rect.left + rect.width + 40 - 20,
+        bottom: rect.top + rect.height + 30 - 15
       };
     }
     
@@ -117,10 +93,6 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
     };
 
     // STRATEGY: Esperar a que TODO esté completamente estable
-    // 1. Esperar a que termine cualquier animación de scroll
-    // 2. Esperar a que el navegador haga todos los reflows
-    // 3. Calcular UNA sola vez y mantenerlo fijo
-    
     const waitForStability = () => {
       // Cancelar cualquier cálculo anterior pendiente
       if (animationFrameId.current) {
@@ -158,7 +130,7 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
   if (!isActive || !spotlightRect) return null;
 
   return (
-    <div ref={overlayRef} className="fixed inset-0 z-50 pointer-events-none tutorial-step-6-container force-stable-render">
+    <div ref={overlayRef} className="fixed inset-0 z-50 pointer-events-none">
       {/* Fondo difuminado COMPLETAMENTE FIJO */}
       <div 
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
@@ -175,13 +147,13 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
             100% 100%, 
             100% 0%
           )`,
-          transition: 'clip-path 0.3s ease-out' // Transición suave pero no reactiva
+          transition: 'clip-path 0.3s ease-out'
         }}
       />
       
       {/* Borde resaltado - COMPLETAMENTE FIJO */}
       <div 
-        className="absolute pointer-events-none border-4 border-blue-500 rounded-xl bg-transparent tutorial-spotlight-step-6"
+        className="absolute pointer-events-none border-4 border-blue-500 rounded-xl bg-transparent"
         style={{
           top: `${spotlightRect.top - 12}px`,
           left: `${spotlightRect.left - 12}px`,
