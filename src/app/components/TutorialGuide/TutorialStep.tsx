@@ -111,92 +111,6 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
     };
   }, []);
 
-  // Efecto para calcular la posición inicial del tooltip
-  useEffect(() => {
-    const updatePosition = () => {
-      const targetElement = document.querySelector(`[data-tutorial="${step.targetElement}"]`);
-      if (targetElement && stepRef.current) {
-        const rect = targetElement.getBoundingClientRect();
-        const stepRect = stepRef.current.getBoundingClientRect();
-        
-        let top = rect.bottom + 10;
-        let left = rect.left;
-
-        // Ajustar posición según la preferencia y espacio disponible
-        if (step.position === 'top') {
-          top = rect.top - stepRect.height - 10;
-        }
-
-        // POSICIÓN ESPECIAL PARA EL PASO 6 (support-section)
-        if (step.targetElement === "support-section") {
-          console.log("🎯 POSICIONANDO TOOLTIP PARA PASO 6 - support-section");
-          
-          // Para el paso 6, queremos el tooltip bien visible SIN TAPAR
-          // Estrategia: Colocar a la IZQUIERDA del elemento, centrado verticalmente
-          
-          const spaceLeft = rect.left - stepRect.width - 40;
-          const spaceRight = window.innerWidth - rect.right - 40;
-          
-          // Decidir dónde ponerlo basado en el espacio disponible
-          if (spaceLeft > 100) {
-            // Hay mucho espacio a la izquierda - ponerlo ahí
-            left = rect.left - stepRect.width - 30;
-            top = rect.top + (rect.height / 2) - (stepRect.height / 2);
-            console.log("📍 Tooltip a la IZQUIERDA (centrado verticalmente)");
-          } else if (spaceRight > 100) {
-            // Hay mucho espacio a la derecha - ponerlo ahí
-            left = rect.right + 30;
-            top = rect.top + (rect.height / 2) - (stepRect.height / 2);
-            console.log("📍 Tooltip a la DERECHA (centrado verticalmente)");
-          } else {
-            // Poco espacio a los lados - ponerlo ARRIBA
-            top = rect.top - stepRect.height - 30;
-            left = rect.left + (rect.width / 2) - (stepRect.width / 2);
-            console.log("📍 Tooltip ARRIBA (centrado horizontalmente)");
-            
-            // Si no cabe arriba, ponerlo en la esquina superior derecha
-            if (top < 20) {
-              top = 20;
-              left = window.innerWidth - stepRect.width - 30;
-              console.log("📍 Tooltip en ESQUINA SUPERIOR DERECHA");
-            }
-          }
-          
-          // Asegurar que no se salga
-          if (top < 20) top = 20;
-          if (left < 20) left = 20;
-          if (left + stepRect.width > window.innerWidth - 20) {
-            left = window.innerWidth - stepRect.width - 20;
-          }
-        }
-
-        // Asegurar que no se salga de la pantalla (para todos los pasos)
-        if (top + stepRect.height > window.innerHeight) {
-          top = window.innerHeight - stepRect.height - 20;
-        }
-        if (top < 20) {
-          top = 20;
-        }
-        if (left + stepRect.width > window.innerWidth) {
-          left = window.innerWidth - stepRect.width - 20;
-        }
-        if (left < 20) {
-          left = 20;
-        }
-
-        console.log(`Paso ${currentStep + 1}: Posición final - top: ${top}, left: ${left}`);
-        setPosition({ top, left });
-      }
-    };
-
-    // Calcular posición solo una vez al inicio del paso
-    updatePosition();
-
-    return () => {
-      // No hacer nada aquí
-    };
-  }, [step, currentStep]);
-
   // Scroll al elemento objetivo - solo al cambiar de paso
   useEffect(() => {
     const targetElement = document.querySelector(`[data-tutorial="${step.targetElement}"]`);
@@ -230,24 +144,88 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
     }
   }, [step.targetElement]);
 
+  // Efecto para calcular la posición del tooltip
+  useEffect(() => {
+    // Esperar un poco para que todo se estabilice
+    const timer = setTimeout(() => {
+      const updatePosition = () => {
+        const targetElement = document.querySelector(`[data-tutorial="${step.targetElement}"]`);
+        if (targetElement && stepRef.current) {
+          const rect = targetElement.getBoundingClientRect();
+          const stepRect = stepRef.current.getBoundingClientRect();
+          
+          console.log(`🔍 PASO ${currentStep + 1} (${step.targetElement}):`);
+          console.log(`📏 Elemento - top: ${rect.top}, left: ${rect.left}, width: ${rect.width}, height: ${rect.height}`);
+          console.log(`📐 Tooltip - width: ${stepRect.width}, height: ${stepRect.height}`);
+          
+          let top = rect.bottom + 10;
+          let left = rect.left;
+
+          // Ajustar posición según la preferencia y espacio disponible
+          if (step.position === 'top') {
+            top = rect.top - stepRect.height - 10;
+          }
+
+          // POSICIÓN FIJA ESPECÍFICA PARA EL PASO 6
+          if (step.targetElement === "support-section") {
+            console.log("🎯 CONFIGURANDO POSICIÓN FIJA PARA PASO 6");
+            
+            // Para el paso 6, siempre poner el tooltip a la DERECHA del elemento
+            // y centrado verticalmente con la sección de soporte
+            left = rect.right + 20;
+            
+            // Centrar verticalmente con la sección
+            const sectionCenter = rect.top + (rect.height / 2);
+            top = sectionCenter - (stepRect.height / 2);
+            
+            console.log(`📍 Posición calculada - top: ${top}, left: ${left}`);
+            
+            // Si no cabe a la derecha (se sale de la pantalla)
+            if (left + stepRect.width > window.innerWidth - 20) {
+              console.log("⚠️ No cabe a la derecha, moviendo a IZQUIERDA");
+              left = rect.left - stepRect.width - 20;
+            }
+            
+            // Si no cabe a la izquierda tampoco
+            if (left < 20) {
+              console.log("⚠️ No cabe a la izquierda, poniendo ARRIBA");
+              left = rect.left + (rect.width / 2) - (stepRect.width / 2);
+              top = rect.top - stepRect.height - 20;
+            }
+          }
+
+          // Asegurar que no se salga de la pantalla
+          if (top + stepRect.height > window.innerHeight - 20) {
+            top = window.innerHeight - stepRect.height - 20;
+          }
+          if (top < 20) {
+            top = 20;
+          }
+          if (left + stepRect.width > window.innerWidth - 20) {
+            left = window.innerWidth - stepRect.width - 20;
+          }
+          if (left < 20) {
+            left = 20;
+          }
+
+          console.log(`✅ POSICIÓN FINAL - top: ${top}, left: ${left}`);
+          setPosition({ top, left });
+        }
+      };
+
+      updatePosition();
+    }, 100); // Pequeño delay para estabilizar
+
+    return () => clearTimeout(timer);
+  }, [step, currentStep]);
+
   // Focus trap - mantener Tab dentro del tooltip
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Primero manejar las teclas de navegación (bloquearlas)
-      if ([
-        'Space', ' ', 'PageUp', 'PageDown', 
-        'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'
-      ].includes(e.key)) {
-        e.preventDefault();
-        e.stopPropagation();
-        return;
-      }
-
       if (e.key !== 'Tab') return;
 
       if (!tooltipRef.current) return;
 
-      // Obtener todos los elementos focusables dentro del tooltip
       const focusableElements = tooltipRef.current.querySelectorAll(
         'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
       );
@@ -260,13 +238,11 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
       const activeElement = document.activeElement as HTMLElement;
 
       if (e.shiftKey) {
-        // Shift + Tab - moverse hacia atras
         if (activeElement === firstElement) {
           e.preventDefault();
           lastElement.focus();
         }
       } else {
-        // Tab - moverse hacia adelante
         if (activeElement === lastElement) {
           e.preventDefault();
           firstElement.focus();
@@ -274,7 +250,6 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
       }
     };
 
-    // Solo agregar listener cuando el tooltip este montado
     const currentTooltip = tooltipRef.current;
     if (currentTooltip) {
       currentTooltip.addEventListener('keydown', handleKeyDown);
