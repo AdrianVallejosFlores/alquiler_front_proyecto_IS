@@ -10,7 +10,7 @@ import type {
 } from "../Types/filtroType";
 
 // Normalizar NEXT_PUBLIC_API_URL para evitar duplicar '/api' si el valor ya lo incluye
-const rawBase = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
+const rawBase = process.env.NEXT_PUBLIC_API_URL ?? "https://alquiler-back-1-9td5.onrender.com";
 const normalized = rawBase.replace(/\/+$/, ""); // quitar slashes finales
 const apiRoot = normalized.endsWith("/api") ? normalized : `${normalized}/api`;
 // Prefijo de rutas para el módulo de borbotones

@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE = "http://localhost:5000/api/borbotones/search/avanzada";
+const BASE = "https://alquiler-back-1-9td5.onrender.com/api/borbotones/search/avanzada";
 
 // =====================================================================
 // ============================= TIPOS =================================

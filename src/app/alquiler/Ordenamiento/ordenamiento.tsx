@@ -8,7 +8,7 @@ const ordenarBorbotones = async (criterio: string) => {
   try {
     //http://localhost:5000/api/borbotones/orden?orden=${criterio}
     //https://alquiler-back.vercel.app/api/borbotones/orden?orden=${criterio}
-    const response = await fetch(`https://alquiler-back.vercel.app/api/borbotones/orden?orden=${criterio}`);
+    const response = await fetch(`https://alquiler-back-1-9td5.onrender.com/api/borbotones/orden?orden=${criterio}`);
     if (!response.ok) throw new Error("Error al ordenar borbotones");
 
     return await response.json();

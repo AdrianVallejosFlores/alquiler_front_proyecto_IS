@@ -224,7 +224,7 @@ export const getJobById = async (id: string): Promise<Job | null> => {
 
   // Si no es un trabajo de ejemplo, intentamos obtenerlo de la API
   try {
-    const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://alquiler-back-1-9td5.onrender.com/api";
     const endpoint = `${API_BASE}/borbotones/usuarios/${id}`;
     
     const response = await fetch(endpoint, {
@@ -279,7 +279,7 @@ export const getJobById = async (id: string): Promise<Job | null> => {
 // Función principal para obtener trabajos
 export const getJobs = async (): Promise<Job[]> => {
   try {
-    const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://alquiler-back-1-9td5.onrender.com/api";
     const endpoint = `${API_BASE}/borbotones/usuarios?limit=30`;
     
     console.log("Intentando obtener usuarios desde:", endpoint);

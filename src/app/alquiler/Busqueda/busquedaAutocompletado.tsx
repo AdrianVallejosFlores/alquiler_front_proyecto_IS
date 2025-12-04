@@ -42,7 +42,7 @@ interface ApiResponse {
 
 // Helper: normaliza NEXT_PUBLIC_API_URL evitando duplicar '/api'
 function getApiRoot(): string {
-    const raw = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+    const raw = process.env.NEXT_PUBLIC_API_URL || 'https://alquiler-back-1-9td5.onrender.com';
     const trimmed = raw.replace(/\/+$/, '');
     return trimmed.endsWith('/api') ? trimmed : `${trimmed}/api`;
 }
