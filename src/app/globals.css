@@ -50,3 +50,142 @@ html {
     opacity: 1;
   }
 }
+
+/* ==================== */
+/* ESTILOS PARA VISIBILIDAD TOTAL - SIN DIFUMINADO */
+/* ==================== */
+
+/* Elemento destacado en el tutorial - COMPLETAMENTE VISIBLE */
+.tutorial-highlight {
+  position: relative !important;
+  z-index: 100 !important;
+}
+
+/* Animación del borde del spotlight */
+@keyframes border-pulse {
+  0%, 100% {
+    border-color: rgba(59, 130, 246, 0.9);
+    box-shadow: 
+      0 0 0 9999px rgba(37, 99, 235, 0.2),
+      0 0 30px rgba(59, 130, 246, 0.6);
+  }
+  50% {
+    border-color: rgba(59, 130, 246, 1);
+    box-shadow: 
+      0 0 0 9999px rgba(37, 99, 235, 0.25),
+      0 0 50px rgba(59, 130, 246, 0.8);
+  }
+}
+
+/* Borde más grueso para el tutorial */
+.border-3 {
+  border-width: 3px;
+}
+
+/* Asegurar que el overlay esté por encima de todo */
+.fixed.z-50 {
+  z-index: 10000;
+}
+
+/* Tooltip del tutorial - asegurar que esté por encima */
+.fixed.z-60 {
+  z-index: 10001;
+}
+
+/* Smooth transitions for tutorial */
+.tutorial-step-enter {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+.tutorial-step-enter-active {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.tutorial-step-exit {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.tutorial-step-exit-active {
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 300ms, transform 300ms;
+}
+
+/* ==================== */
+/* ESTILOS PARA EL VIDEO */
+/* ==================== */
+
+/* Estilos para el video responsivo */
+.aspect-video {
+  aspect-ratio: 16 / 9;
+}
+
+/* Mejorar la apariencia del iframe de YouTube */
+iframe {
+  border: none;
+  border-radius: 12px;
+}
+
+/* Efectos hover para botones de video */
+.bg-red-600 {
+  transition: all 0.3s ease;
+}
+
+.bg-red-600:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
+}
+
+/* Mejorar la experiencia del video en móviles */
+@media (max-width: 768px) {
+  .max-w-4xl {
+    margin-left: 1rem;
+    margin-right: 1rem;
+  }
+  
+  /* Ajustar el tamaño del video en móviles */
+  .aspect-video {
+    aspect-ratio: 16 / 9;
+  }
+}
+
+/* ==================== */
+/* ESTILOS ADICIONALES PARA MEJOR UX */
+/* ==================== */
+
+/* Mejorar el scroll suave para el tutorial */
+.tutorial-scroll {
+  scroll-behavior: smooth;
+}
+
+/* Asegurar que los elementos del tutorial sean accesibles */
+.tutorial-tooltip {
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(82, 171, 255, 0.2);
+}
+
+/* Mejorar la legibilidad del texto en el tutorial */
+.tutorial-content {
+  line-height: 1.6;
+}
+
+/* Efectos de hover para botones del tutorial */
+.tutorial-button {
+  transition: all 0.2s ease-in-out;
+}
+
+.tutorial-button:hover {
+  transform: translateY(-1px);
+}
+
+/* Responsive adjustments for tutorial steps */
+@media (max-width: 640px) {
+  .tutorial-tooltip {
+    max-width: 90vw;
+    margin: 0 auto;
+  }
+}

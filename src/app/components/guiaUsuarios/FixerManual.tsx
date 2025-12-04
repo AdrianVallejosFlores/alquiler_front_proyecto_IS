@@ -50,7 +50,7 @@ export const FixerGuide = ({ setVista }: FixerGuideProps) => {
               }`}
             >
               <div className="flex items-center gap-4 mb-4">
-                <div className="flex-shrink-0 bg-blue-100 text-blue-600 rounded-full p-3">
+                <div className="shrink-0 bg-blue-100 text-blue-600 rounded-full p-3">
                   {step.icon}
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900">{step.title}</h3>
