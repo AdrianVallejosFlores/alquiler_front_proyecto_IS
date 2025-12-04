@@ -1,12 +1,6 @@
 @import "tailwindcss";
 /* ✅ CORRECCIÓN: Eliminar import de Leaflet CSS aquí, se maneja en layout.tsx */
 
-/*:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}*/
-
-/* ✅ CORRECCIÓN: Eliminar @theme que no es compatible */
 /* Usar las variables de CSS directamente */
 :root {
   --color-background: #ffffff;
@@ -14,13 +8,6 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
-
-/*@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #ffffff;
-    --foreground: #000000;
-  }
-}*/
 
 body {
   background: var(--color-background);
@@ -32,6 +19,7 @@ body {
 html {
   scroll-behavior: smooth;
 }
+
 .user-location-marker {
   animation: pulse 2s infinite;
 }
@@ -52,13 +40,32 @@ html {
 }
 
 /* ==================== */
-/* ESTILOS PARA VISIBILIDAD TOTAL - SIN DIFUMINADO */
+/* ESTILOS PARA VISIBILIDAD TOTAL DEL TUTORIAL */
 /* ==================== */
 
-/* Elemento destacado en el tutorial - COMPLETAMENTE VISIBLE */
+/* Elemento destacado en el tutorial - MUY VISIBLE */
 .tutorial-highlight {
   position: relative !important;
-  z-index: 100 !important;
+  z-index: 10050 !important;
+  animation: highlight-pulse 2s infinite ease-in-out !important;
+  border-radius: 8px;
+}
+
+@keyframes highlight-pulse {
+  0%, 100% { 
+    box-shadow: 
+      0 0 0 4px rgba(59, 130, 246, 0.7),
+      0 0 20px rgba(59, 130, 246, 0.4),
+      inset 0 0 10px rgba(59, 130, 246, 0.2) !important;
+    transform: scale(1);
+  }
+  50% { 
+    box-shadow: 
+      0 0 0 6px rgba(59, 130, 246, 0.9),
+      0 0 30px rgba(59, 130, 246, 0.6),
+      inset 0 0 15px rgba(59, 130, 246, 0.3) !important;
+    transform: scale(1.005);
+  }
 }
 
 /* Animación del borde del spotlight */
@@ -66,14 +73,16 @@ html {
   0%, 100% {
     border-color: rgba(59, 130, 246, 0.9);
     box-shadow: 
-      0 0 0 9999px rgba(37, 99, 235, 0.2),
-      0 0 30px rgba(59, 130, 246, 0.6);
+      0 0 0 9999px rgba(37, 99, 235, 0.25),
+      0 0 40px rgba(59, 130, 246, 0.8),
+      inset 0 0 20px rgba(255, 255, 255, 0.3);
   }
   50% {
     border-color: rgba(59, 130, 246, 1);
     box-shadow: 
-      0 0 0 9999px rgba(37, 99, 235, 0.25),
-      0 0 50px rgba(59, 130, 246, 0.8);
+      0 0 0 9999px rgba(37, 99, 235, 0.35),
+      0 0 60px rgba(59, 130, 246, 1),
+      inset 0 0 30px rgba(255, 255, 255, 0.5);
   }
 }
 
@@ -82,26 +91,41 @@ html {
   border-width: 3px;
 }
 
-/* Asegurar que el overlay esté por encima de todo */
+/* ==================== */
+/* Z-INDEX CORREGIDOS - CRÍTICO PARA VISIBILIDAD */
+/* ==================== */
+
+/* Asegurar que el overlay esté por encima de TODO */
 .fixed.z-50 {
-  z-index: 10000;
+  z-index: 10050 !important;
 }
 
-/* Tooltip del tutorial - asegurar que esté por encima */
+/* Tooltip del tutorial - POR ENCIMA del overlay */
 .fixed.z-60 {
-  z-index: 10001;
+  z-index: 10060 !important;
 }
+
+/* Garantizar que elementos destacados estén visibles */
+[data-tutorial].tutorial-highlight {
+  z-index: 10055 !important;
+  position: relative;
+}
+
+/* ==================== */
+/* TRANSICIONES Y ANIMACIONES */
+/* ==================== */
 
 /* Smooth transitions for tutorial */
 .tutorial-step-enter {
   opacity: 0;
-  transform: scale(0.9);
+  transform: scale(0.95) translateY(10px);
 }
 
 .tutorial-step-enter-active {
   opacity: 1;
-  transform: scale(1);
-  transition: opacity 300ms, transform 300ms;
+  transform: scale(1) translateY(0);
+  transition: opacity 400ms cubic-bezier(0.4, 0, 0.2, 1), 
+              transform 400ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .tutorial-step-exit {
@@ -111,7 +135,7 @@ html {
 
 .tutorial-step-exit-active {
   opacity: 0;
-  transform: scale(0.9);
+  transform: scale(0.95);
   transition: opacity 300ms, transform 300ms;
 }
 
@@ -140,7 +164,10 @@ iframe {
   box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
 }
 
-/* Mejorar la experiencia del video en móviles */
+/* ==================== */
+/* RESPONSIVE - MÓVILES */
+/* ==================== */
+
 @media (max-width: 768px) {
   .max-w-4xl {
     margin-left: 1rem;
@@ -151,41 +178,189 @@ iframe {
   .aspect-video {
     aspect-ratio: 16 / 9;
   }
+  
+  /* Mejoras para tutorial en móviles */
+  .tutorial-highlight {
+    animation: highlight-pulse-mobile 2s infinite ease-in-out !important;
+  }
+  
+  @keyframes highlight-pulse-mobile {
+    0%, 100% { 
+      box-shadow: 
+        0 0 0 3px rgba(59, 130, 246, 0.8),
+        0 0 15px rgba(59, 130, 246, 0.5),
+        inset 0 0 8px rgba(59, 130, 246, 0.2) !important;
+    }
+    50% { 
+      box-shadow: 
+        0 0 0 4px rgba(59, 130, 246, 0.95),
+        0 0 25px rgba(59, 130, 246, 0.7),
+        inset 0 0 12px rgba(59, 130, 246, 0.3) !important;
+    }
+  }
 }
 
 /* ==================== */
-/* ESTILOS ADICIONALES PARA MEJOR UX */
+/* ESTILOS ADICIONALES PARA GARANTIZAR FUNCIONALIDAD */
 /* ==================== */
 
-/* Mejorar el scroll suave para el tutorial */
+/* Scroll suave mejorado para tutorial */
 .tutorial-scroll {
   scroll-behavior: smooth;
 }
 
+/* Cuando el tutorial está activo, bloquear scroll del body */
+body.tutorial-active {
+  overflow: hidden !important;
+  position: fixed !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
 /* Asegurar que los elementos del tutorial sean accesibles */
 .tutorial-tooltip {
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  border: 2px solid rgba(82, 171, 255, 0.2);
+  box-shadow: 
+    0 25px 50px -12px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+  border: 2px solid rgba(82, 171, 255, 0.3) !important;
+  backdrop-filter: blur(10px);
 }
 
 /* Mejorar la legibilidad del texto en el tutorial */
 .tutorial-content {
   line-height: 1.6;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 /* Efectos de hover para botones del tutorial */
 .tutorial-button {
   transition: all 0.2s ease-in-out;
+  position: relative;
+  overflow: hidden;
 }
 
 .tutorial-button:hover {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.tutorial-button:active {
+  transform: translateY(0);
 }
 
 /* Responsive adjustments for tutorial steps */
 @media (max-width: 640px) {
   .tutorial-tooltip {
-    max-width: 90vw;
-    margin: 0 auto;
+    max-width: calc(100vw - 2rem) !important;
+    margin: 0 1rem !important;
+    left: 1rem !important;
+    right: 1rem !important;
   }
+  
+  /* Asegurar que el tooltip no se salga en móviles */
+  .fixed.z-60 {
+    max-width: calc(100vw - 2rem) !important;
+  }
+}
+
+/* ==================== */
+/* ESTILOS DE DEBUG Y VISIBILIDAD FORZADA */
+/* ==================== */
+
+/* Forzar visibilidad de elementos durante el tutorial */
+.tutorial-active-element {
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: block !important;
+}
+
+/* Evitar que elementos se oculten durante el tutorial */
+body:has(.fixed.z-50) [data-tutorial] {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Asegurar contraste en todos los navegadores */
+.tutorial-tooltip * {
+  color: inherit !important;
+}
+
+/* Fix para Safari/iOS */
+@supports (-webkit-touch-callout: none) {
+  .tutorial-highlight {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+  
+  body.tutorial-active {
+    position: relative;
+    overflow: hidden;
+    height: 100vh;
+  }
+}
+
+/* ==================== */
+/* ESTILOS ESPECÍFICOS PARA PASO 6 (SOPORTE) */
+/* ==================== */
+
+/* Garantizar que el footer de soporte sea visible */
+[data-tutorial="support-section"] {
+  position: relative !important;
+}
+
+[data-tutorial="support-section"].tutorial-highlight {
+  z-index: 10058 !important;
+}
+
+/* Mejorar visibilidad de enlaces en el paso 6 */
+[data-tutorial="support-section"] a,
+[data-tutorial="support-section"] button {
+  position: relative;
+  z-index: 10059 !important;
+}
+
+/* ==================== */
+/* ANIMACIONES DE ENTRADA MEJORADAS */
+/* ==================== */
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tutorial-fade-in {
+  animation: fade-in-up 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* ==================== */
+/* GARANTIZAR QUE TODO FUNCIONE EN TODOS LOS NAVEGADORES */
+/* ==================== */
+
+/* Fix para Firefox */
+@-moz-document url-prefix() {
+  .tutorial-highlight {
+    box-shadow: 
+      0 0 0 4px rgba(59, 130, 246, 0.7),
+      0 0 20px rgba(59, 130, 246, 0.4) !important;
+  }
+}
+
+/* Fix para Edge */
+@supports (-ms-ime-align: auto) {
+  .tutorial-tooltip {
+    border: 2px solid rgba(82, 171, 255, 0.4) !important;
+  }
+}
+
+/* Garantizar que no haya conflictos con otros estilos */
+#__next .tutorial-highlight,
+body .tutorial-highlight,
+html .tutorial-highlight {
+  z-index: 10050 !important;
 }

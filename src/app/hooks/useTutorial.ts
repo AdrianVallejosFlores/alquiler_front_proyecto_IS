@@ -17,20 +17,10 @@ export const useTutorial = () => {
     showStartPanel: false
   });
 
-  useEffect(() => {
-    // NOTE: We no longer auto-open the tutorial on first page load.
-    // Instead we will open it when the user explicitly requests it (via
-    // `show-tutorial`) or automatically after a successful login if the
-    // user hasn't seen it yet. This avoids showing the guide before the
-    // user signs in.
-  }, []);
-
   // Escuchar evento personalizado para mostrar el tutorial
   useEffect(() => {
     const handleShowTutorial = () => {
-      // Show the welcome/start panel when the user explicitly requests the
-      // tutorial. We don't mark it as "seen" yet — mark when they actually
-      // start the guide.
+      console.log('🎯 Evento "show-tutorial" recibido');
       setTutorialState({
         isActive: false,
         currentStep: 0,
@@ -39,15 +29,10 @@ export const useTutorial = () => {
       });
     };
 
-    window.addEventListener('show-tutorial', handleShowTutorial);
-
-    // If the user logs in successfully, and they haven't seen the tutorial
-    // before (checked via localStorage), then start the tutorial
     const handleLogin = () => {
+      console.log('🔑 Evento "login-exitoso" recibido');
       const hasSeenTutorial = localStorage.getItem('servineo-tutorial-seen');
       if (!hasSeenTutorial) {
-        // Show the welcome/start panel after login; user will click Start
-        // to begin the step-by-step guide.
         setTutorialState({
           isActive: false,
           currentStep: 0,
@@ -57,6 +42,7 @@ export const useTutorial = () => {
       }
     };
 
+    window.addEventListener('show-tutorial', handleShowTutorial);
     window.addEventListener('login-exitoso', handleLogin as EventListener);
 
     return () => {
@@ -66,8 +52,12 @@ export const useTutorial = () => {
   }, []);
 
   const startTutorial = () => {
-    // mark as seen when the user actually starts the guide
-    try { localStorage.setItem('servineo-tutorial-seen', 'true'); } catch (e) {}
+    console.log('🚀 Tutorial iniciado');
+    try { 
+      localStorage.setItem('servineo-tutorial-seen', 'true'); 
+    } catch (e) {
+      console.warn('No se pudo guardar en localStorage:', e);
+    }
     setTutorialState({
       isActive: true,
       currentStep: 0,
@@ -77,10 +67,13 @@ export const useTutorial = () => {
   };
 
   const nextStep = () => {
+    console.log(`➡️ Avanzando del paso ${tutorialState.currentStep} al ${tutorialState.currentStep + 1}`);
     setTutorialState(prev => {
-      if (prev.currentStep < 5) {
+      // IMPORTANTE: Cambiar de 5 a 6 pasos (0-5)
+      if (prev.currentStep < 5) { // 6 pasos totales (0, 1, 2, 3, 4, 5)
         return { ...prev, currentStep: prev.currentStep + 1 };
       } else {
+        console.log('✅ Tutorial completado');
         return { 
           ...prev, 
           isActive: false, 
@@ -92,6 +85,7 @@ export const useTutorial = () => {
   };
 
   const prevStep = () => {
+    console.log(`⬅️ Retrocediendo del paso ${tutorialState.currentStep} al ${tutorialState.currentStep - 1}`);
     setTutorialState(prev => ({
       ...prev,
       currentStep: Math.max(0, prev.currentStep - 1)
@@ -99,6 +93,7 @@ export const useTutorial = () => {
   };
 
   const skipTutorial = () => {
+    console.log('⏭️ Tutorial saltado');
     setTutorialState({
       isActive: false,
       currentStep: 0,
@@ -108,6 +103,7 @@ export const useTutorial = () => {
   };
 
   const closeTutorial = () => {
+    console.log('❌ Tutorial cerrado');
     setTutorialState({
       isActive: false,
       currentStep: 0,
@@ -117,6 +113,7 @@ export const useTutorial = () => {
   };
 
   const restartTutorial = () => {
+    console.log('🔄 Tutorial reiniciado');
     setTutorialState({
       isActive: true,
       currentStep: 0,
