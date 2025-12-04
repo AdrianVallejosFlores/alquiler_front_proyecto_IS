@@ -21,16 +21,47 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
       return;
     }
 
+
+
+
+
+
+
+
+    // AGREGADOS POR HENRY
+    //Funcion auxiliar agregado por Henry para manejar los casos responsive
+const getTutorialElement = (target: string) => {
+  const isMobile = window.innerWidth < 640;
+  return document.querySelector(
+    `[data-tutorial="${target}"][data-tutorial-breakpoint="${isMobile ? 'mobile' : 'desktop'}"]`
+  ) || document.querySelector(`[data-tutorial="${target}"]`);
+};
+
     const updateSpotlight = () => {
-      const targetElementNode = document.querySelector(`[data-tutorial="${targetElement}"]`);
+      // ANTES: const targetElementNode = document.querySelector(`[data-tutorial="${targetElement}"]`);
+      // DESPUÉS:
+      const targetElementNode = getTutorialElement(targetElement || '');
+      
       if (targetElementNode) {
         const rect = targetElementNode.getBoundingClientRect();
         setSpotlightRect(rect);
-        
-        // Asegurar que el elemento objetivo sea completamente visible
         targetElementNode.classList.add('tutorial-highlight');
       }
     };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     updateSpotlight();
     window.addEventListener('resize', updateSpotlight);

@@ -53,3 +53,5 @@ export const tutorialFeatures = [
   { name: "Ser Fixer" },
   { name: "Video tutorial" }
 ];
+
+

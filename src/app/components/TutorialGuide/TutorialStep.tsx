@@ -24,9 +24,35 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
   const stepRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  // AGREGADOS POR HENRY 
+
+  const getTutorialElement = (target: string) => {
+  const isMobile = window.innerWidth < 640;
+  return document.querySelector(
+    `[data-tutorial="${target}"][data-tutorial-breakpoint="${isMobile ? 'mobile' : 'desktop'}"]`
+  ) || document.querySelector(`[data-tutorial="${target}"]`);
+};
+
   useEffect(() => {
     const updatePosition = () => {
-      const targetElement = document.querySelector(`[data-tutorial="${step.targetElement}"]`);
+      // ANTES: const targetElement = document.querySelector(`[data-tutorial="${step.targetElement}"]`);
+      // DESPUÉS:
+      const targetElement = getTutorialElement(step.targetElement);
+
       if (targetElement && stepRef.current) {
         const rect = targetElement.getBoundingClientRect();
         const stepRect = stepRef.current.getBoundingClientRect();
@@ -69,7 +95,9 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
 
   // Scroll al elemento objetivo
   useEffect(() => {
-    const targetElement = document.querySelector(`[data-tutorial="${step.targetElement}"]`);
+      // ANTES: const targetElement = document.querySelector(`[data-tutorial="${step.targetElement}"]`);
+     // DESPUÉS:
+     const targetElement = getTutorialElement(step.targetElement);
     if (targetElement) {
       targetElement.scrollIntoView({ 
         behavior: 'smooth', 
@@ -85,6 +113,36 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
       };
     }
   }, [step.targetElement]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   // Focus trap - mantener Tab dentro del tooltip
   useEffect(() => {
