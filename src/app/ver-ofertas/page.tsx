@@ -21,7 +21,7 @@ export default function VerOfertas() {
   // 🔹 Obtener ofertas
   const fetchOfertas = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/ofertas");
+      const res = await fetch("http://localhost:4000/api/ofertas");
       if (!res.ok) throw new Error("Error al obtener las ofertas");
       const data = await res.json();
       setOfertas(data);
@@ -60,7 +60,7 @@ export default function VerOfertas() {
       formData.append("categoria", editandoDatos.categoria);
       if (nuevaImagen) formData.append("imagen", nuevaImagen);
 
-      const res = await fetch(`http://localhost:5000/api/ofertas/${editandoDatos.id}`, {
+      const res = await fetch(`http://localhost:4000/api/ofertas/${editandoDatos.id}`, {
         method: "PUT",
         body: formData,
       });
@@ -85,7 +85,7 @@ export default function VerOfertas() {
   const borrarOferta = async () => {
     if (!ofertaSeleccionada) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/ofertas/${ofertaSeleccionada.id}`, {
+      const res = await fetch(`http://localhost:4000/api/ofertas/${ofertaSeleccionada.id}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Error al borrar la oferta");

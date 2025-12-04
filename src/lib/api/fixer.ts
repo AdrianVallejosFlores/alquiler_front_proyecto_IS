@@ -2,7 +2,7 @@ import type { CategoryDTO } from "@/lib/api/categories";
 import type { PaymentMethodKey } from "@/types/payment";
 
 const RAW_API = process.env.NEXT_PUBLIC_API_URL || "";
-const API_BASE = RAW_API ? RAW_API.replace(/\/+$/, "") : "http://localhost:5000";
+const API_BASE = RAW_API ? RAW_API.replace(/\/+$/, "") : "http://localhost:4000";
 const FIXER_BASE = `${API_BASE}/api/fixers`;
 
 type ApiSuccess<T> = { success: true; data: T } & Record<string, unknown>;

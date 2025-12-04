@@ -1,7 +1,7 @@
 "use client";
 
-import { Dialog, DialogContent, DialogTitle } from "../components/ui/dialog";
-import { Button } from "../components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { CheckCircle, AlertTriangle } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -35,7 +35,7 @@ export default function ModalConfirmacion({
       }
     } else {
       onClose();
-      router.push("/booking/agenda");
+      router.push("/agenda");
     }
   };
 

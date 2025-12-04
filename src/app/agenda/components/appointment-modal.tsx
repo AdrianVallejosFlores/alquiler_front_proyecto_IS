@@ -8,10 +8,6 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from "./ui/dial
 import { cn } from "@/lib/utils";
 import LocationForm from "./LocationForms";
 import ModalConfirmacion from "./ModalConfirmacion";
-import { createAndNotify } from "@/lib/appointments_gmail";
-import { updateAndNotify } from "@/lib/appointments_gmail";
-import { createAndNotifyWhatsApp } from "@/lib/appointments_whatsapp";
-import { updateAndNotifyWhatsApp } from "@/lib/appointments_whatsapp";
 
 type UISlot = { label: string; startISO: string; endISO: string };
 
@@ -64,8 +60,6 @@ export function AppointmentModal({
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<UISlot | null>(null);
   const [dateInput, setDateInput] = useState("");
-  const [confirmationTitle, setConfirmationTitle] = useState("");
-  const [confirmationMessage, setConfirmationMessage] = useState("");
 
   // Disponibilidad
   const [availableSlots, setAvailableSlots] = useState<UISlot[]>([]);
@@ -261,29 +255,15 @@ export function AppointmentModal({
     today.setHours(0, 0, 0, 0);
     const isWeekend = (d: Date) => d.getDay() === 0 || d.getDay() === 6;
 
-    // No permitir días pasados
     if (day < today) return true;
-
-    // No fines de semana
     if (isWeekend(day)) return true;
 
-    // No más allá de 6 meses
     const maxDate = new Date();
     maxDate.setMonth(maxDate.getMonth() + 6);
     if (day > maxDate) return true;
 
-    // No feriados
     if (holidays.includes(dateStr)) return true;
-
-    // Si es edición → PERMITIR fecha original
-    if (isEditing && initialAppointment?.fecha === dateStr) return false;
-
-    // Si es edición → bloquear sólo días realmente ocupados por OTROS
-    if (isEditing) {
-      return bookedDays.includes(dateStr);
-    }
-
-    // Si es creación → bloquear cualquier día ocupado
+    if (isEditing && initialAppointment && dateStr === initialAppointment.fecha) return false;
     return bookedDays.includes(dateStr);
   };
 
@@ -310,24 +290,14 @@ export function AppointmentModal({
         },
         ubicacion: locationData,
         estado: "pendiente",
-        cliente: {
-          nombre: patientName,
-          email: "adrianvallejosflores24@gmail.com", //reemplázalo dinámicamente si lo tienes
-          phone: "59177484270" //se reemplazaria cuando clienteId este completo o usable
-        }
       };
 
-      console.log("Enviando payload:", payload);
-
-      /*
       let url = `${API_URL}/api/devcode/citas`;
       let method = "POST";
 
-      
       if (isEditing && appointmentId) {
         url = `${API_URL}/api/devcode/citas/${appointmentId}`;
         method = "PUT";
-        console.log(" Actualizando cita existente:", appointmentId);
       }
 
       const res = await fetch(url, {
@@ -342,65 +312,7 @@ export function AppointmentModal({
         if (res.status === 409) return alert(body?.message || "Horario no disponible.");
         return alert(body?.message || `Error HTTP ${res.status}`);
       }
-      */
-     
-     //Si es edición, actualizamos SIN enviar notificación.
-      const url = isEditing && appointmentId
-        ? `${API_URL}/api/devcode/citas/${appointmentId}`
-        : `${API_URL}/api/devcode/citas`;
 
-      const method = isEditing ? "PUT" : "POST";
-
-      // Llamada principal al backend (crea o actualiza la cita)
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      const body = await res.json().catch(() => ({}));
-
-      if (!res.ok) {
-        if (res.status === 409) return alert(body?.message || "Horario no disponible.");
-        return alert(body?.message || `Error HTTP ${res.status}`);
-      }
-
-      // Enviar notificación según el caso
-      /*
-      let resultNotify;
-      if (isEditing) {
-        console.log("📨 Enviando notificación de actualización...");
-        resultNotify = await updateAndNotify(payload);
-      } else {
-        console.log("📨 Enviando notificación de creación...");
-        resultNotify = await createAndNotify(payload);
-      }
-        */
-
-      // Validar resultado de notificación
-      try {
-        if (isEditing) {
-          console.log("📨 Enviando notificación de actualización...");
-
-          await Promise.allSettled([
-            updateAndNotify(payload),
-            updateAndNotifyWhatsApp(payload),
-          ]);
-        } else {
-          console.log("📨 Enviando notificación de creación...");
-
-          await Promise.allSettled([
-            createAndNotify(payload),
-            createAndNotifyWhatsApp(payload),
-          ]);
-        }
-
-        console.log("✅ Notificaciones procesadas (Gmail y WhatsApp)");
-      } catch (notifyError) {
-        console.warn("⚠️ Ocurrió un error al enviar las notificaciones:", notifyError);
-      }
-
-      // Mostrar modal de confirmación y limpiar estado
       setShowConfirmationModal(true);
       onOpenChange(false);
       setSelectedTime(null);
@@ -408,7 +320,7 @@ export function AppointmentModal({
 
     } catch (err) {
       console.error(err);
-      alert("No se pudo crear o actualizar la cita");
+      alert("No se pudo crear la cita");
     } finally {
       setSaving(false);
     }
@@ -660,12 +572,8 @@ export function AppointmentModal({
 
       <ModalConfirmacion 
         isOpen={showConfirmationModal} 
-        onClose={() => setShowConfirmationModal(false)}
-        title={confirmationTitle}
-        message={confirmationMessage}
-        success={true}
+        onClose={() => setShowConfirmationModal(false)} 
       />
-
     </Dialog>
   );
 }

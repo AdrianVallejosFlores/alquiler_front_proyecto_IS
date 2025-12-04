@@ -2,8 +2,6 @@
 import Link from 'next/link';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Icono from './Icono';
-import GoogleSignInButton from "../../../components/GoogleSignInButton";
-
 import { useRouter, usePathname } from 'next/navigation';
 import {
   clearSession,
@@ -25,81 +23,66 @@ export default function Header() {
   const [menuVisible, setMenuVisible] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
-
   // NUEVO: solo cuando esto sea true creamos socket
   const [canInitSocket, setCanInitSocket] = useState(false);
-
   let isSocketReady = useForceLogout(
-    isLoggedIn && canInitSocket ? userId : null,
-    accessToken ?? null
+    isLoggedIn && canInitSocket ? userId : null,accessToken ?? null 
   );
+const handleHomeClick = () => {
+    // Si el socket NO está formado, limpiamos
+  const respuesta=sessionStorage.getItem("login") 
+  if (!getSocket()){
+      handleLogout()
 
-  const handleHomeClick = () => {
-    const respuesta = sessionStorage.getItem("login");
-    if (!getSocket()) handleLogout();
-
-    if (!respuesta) {
-      sessionStorage.clear();
+    } 
+   if (!respuesta) {
+    
+      // lo que pediste:
+      sessionStorage.clear(); // o solo algunas claves si prefieres
       localStorage.removeItem("authToken");
       localStorage.removeItem("userData");
     }
+     
+    // No hace falta router.push aquí, Link ya navega a "/"
   };
-
   const lastScrollY = useRef(0);
   const router = useRouter();
   const pathname = usePathname();
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    const checkSize = () => setIsMobile(window.innerWidth < 640);
-    checkSize();
-    window.addEventListener("resize", checkSize);
-    return () => window.removeEventListener("resize", checkSize);
-  }, []);
+  const checkSize = () => setIsMobile(window.innerWidth < 640);
+  checkSize();
+  window.addEventListener("resize", checkSize);
+  return () => window.removeEventListener("resize", checkSize);
+}, []);
 
   const syncSession = useCallback(() => {
     setIsLoggedIn(Boolean(getToken()));
     setCurrentUser(getStoredUser());
   }, []);
 
-  // 🔥🔥🔥 FIX IMPORTANTE AQUÍ 🔥🔥🔥
-  const safeLoadUserData = () => {
-    const raw =
-      sessionStorage.getItem("userData") ||
-      localStorage.getItem("userData");
-
-    if (!raw || raw === "undefined" || raw === "null" || raw === "") {
-      sessionStorage.removeItem("userData");
-      localStorage.removeItem("userData");
-      return null;
-    }
-
-    try {
-      return JSON.parse(raw);
-    } catch (err) {
-      console.error("[Header] JSON inválido en userData:", raw, err);
-      sessionStorage.removeItem("userData");
-      localStorage.removeItem("userData");
-      return null;
-    }
-  };
-
   useEffect(() => {
     setIsClient(true);
     syncSession();
-
-    const token =
-      localStorage.getItem('authToken') ||
-      sessionStorage.getItem('authToken');
-
+    const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
     if (token) {
       setIsLoggedIn(true);
       setCanInitSocket(true);
     }
+    try {
+      const raw =
+        sessionStorage.getItem("userData") ||
+        localStorage.getItem("userData");
 
-    const parsed = safeLoadUserData();
-    if (parsed?._id) setUserId(parsed._id);
-
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        const id = parsed._id || null;
+        setUserId(id);
+      }
+    } catch (e) {
+      console.error("[Header] error leyendo userData:", e);
+    }
     const handleScroll = () => {
       if (window.innerWidth < 640) {
         setAreButtonsVisible(
@@ -113,12 +96,19 @@ export default function Header() {
       setIsLoggedIn(true);
       setCanInitSocket(true);
 
-      const parsed = safeLoadUserData();
-      const token = sessionStorage.getItem("authToken");
-
-      if (parsed && token) {
-        setUserId(parsed._id || null);
-        setAccessToken(token);
+      try {
+        const raw =
+          sessionStorage.getItem("userData") ||
+          localStorage.getItem("userData");
+          const token=sessionStorage.getItem("authToken")
+        if (raw && token) {
+          const parsed = JSON.parse(raw);
+          const id = parsed._id || null;
+          setUserId(id);
+          setAccessToken(token);
+        }
+      } catch (e) {
+        console.error("[Header] error leyendo userData tras login:", e);
       }
     };
 
@@ -158,7 +148,7 @@ export default function Header() {
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
-
+  // Ocultar barra de búsqueda en login y registro
   const shouldShowSearchBar = !['/login', '/registro'].includes(pathname);
 
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -176,7 +166,6 @@ export default function Header() {
     sessionStorage.clear();
     setIsLoggedIn(false);
     setCurrentUser(null);
-
     const eventLogout = new CustomEvent("logout-exitoso");
     window.dispatchEvent(eventLogout);
 
@@ -186,7 +175,6 @@ export default function Header() {
   const fixerId = currentUser?.fixerId ?? null;
   const fixerCtaHref = fixerId ? `/fixers/${fixerId}` : '/convertirse-fixer';
   const fixerCtaLabel = fixerId ? 'Mi perfil Fixer' : 'Ser Fixer';
-
   const rawName = currentUser?.nombre?.trim();
   const displayName =
     rawName && rawName.length > 0
@@ -202,7 +190,7 @@ export default function Header() {
 
   return (
     <>
-      {/* HEADER DESKTOP */}
+      {/* HEADER DESKTOP / TABLET */}
       <header className="hidden sm:flex items-center justify-between p-4 bg-[#EEF7FF] shadow-md fixed top-0 left-0 w-full z-50">
         <div className="flex items-center">
           <Link href="/">
