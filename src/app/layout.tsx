@@ -5,6 +5,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
 import Header from "./components/Header/Header";
+import { LanguageProvider } from './context/LanguageContext';
 // ELIMINADO: useUsuarioNuevo no se usa
 // import { useUsuarioNuevo } from "./hooks/useUsuarioNuevo";
 import TutorialGuide from "./components/TutorialGuide/TutorialGuide";
@@ -46,7 +47,7 @@ export default function RootLayout({
   }, []);
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html suppressHydrationWarning>
       <head>
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
       </head>
@@ -54,6 +55,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning={true}
       >
+        <LanguageProvider>
         {/* Banner de "Sin Conexión" */}
         {!isOnline && (
           <div className="fixed top-0 left-0 w-full bg-red-600 text-white text-center p-2 z-50 shadow-lg animate-pulse">
@@ -74,8 +76,9 @@ export default function RootLayout({
           </main>
         </div>
 
-        {/* ✅ NUEVO: Componente de Guía Tutorial */}
-        <TutorialGuide />
+          {/* ✅ NUEVO: Componente de Guía Tutorial */}
+          <TutorialGuide />
+        </LanguageProvider>
 
       </body>
     </html>

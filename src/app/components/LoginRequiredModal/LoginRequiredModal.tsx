@@ -2,6 +2,7 @@
 
 import React, { useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface LoginRequiredModalProps {
   isOpen: boolean;
@@ -11,6 +12,7 @@ interface LoginRequiredModalProps {
 const LoginRequiredModal: React.FC<LoginRequiredModalProps> = ({ isOpen, onClose }) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (isOpen && modalRef.current) {
@@ -75,13 +77,13 @@ const LoginRequiredModal: React.FC<LoginRequiredModalProps> = ({ isOpen, onClose
           </div>
 
           {/* Content */}
-          <div className="px-6 py-6">
+          <div className="px-6 py-4">
             <p className="text-gray-700 text-center mb-6">
-              Para acceder a la <span className="font-semibold">Guía de Usuario</span>, necesita estar logueado.
+              {t('accessRequiredBody')}
             </p>
 
             <p className="text-sm text-gray-600 text-center mb-6">
-              Inicie sesión en su cuenta o cree una nueva para continuar.
+              {/* small helper line - reuse accessRequiredBody for now or leave blank */}
             </p>
           </div>
 
@@ -90,17 +92,17 @@ const LoginRequiredModal: React.FC<LoginRequiredModalProps> = ({ isOpen, onClose
             <button
               onClick={handleClose}
               className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition focus:outline-none focus:ring-2 focus:ring-[#52abff]"
-              aria-label="Cancelar"
+              aria-label={t('cancel')}
             >
-              Cancelar
+              {t('cancel')}
             </button>
             <button
               onClick={handleLoginClick}
               data-action="login"
               className="flex-1 px-4 py-2 bg-[#52abff] text-white rounded-lg hover:bg-[#3a96e6] transition focus:outline-none focus:ring-2 focus:ring-[#52abff] focus:ring-offset-2"
-              aria-label="Ir a Iniciar sesión"
+              aria-label={t('signIn')}
             >
-              Iniciar Sesión
+              {t('signIn')}
             </button>
           </div>
         </div>
