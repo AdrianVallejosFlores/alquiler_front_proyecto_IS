@@ -5,6 +5,9 @@ import { CalendarDays, AlertTriangle } from "lucide-react";
 import { Dialog, Transition } from "@headlessui/react";
 import Link from "next/link"; // 🔹 Asegúrate de importar Link
 
+import { cancelAndNotify } from "@/lib/appointments_gmail";
+import { cancelAndNotifyWhatsApp } from "@/lib/appointments_whatsapp";
+
 const PROVEEDOR_ID = "6927e823567c50dddae45313";
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -96,6 +99,7 @@ export default function GestionCitas() {
     setShowConfirmModal(true);
   };
 
+
   const confirmarCancelacion = async () => {
     try {
       const citasAEliminar = citas.filter((c) =>
@@ -108,19 +112,52 @@ export default function GestionCitas() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ proveedorId: PROVEEDOR_ID }),
         });
+
         const result = await res.json();
         if (!result.success) throw new Error(result.error || "Error al eliminar cita");
+
+        const payload = {
+          proveedorId: PROVEEDOR_ID,
+          servicioId: (cita.servicioId as any)?._id || (cita.servicioId as any),
+          fecha: cita.fecha,
+          horario: {
+            inicio: cita.horario?.inicio,
+            fin: cita.horario?.fin,
+          },
+          clienteId: {
+            id: (cita.clienteId as any)?._id || (cita.clienteId as any),
+            nombre: (cita.clienteId as any)?.nombre || "",
+            phone: (cita.clienteId as any)?.phone || "",
+          },
+          ubicacion: {
+            direccion: cita.ubicacion?.direccion || "",
+            notas: (cita.ubicacion as any)?.notas || "",
+          },
+          cambios: ["Cita cancelada por el proveedor"],
+          citaId: cita._id,
+        };
+
+        try {
+          await cancelAndNotify(payload);
+          await cancelAndNotifyWhatsApp(payload);
+        } catch (notifyErr) {
+          console.warn("⚠️ Error al notificar cancelación:", notifyErr);
+        }
       }
 
-      setCitas((prev) => prev.filter((c) => !selectedIds.includes(c.fecha.split("T")[0])));
+      setCitas((prev) =>
+        prev.filter((c) => !selectedIds.includes(c.fecha.split("T")[0]))
+      );
       setSelectedIds([]);
       setShowConfirmModal(false);
       setShowSuccessModal(true);
+
     } catch (err) {
       console.error(err);
       alert("Error al cancelar las citas");
     }
   };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex flex-col">

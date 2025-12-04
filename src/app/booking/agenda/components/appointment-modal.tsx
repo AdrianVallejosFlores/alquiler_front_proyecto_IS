@@ -9,6 +9,10 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from "./ui/dial
 import { cn } from "@/lib/utils";
 import LocationForm from "./LocationForms";
 import ModalConfirmacion from "./ModalConfirmacion";
+import { createAndNotify } from "@/lib/appointments_gmail";
+import { updateAndNotify } from "@/lib/appointments_gmail";
+import { createAndNotifyWhatsApp } from "@/lib/appointments_whatsapp";
+import { updateAndNotifyWhatsApp } from "@/lib/appointments_whatsapp";
 
 type UISlot = { label: string; startISO: string; endISO: string };
 
@@ -260,15 +264,29 @@ export function AppointmentModal({
     today.setHours(0, 0, 0, 0);
     const isWeekend = (d: Date) => d.getDay() === 0 || d.getDay() === 6;
 
+    // No permitir días pasados
     if (day < today) return true;
+
+    // No fines de semana
     if (isWeekend(day)) return true;
 
+    // No más allá de 6 meses
     const maxDate = new Date();
     maxDate.setMonth(maxDate.getMonth() + 6);
     if (day > maxDate) return true;
 
+    // No feriados
     if (holidays.includes(dateStr)) return true;
-    if (isEditing && initialAppointment && dateStr === initialAppointment.fecha) return false;
+
+    // Si es edición → PERMITIR fecha original
+    if (isEditing && initialAppointment?.fecha === dateStr) return false;
+
+    // Si es edición → bloquear sólo días realmente ocupados por OTROS
+    if (isEditing) {
+      return bookedDays.includes(dateStr);
+    }
+
+    // Si es creación → bloquear cualquier día ocupado
     return bookedDays.includes(dateStr);
   };
 
@@ -295,14 +313,24 @@ export function AppointmentModal({
         },
         ubicacion: locationData,
         estado: "pendiente",
+        cliente: {
+          nombre: patientName,
+          email: "adrianvallejosflores24@gmail.com", //reemplázalo dinámicamente si lo tienes
+          phone: "59177484270" //se reemplazaria cuando clienteId este completo o usable
+        }
       };
 
+      console.log("Enviando payload:", payload);
+
+      /*
       let url = `${API_URL}/api/devcode/citas`;
       let method = "POST";
 
+      
       if (isEditing && appointmentId) {
         url = `${API_URL}/api/devcode/citas/${appointmentId}`;
         method = "PUT";
+        console.log(" Actualizando cita existente:", appointmentId);
       }
 
       const googleToken = typeof window !== 'undefined' ? localStorage.getItem('googleAccessToken') : null;
@@ -321,6 +349,12 @@ export function AppointmentModal({
         if (res.status === 409) return alert(body?.message || "Horario no disponible.");
         return alert(body?.message || `Error HTTP ${res.status}`);
       }
+      */
+     
+     //Si es edición, actualizamos SIN enviar notificación.
+      const url = isEditing && appointmentId
+        ? `${API_URL}/api/devcode/citas/${appointmentId}`
+        : `${API_URL}/api/devcode/citas`;
 
       // Mostrar mensaje de Google Calendar SOLO para usuarios logueados con Google
       // Manejar el resultado de sincronización con Google Calendar (si se intentó)
