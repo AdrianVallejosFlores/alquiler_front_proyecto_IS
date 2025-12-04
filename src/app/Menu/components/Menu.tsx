@@ -53,7 +53,13 @@ export default function SimpleProfileMenu() {
     setShowMensajeCerrarSesion(false);
     router.push("/");
   };
+const gestionarCitas = () => {
+    router.push("/booking/worker");
+  };
 
+const misCitas = () => {
+    router.push("/booking/agenda/citas-agendadas");
+  };
   const handleCancelLogout = () => {
     // Solo cerrar el modal (el useEffect tiene cleanup si había timer)
     setShowMensajeCerrarSesion(false);
@@ -157,6 +163,18 @@ export default function SimpleProfileMenu() {
         Configuración
       </button>
 
+      <button
+        onClick={gestionarCitas}
+        className="text-base sm:text-base font-semibold text-gray-800 hover:bg-gray-100 rounded-2xl px-4 py-3 w-full text-left transition duration-150"
+      >
+        gestionar citas
+      </button>
+      <button
+        onClick={gestionarCitas}
+        className="text-base sm:text-base font-semibold text-gray-800 hover:bg-gray-100 rounded-2xl px-4 py-3 w-full text-left transition duration-150"
+      >
+        mis citas
+      </button>
       {/* Submenú */}
       {showSubMenu && (
         <div className="flex flex-col space-y-3 pl-4 mt-3 border-l-2 border-gray-200
