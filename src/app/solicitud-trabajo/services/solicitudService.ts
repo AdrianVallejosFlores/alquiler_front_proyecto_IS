@@ -9,7 +9,7 @@ import { isInsideAnyFranja, overlaps } from "../utils/helpers";
  * URL del API (configurable por entorno)
  * Define NEXT_PUBLIC_API_BASE_URL en .env.local para producción/desarrollo:
  *   NEXT_PUBLIC_API_BASE_URL=https://tu-api.com
- *   # en local, por defecto: https://alquiler-back-soft-war2.vercel.app/
+ *   # en local, por defecto: http://localhost:5000
  */
 const BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL?.trim() || "https://back-los-vengadores-4.onrender.com";

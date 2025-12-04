@@ -113,7 +113,7 @@ export default function SimpleProfileMenu() {
           `${parsed.firstName ?? ""} ${parsed.lastName ?? ""}`.trim() ||
           "Usuario",
         correo: parsed.correo || parsed.email || "correo@desconocido.com",
-        fotoPerfil: `${parsed.fotoPerfil}` || "/images/default-profile.jpg",
+        fotoPerfil: `${parsed.fotoPerfil}` || "/default-avatar.png",
         telefono: parsed.telefono || ""
       });
     } catch (error) {
@@ -127,14 +127,14 @@ export default function SimpleProfileMenu() {
       {/* Datos del usuario */}
       <div className="flex items-center mb-4">
         <Image
-          src={user?.fotoPerfil || "/images/default-profile.jpg"}
+          src={user?.fotoPerfil || "/default-avatar.png"}
           alt="Foto de perfil"
           width={50}
           height={50}
           className="rounded-full object-cover border border-gray-300"
           unoptimized
           onError={(e) => {
-            (e.currentTarget as HTMLImageElement).src = "/images/default-profile.jpg";
+            (e.currentTarget as HTMLImageElement).src = "/default-avatar.png";
           }}
         />
         <div className="ml-3 truncate">
