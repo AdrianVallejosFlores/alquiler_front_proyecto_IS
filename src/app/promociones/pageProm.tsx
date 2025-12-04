@@ -1,8 +1,7 @@
-"use client";
+'use client'
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 
 const URL = "https://back-tercersprint.onrender.com";
 
@@ -160,7 +159,10 @@ const ModalPromocion: React.FC<ModalProps> = ({ isOpen, onClose, onSave, promoEd
 };
 
 // --- PÁGINA PRINCIPAL (Sin cambios) ---
-export default function PromocionesPage() {
+export default function PageProm({ ID_OFERTA }: { ID_OFERTA: string }) {
+
+
+  const searchParams = useSearchParams();
 
   const router = useRouter();
   const [promociones, setPromociones] = useState<Promocion[]>([]);
@@ -176,7 +178,6 @@ export default function PromocionesPage() {
   const totalPaginas = Math.ceil(promociones.length / itemsPorPagina);
 
   
-  const ID_OFERTA =  "69305e4ed53a2f78f215f6e1";
   
 
   const abrirModalNueva = () => {
