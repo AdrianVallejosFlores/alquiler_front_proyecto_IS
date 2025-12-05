@@ -7,7 +7,6 @@ type Props = {
 };
 
 export default function Recaptcha({ onVerify }: Props) {
-
   const handleChange = (token: string | null) => {
     onVerify(token);
   };

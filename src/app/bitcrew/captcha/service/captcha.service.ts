@@ -1,11 +1,10 @@
 import axios from "@config/axios";
 
- // tu axios configurado
-
 export const validarCaptcha = async (token: string) => {
-  const res = await axios.post("/api/bitcrew/captcha/validate-captcha", {
-    token,
-  });
+  const res = await axios.post(
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/bitcrew/captcha/validate-captcha`,
+    { token }
+  );
 
-  return res.data;
+  return res.data; // { success: true }
 };

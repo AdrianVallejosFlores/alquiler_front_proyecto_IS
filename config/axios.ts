@@ -1,13 +1,35 @@
 import axios from "axios";
 
-// Crea la instancia de axios
-const axiosInstance = axios.create({
-  // baseURL: "http://localhost:4000", // Descomenta y ajusta si tu backend está en otra URL
+// Instancia global de Axios
+const api = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL,  // <= Muy importante
   headers: {
     "Content-Type": "application/json",
   },
-  timeout: 10000, // Opcional: Tiempo de espera de 10 segundos
+  timeout: 10000,
 });
 
-// Exportación por defecto para que tu import funcione
-export default axiosInstance;
+// Interceptor para agregar token automáticamente
+api.interceptors.request.use(
+  (config) => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("token");
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Interceptor de errores globales
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error("❌ Error API:", error.response?.data || error.message);
+    return Promise.reject(error);
+  }
+);
+
+export default api;
