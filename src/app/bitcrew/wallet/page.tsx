@@ -12,7 +12,6 @@ import WalletRestrictionModal from "./components/WalletRestrictionModal";
 
 import { ChevronLeft, BarChart3, Wallet, Settings } from "lucide-react";
 
-// CAPTCHA (del otro dev)
 import Recaptcha from "../captcha/components/Recaptcha";
 import { validarCaptcha } from "../captcha/service/captcha.service";
 
@@ -21,18 +20,25 @@ function WalletLogic() {
   const searchParams = useSearchParams();
   const fixerId = searchParams.get("fixer_id");
 
-  const { balanceData, transactions, loading, error, reload } = useWallet(fixerId);
+  const { balanceData, transactions, loading, error, reload } = useWallet(
+    fixerId
+  );
   const [showSaldo, setShowSaldo] = useState(true);
 
-  // Vista de cobro QR
   const [showReceive, setShowReceive] = useState(false);
-
-  // Modal de restricción
   const [showRestriction, setShowRestriction] = useState(false);
 
-  // Estados del Captcha
+  const [showCaptchaBox, setShowCaptchaBox] = useState(false);
   const [captchaValido, setCaptchaValido] = useState(false);
   const [captchaCargando, setCaptchaCargando] = useState(false);
+
+  if (showReceive && fixerId) {
+    return (
+      <div className="bg-gray-50 min-h-screen flex items-center justify-center p-4">
+        <ReceivePayment userId={fixerId} onBack={() => setShowReceive(false)} />
+      </div>
+    );
+  }
 
   const onCaptchaVerify = async (token: string | null) => {
     if (!token) {
@@ -40,28 +46,31 @@ function WalletLogic() {
       return;
     }
 
-    setCaptchaCargando(true);
-    const result = await validarCaptcha(token);
-    setCaptchaValido(result.success);
-    setCaptchaCargando(false);
+    setCaptchaValido(true);
+
+    try {
+      setCaptchaCargando(true);
+      const result = await validarCaptcha(token);
+      console.log("[Wallet] validarCaptcha:", result);
+    } catch (err) {
+      console.error("[Wallet] Error validarCaptcha:", err);
+    } finally {
+      setCaptchaCargando(false);
+    }
   };
 
-  // Si estamos en pantalla de cobro, mostramos solo eso
-  if (showReceive && fixerId) {
-    return (
-      <div className="bg-gray-50 min-h-screen flex items-center justify-center p-4">
-        <ReceivePayment
-          userId={fixerId}
-          onBack={() => setShowReceive(false)}
-        />
-      </div>
-    );
-  }
-
   const handleRecargar = () => {
-    if (fixerId) {
-      router.push(`/bitcrew/pagosQR?fixer_id=${fixerId}`);
+    if (!fixerId) return;
+
+    if (!showCaptchaBox) {
+      setShowCaptchaBox(true);
+      setCaptchaValido(false);
+      return;
     }
+
+    if (!captchaValido) return;
+
+    router.push(`/bitcrew/pagosQR?fixer_id=${fixerId}`);
   };
 
   const handleGrafico = () => {
@@ -74,16 +83,19 @@ function WalletLogic() {
     setShowRestriction(true);
   };
 
+  const handleCancelarCaptcha = () => {
+    setShowCaptchaBox(false);
+    setCaptchaValido(false);
+  };
+
   return (
     <div className="bg-gray-50 w-full min-h-[calc(100vh-64px)] overflow-hidden relative">
-      {/* Modal de Restricción */}
       <WalletRestrictionModal
         isOpen={showRestriction}
         onClose={() => setShowRestriction(false)}
       />
 
       <div className="max-w-4xl mx-auto px-4 md:px-8 pt-4 md:pt-6 pb-4 md:pb-8 h-full">
-        {/* HEADER */}
         <header className="flex justify-between items-center mb-6">
           <div className="flex items-center space-x-2">
             <button
@@ -105,7 +117,6 @@ function WalletLogic() {
           </div>
 
           <div className="flex items-center space-x-3">
-            {/* Cobrar QR */}
             <button
               className="flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-md hover:bg-green-700 transition-colors disabled:opacity-50"
               onClick={() => setShowReceive(true)}
@@ -133,7 +144,6 @@ function WalletLogic() {
               <span>Cobrar QR</span>
             </button>
 
-            {/* Botones desktop */}
             <div className="hidden md:flex items-center space-x-3">
               <button
                 onClick={handleGrafico}
@@ -143,11 +153,14 @@ function WalletLogic() {
                 <span>Gráfico de Ingresos</span>
               </button>
 
-              {/* Recargar con validación de Captcha */}
               <button
                 onClick={handleRecargar}
-                disabled={loading || !fixerId || !captchaValido}
-                className="flex items-center space-x-2 bg-[#11255A] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-md hover:bg-[#0B1A40] transition-colors disabled:opacity-50"
+                className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium shadow-md transition-colors ${
+                  loading || !fixerId
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : "bg-[#11255A] text-white hover:bg-[#0B1A40]"
+                }`}
+                disabled={loading || !fixerId}
               >
                 <Wallet className="w-5 h-5" />
                 <span>Recargar Saldo</span>
@@ -161,7 +174,6 @@ function WalletLogic() {
               </button>
             </div>
 
-            {/* Ajustes mobile */}
             <div className="md:hidden">
               <button
                 onClick={handleAjustes}
@@ -173,13 +185,24 @@ function WalletLogic() {
           </div>
         </header>
 
-        {/* Sección Captcha */}
-        <div className="mt-4 mb-6">
-          <Recaptcha onVerify={onCaptchaVerify} />
-          {captchaCargando && (
-            <p className="text-sm text-gray-500 mt-1">Validando...</p>
-          )}
-        </div>
+        {showCaptchaBox && (
+          <div className="mb-6 border border-gray-200 rounded-xl p-4 bg-white shadow-sm">
+            <p className="text-sm text-gray-700 mb-3">
+              Antes de recargar tu saldo, completa el captcha:
+            </p>
+            <Recaptcha onVerify={onCaptchaVerify} />
+            {captchaCargando && (
+              <p className="text-sm text-gray-500 mt-2">Validando...</p>
+            )}
+            <button
+              type="button"
+              onClick={handleCancelarCaptcha}
+              className="mt-3 text-sm text-blue-700 hover:underline"
+            >
+              Cancelar
+            </button>
+          </div>
+        )}
 
         <main>
           {error && (
@@ -209,12 +232,15 @@ function WalletLogic() {
                 walletId={balanceData._id}
               />
 
-              {/* Botones mobile */}
               <div className="flex flex-col gap-3 mt-4 mb-6 md:hidden">
                 <button
                   onClick={handleRecargar}
-                  disabled={loading || !fixerId || !captchaValido}
-                  className="w-full flex items-center justify-center space-x-2 bg-[#11255A] text-white px-4 py-3 rounded-xl text-sm font-medium shadow-sm hover:bg-[#0B1A40] transition-colors disabled:opacity-50"
+                  className={`w-full flex items-center justify-center space-x-2 px-4 py-3 rounded-xl text-sm font-medium shadow-sm transition-colors ${
+                    loading || !fixerId
+                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      : "bg-[#11255A] text-white hover:bg-[#0B1A40]"
+                  }`}
+                  disabled={loading || !fixerId}
                 >
                   <Wallet className="w-5 h-5" />
                   <span>Recargar Saldo</span>
