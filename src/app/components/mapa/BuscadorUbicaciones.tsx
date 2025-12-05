@@ -48,7 +48,7 @@ export default function BuscadorUbicaciones({
           <select
             value={seleccionada?.id?.toString() ?? ""}
             onChange={handleSeleccionChange}
-            className="w-full p-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 cursor-pointer text-gray-700 bg-white text-sm sm:text-base md:text-lg"
+            className="w-full p-2 border border-gray-299 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 cursor-pointer text-gray-700 bg-white text-sm sm:text-base md:text-lg"
             aria-label="Selecciona una ubicación"
           >
             <option value="">Selecciona una ubicación</option>
