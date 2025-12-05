@@ -4,8 +4,7 @@ import React from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { getOfferById, canEditOffer, deleteOffer, type Offer } from '../services/offersService';
 import { useClientSession } from '@/lib/auth/useSession';
-// 1. IMPORTAMOS EL COMPONENTE
-import PromotionsList from '../../fixers/components/PromotionsList';
+import PromotionsList from '@/app/fixers/components/PromotionsList';
 
 const shellStyles: React.CSSProperties = {
   maxWidth: 960,
@@ -334,7 +333,7 @@ export default function OfferDetail() {
           </div>
         </article>
 
-        {/* ✅ 2. SECCIÓN DE PROMOCIONES INSERTADA AQUÍ (Antes de los botones) */}
+        {/* ✅ Sección de promociones, igual que en la versión antigua, antes del footer */}
         <PromotionsList />
 
         <footer
