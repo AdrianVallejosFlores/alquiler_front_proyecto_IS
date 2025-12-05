@@ -25,7 +25,7 @@ export default function CambiarContrasena({ onClose }: Props) {
     type: "ok" | "err" | null;
     text: string;
   }>({ type: null, text: "" });
-
+   const [tienePassword, setTienePassword] = useState(false);
   // Modal de éxito "Tu contraseña fue actualizada"
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
@@ -76,8 +76,11 @@ if(!usuario)
   return
 
 const user =JSON.parse(usuario)
-  if(!user.password)
+  if(!user.password){
+    setTienePassword(true)
     setShowSuccessModal(true)
+  }
+    
     
   }
 
@@ -259,10 +262,12 @@ const user =JSON.parse(usuario)
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 px-4">
           <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl text-center">
             <h3 className="text-lg font-semibold text-blue-600 mb-2">
-              Tu contraseña fue actualizada
+               {tienePassword ? 'No cuenta con una contraseña' : 'Tu contraseña fue actualizada'}
+              
             </h3>
             <p className="text-sm text-gray-700 mb-4">
-              Has cambiado tu contraseña correctamente.
+               {tienePassword ? 'Sin contraseña' : 'Has cambiado tu contraseña correctamente.'}
+              
             </p>
             <button
               onClick={closeSuccessModal}
