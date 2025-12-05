@@ -1,14 +1,11 @@
-// components/Footer/Footer.tsx
-
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
 import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaFacebookF, FaInstagram, FaBookOpen } from 'react-icons/fa';
 import { SiTiktok } from 'react-icons/si';
 import Modal from '../reutilizables/Modal';
 import Icono from '../Header/Icono';
+import LoginRequiredModal from '../LoginRequiredModal/LoginRequiredModal';
 
 // Contenido para cada modal (sin cambios)
 const modalContents = {
@@ -113,23 +110,6 @@ const modalContents = {
   }
 };
 
-const languageOptions = [
-  {
-    code: 'es',
-    label: 'Español',
-    flagSrc: '/flags/es.svg',
-    flagAlt: 'Bandera de España'
-  },
-  {
-    code: 'en',
-    label: 'English',
-    flagSrc: '/flags/us.svg',
-    flagAlt: 'United States flag'
-  }
-] as const;
-
-type LanguageCode = typeof languageOptions[number]['code'];
-
 // Dirección de contacto usada en todo el footer
 const CONTACT_EMAIL = 'servineobol@gmail.com';
 
@@ -173,42 +153,32 @@ const openMailClientOrGmail = (subjectText = 'Contacto desde Servineo', bodyText
 
 const Footer = () => {
   const [activeModal, setActiveModal] = useState<keyof typeof modalContents | null>(null);
-  const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
-  const [currentLanguage, setCurrentLanguage] = useState<LanguageCode>('es');
-  const languageMenuRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
+  const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);
 
-  useEffect(() => {
-    if (!isLanguageMenuOpen) {
-      return;
+  // ✅ VERIFICAR si el usuario está autenticado
+  const isUserAuthenticated = () => {
+    // Verificar si hay token o sesión en localStorage
+    if (typeof window !== 'undefined') {
+      // Buscar tokens comunes del sistema
+      const token = localStorage.getItem('token') ||
+                    localStorage.getItem('authToken') ||
+                    localStorage.getItem('session') ||
+                    localStorage.getItem('user');
+      return !!token;
     }
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (languageMenuRef.current && !languageMenuRef.current.contains(event.target as Node)) {
-        setIsLanguageMenuOpen(false);
-      }
-    };
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsLanguageMenuOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isLanguageMenuOpen]);
-  const showTutorial = () => {
-    // Disparar evento personalizado para mostrar el tutorial
-    window.dispatchEvent(new CustomEvent('show-tutorial'));
+    return false;
   };
 
-  const selectedLanguage = languageOptions.find((option) => option.code === currentLanguage) ?? languageOptions[0];
+  // ✅ MANEJAR clic del botón "Guía de Usuario"
+  const handleTutorialClick = () => {
+    if (isUserAuthenticated()) {
+      // Si el usuario está autenticado, mostrar el tutorial
+      window.dispatchEvent(new CustomEvent('show-tutorial'));
+    } else {
+      // Si NO está autenticado, mostrar la modal de login requerido
+      setShowLoginRequiredModal(true);
+    }
+  };
 
   const handleCloseModal = () => {
     setActiveModal(null);
@@ -228,53 +198,53 @@ const Footer = () => {
                 <h3 className="text-2xl font-bold font-heading">Servineo</h3>
               </div>
               <p className="text-[#b9ddff] text-sm sm:text-base">
-                La plataforma líder que conecta clientes con proveedores de servicios profesionales. Encuentra el fixer perfecto para tu proyecto.
+                Conectando profesionales con clientes para crear oportunidades confiables.
               </p>
             </div>
 
             <div className="space-y-4">
               <h4 className="text-xl font-semibold font-heading">Categorías</h4>
-              {/* ===== SECCIÓN "CATEGORÍAS" ACTUALIZADA (SIN MANUAL) ===== */}
+              {/* ===== SECCIÓN "CATEGORÍAS" ===== */}
               <nav className="flex flex-col space-y-2 items-center md:items-start">
                 <a href="#trabajos-recientes" className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">
-                  Trabajos recientes
+                  Trabajos Recientes
                 </a>
                 <a href="#mapa" className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">
                   Mapa
                 </a>
                 <a href="#servicios" className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">
-                  Lista de servicios
+                  Lista de Servicios
                 </a>
                 <a href="#carrusel" className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">
-                  Sección carrusel
+                  Carrusel
                 </a>
               </nav>
             </div>
 
             <div className="space-y-4">
-              <h4 className="text-xl font-semibold font-heading">Funciones del Sistema</h4>
+              <h4 className="text-xl font-semibold font-heading">Funcionalidades</h4>
               <nav className="flex flex-col space-y-2 items-center md:items-start">
                 <a href="/convertir-fixer" className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">Convertir en fixer</a>
                 <button type="button" onClick={() => setActiveModal('howItWorks')} className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 text-left focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">¿Cómo funciona?</button>
-                {/* ✅ NUEVO BOTÓN: Guía de Usuario */}
+                {/* ✅ BOTÓN: Guía de Usuario */}
                 <button 
                   type="button" 
-                  onClick={showTutorial}
+                  onClick={handleTutorialClick}
                   className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 text-left focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded flex items-center gap-2"
                 >
                   <span>Guía de Usuario</span>
                 </button>
-                <a href="/login" className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">Iniciar sesión</a>
+                <a href="/login" className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">Iniciar Sesión</a>
                 <a href="/registro" className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">Registrarse</a>
               </nav>
             </div>
 
              <div 
               className="space-y-4"
-              data-tutorial="support-section" // ✅ NUEVO: Para paso 2 del tutorial
+              data-tutorial="support-section"
             >
               <h4 className="text-xl font-semibold font-heading">Soporte</h4>
-              {/* ===== SECCIÓN "SOPORTE" ACTUALIZADA (CON MANUAL) ===== */}
+              {/* ===== SECCIÓN "SOPORTE" ===== */}
               <ul className="space-y-3">
                 <li className="flex items-center justify-center md:justify-start">
                   <a href="https://wa.me/59160379823" target="_blank" rel="noopener noreferrer" className="flex items-center transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">
@@ -300,9 +270,9 @@ const Footer = () => {
                   </a>
                 </li>
                 <li className="flex items-center justify-center md:justify-start">
-                  <a href="/panel" className="flex items-center transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">
+                    <a href="/panel" className="flex items-center transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">
                     <FaBookOpen className="mr-3 text-[#52abff]" />
-                    <span className="text-sm">Ver manual usuario</span>
+                    <span className="text-sm">Ver Manual</span>
                   </a>
                 </li>
               </ul>
@@ -322,69 +292,10 @@ const Footer = () => {
 
           <div className="border-t border-[#1140bc] mt-8 pt-8 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <p className="text-sm text-[#89c9ff]">© {new Date().getFullYear()} Servineo. Todos los derechos reservados.</p>
-            <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
-              <div className="relative w-full md:w-auto" ref={languageMenuRef}>
-                <button
-                  type="button"
-                  onClick={() => setIsLanguageMenuOpen((prev) => !prev)}
-                  className="w-full md:w-auto flex items-center justify-center gap-2 text-sm border border-[#1140bc] px-4 py-2 rounded-md transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] focus:ring-offset-2 focus:ring-offset-[#11255a]"
-                  aria-haspopup="listbox"
-                  aria-expanded={isLanguageMenuOpen}
-                >
-                  <Image
-                    src={selectedLanguage.flagSrc}
-                    alt={selectedLanguage.flagAlt}
-                    width={24}
-                    height={18}
-                    className="h-4 w-6 rounded-sm object-cover"
-                  />
-                  <span>{selectedLanguage.label}</span>
-                  <span className="text-xs" aria-hidden>▾</span>
-                </button>
-                {isLanguageMenuOpen && (
-                  <div className="absolute left-0 bottom-full mb-2 w-full md:w-40 rounded-md border border-[#1140bc] bg-[#0e2358] shadow-lg z-10">
-                    <ul role="listbox" aria-label="Seleccionar idioma">
-                      {languageOptions.map((option) => (
-                        <li key={option.code}>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (option.code === 'en') {
-                                setIsLanguageMenuOpen(false);
-                                router.push('/404');
-                                return;
-                              }
-                              setCurrentLanguage(option.code);
-                              setIsLanguageMenuOpen(false);
-                            }}
-                            className={`flex w-full items-center gap-2 px-4 py-2 text-sm transition transform duration-150 ease-in-out hover:scale-105 ${
-                              option.code === currentLanguage
-                                ? 'bg-[#1140bc] text-[#d8ecff]'
-                                : 'text-[#d8ecff] hover:bg-[#173a87]'
-                            }`}
-                            role="option"
-                            aria-selected={option.code === currentLanguage}
-                          >
-                            <Image
-                              src={option.flagSrc}
-                              alt={option.flagAlt}
-                              width={24}
-                              height={18}
-                              className="h-4 w-6 rounded-sm object-cover"
-                            />
-                            <span>{option.label}</span>
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-              <div className="flex flex-wrap justify-center gap-4 w-full md:w-auto">
-                <button type="button" onClick={() => setActiveModal('privacy')} className="w-full md:w-auto text-sm transition transform duration-200 ease-in-out hover:text-[#52abff] hover:scale-105 border border-[#1140bc] px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#52abff]">Política de privacidad</button>
-                <button type="button" onClick={() => setActiveModal('terms')} className="w-full md:w-auto text-sm transition transform duration-200 ease-in-out hover:text-[#52abff] hover:scale-105 border border-[#1140bc] px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#52abff]">Términos de uso</button>
-                <button type="button" onClick={() => setActiveModal('cookies')} className="w-full md:w-auto text-sm transition transform duration-200 ease-in-out hover:text-[#52abff] hover:scale-105 border border-[#1140bc] px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#52abff]">Política de cookies</button>
-              </div>
+            <div className="flex flex-wrap justify-center gap-4 w-full md:w-auto">
+              <button type="button" onClick={() => setActiveModal('privacy')} className="w-full md:w-auto text-sm transition transform duration-200 ease-in-out hover:text-[#52abff] hover:scale-105 border border-[#1140bc] px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#52abff]">Política de privacidad</button>
+              <button type="button" onClick={() => setActiveModal('terms')} className="w-full md:w-auto text-sm transition transform duration-200 ease-in-out hover:text-[#52abff] hover:scale-105 border border-[#1140bc] px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#52abff]">Términos de uso</button>
+              <button type="button" onClick={() => setActiveModal('cookies')} className="w-full md:w-auto text-sm transition transform duration-200 ease-in-out hover:text-[#52abff] hover:scale-105 border border-[#1140bc] px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#52abff]">Política de cookies</button>
             </div>
           </div>
         </div>
@@ -399,6 +310,12 @@ const Footer = () => {
           {modalContents[activeModal].content}
         </Modal>
       )}
+
+      {/* ✅ Modal de Login Requerido */}
+      <LoginRequiredModal 
+        isOpen={showLoginRequiredModal} 
+        onClose={() => setShowLoginRequiredModal(false)} 
+      />
     </>
   );
 };

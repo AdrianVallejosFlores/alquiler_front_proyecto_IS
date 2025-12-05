@@ -200,7 +200,7 @@ export const DATA_MANUAL: Record<string, Category> = {
                 'Revisa el portafolio'
               ],
               actions: [
-                { label: 'Ver categorías', href: '/categorias', type: 'secondary' }
+                { label: 'Ver categorías', href: '/#servicios', type: 'secondary' }
               ]
             },
             {
