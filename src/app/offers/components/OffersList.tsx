@@ -72,7 +72,9 @@ export default function OffersList() {
   function onOpenOffer(offer: Offer) {
     router.push(`/offers/${offer.id}`);
   }
-
+  function onOpenPromotions(offer: Offer) {
+    router.push(`/promociones/${offer._id}`);
+  }
   return (
     <section style={{ display: 'grid', gap: 16 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -127,7 +129,7 @@ export default function OffersList() {
       ) : (
         <div style={{ display: 'grid', gap: 12 }}>
           {items.map((o) => (
-            <OfferCard key={o.id} offer={o} onOpen={onOpenOffer} />
+            <OfferCard key={o.id} offer={o} onOpen={onOpenOffer} onOpenPromotions={onOpenPromotions} />
           ))}
         </div>
       )}
