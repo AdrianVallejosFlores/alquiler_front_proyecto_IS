@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from "react";
+import React, { useState, useEffect} from "react";
 import { cambiarContrasenaHU3 } from "@/app/teamsys/services/UserService";
 import { getSocket } from "@/app/teamsys/realtime/socketClient";
 
@@ -70,6 +70,20 @@ export default function CambiarContrasena({ onClose }: Props) {
 
     return ok;
   };
+  useEffect(()=>{
+const usuario=sessionStorage.getItem("userData")
+if(!usuario)
+  return
+
+const user =JSON.parse(usuario)
+  if(!user.password)
+    setShowSuccessModal(true)
+    
+  }
+
+  , []);
+
+  
 
   const onSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
