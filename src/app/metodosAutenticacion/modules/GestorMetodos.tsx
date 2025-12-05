@@ -329,8 +329,15 @@ const activarMetodoGoogle = (): void => {
         if (!email) throw new Error('No llegó el email desde Google');
         if (!emailActual) throw new Error('El usuario actual no tiene email en sessionStorage');
 
+
         if (email.toLowerCase() !== emailActual.toLowerCase()) {
-          throw new Error('El correo de Google no coincide con el del usuario actual');
+          //throw new Error('El correo de Google no coincide con el del usuario actual'); 
+        setError('El correo de Google no coincide con el del usuario actual');
+       alert('El correo de Google no coincide con el del usuario actual');
+        return;
+
+
+
         }
 
         // Por si había algún error viejo
