@@ -1,4 +1,5 @@
 //src/app/Homepage/page.tsx
+'use client';
 import Mapa from "../components/mapa/MapaWrapper";
 import CarruselOfertas from "../components/CarruselOfertas/CarruselOfertas";
 import HomeFixer from "../components/ListaCategorias/HomeFixer";
