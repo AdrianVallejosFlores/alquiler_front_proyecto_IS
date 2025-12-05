@@ -1,12 +1,13 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation'; // <--- 1. Solo agregué esta importación
 import type { Offer } from '../services/offersService';
 
 type Props = {
   offer: Offer;
   onOpen: (offer: Offer) => void;
-  onOpenPromotions: (offer: Offer) => void;
+  onOpenPromotions: (offer: Offer) => void; // Mantenemos esto para no romper el tipado del padre
 };
 
 // Utilidad segura: maneja null/undefined y corta a 100 chars
@@ -15,7 +16,9 @@ const clamp = (text: string | undefined | null, max = 100) => {
   return t.length > max ? t.slice(0, max - 1) + '…' : t;
 };
 
+// Mantenemos 'onOpenPromotions' aquí aunque no lo usemos, para que sea idéntico al original
 export default function OfferCard({ offer, onOpen, onOpenPromotions }: Props) {
+  const router = useRouter(); // <--- 2. Inicializamos el router
   const isInactive = offer.status === 'inactive';
 
   return (
@@ -103,46 +106,51 @@ export default function OfferCard({ offer, onOpen, onOpenPromotions }: Props) {
           )}
         </div>
       </div>
-           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-           <button
-           type="button"
-          onClick={() => onOpenPromotions(offer)}
-    className="btn-outline"
-    style={{
-      cursor: 'pointer',
-      padding: '8px 12px',
-      borderRadius: 8,
-      border: '1px solid #DBDEE5',
-      background: '#F0F2F5',
-      color: '#0c4fe9',
-      fontWeight: 600,
-      whiteSpace: 'nowrap',
-    }}
-    aria-label={`Ver promociones de ${offer.title}`}
-  >
-    Ver Promociones
-  </button>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <button
+          type="button"
+          // <--- 3. CAMBIO: Aquí usamos el router en lugar de onOpenPromotions
+          onClick={() => {
+             // Intenta obtener el ID, maneja si viene como .id o ._id
+             const id = offer.id || (offer as any)._id; 
+             router.push(`/promociones/${id}`);
+          }}
+          className="btn-outline"
+          style={{
+            cursor: 'pointer',
+            padding: '8px 12px',
+            borderRadius: 8,
+            border: '1px solid #DBDEE5',
+            background: '#F0F2F5',
+            color: '#0c4fe9',
+            fontWeight: 600,
+            whiteSpace: 'nowrap',
+          }}
+          aria-label={`Ver promociones de ${offer.title}`}
+        >
+          Ver Promociones
+        </button>
 
-  <button
-    type="button"
-    onClick={() => onOpen(offer)}
-    className="btn-outline"
-    style={{
-      cursor: 'pointer',
-      padding: '8px 12px',
-      borderRadius: 8,
-      border: '1px solid #DBDEE5',
-      background: '#F0F2F5',
-      color: '#0c4fe9',
-      fontWeight: 600,
-      whiteSpace: 'nowrap',
-    }}
-    aria-label={`Ver oferta ${offer.title}`}
-  >
-    Ver oferta
-  </button>
+        <button
+          type="button"
+          onClick={() => onOpen(offer)}
+          className="btn-outline"
+          style={{
+            cursor: 'pointer',
+            padding: '8px 12px',
+            borderRadius: 8,
+            border: '1px solid #DBDEE5',
+            background: '#F0F2F5',
+            color: '#0c4fe9',
+            fontWeight: 600,
+            whiteSpace: 'nowrap',
+          }}
+          aria-label={`Ver oferta ${offer.title}`}
+        >
+          Ver oferta
+        </button>
 
- </div>
+      </div>
     </div>
   );
 }
