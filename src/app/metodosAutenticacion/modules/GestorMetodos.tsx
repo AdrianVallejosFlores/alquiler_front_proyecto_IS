@@ -379,7 +379,7 @@ const activarMetodoGoogle = (): void => {
         throw new Error('No se encontraron datos de usuario en sessionStorage');
       }
 
-      const userData = JSON.parse(userDataString);
+      let userData = JSON.parse(userDataString);
       const userId = getStr(userData, '_id') ?? getStr(userData, 'id');
       if (!userId) {
         throw new Error('No se pudo obtener el id del usuario desde sessionStorage');
@@ -390,7 +390,7 @@ const activarMetodoGoogle = (): void => {
       setMensajeOk('Método de correo y contraseña activado exitosamente');
       userData.password=contrasena
       sessionStorage.removeItem("userData")
-      sessionStorage.setItem("userData", userData)
+      sessionStorage.setItem("userData", JSON.stringify(userData))
       if (recargarMetodos) await recargarMetodos();
       setModalContrasenaAbierto(false);
       setMetodoSeleccionadoParaContrasena(null);
@@ -431,16 +431,22 @@ const activarMetodoGoogle = (): void => {
         throw new Error('No se encontraron datos de usuario en sessionStorage');
       }
 
-      const userData = JSON.parse(userDataString) as unknown;
+      let userData = JSON.parse(userDataString);
       const userId = getStr(userData, '_id') ?? getStr(userData, 'id');
       if (!userId) {
         throw new Error('No se pudo obtener el id del usuario desde sessionStorage');
       }
 
       for (const id of modos.metodosAEliminar) {
+
         let provider = id;
         if (provider === 'correo') provider = 'local';
         await eliminarAutenticacion(userId, provider);
+        if(provider== "local"){
+          userData.password=null
+          sessionStorage.removeItem("userData")
+          sessionStorage.setItem("userData", JSON.stringify(userData))
+        }
       }
 
       setMensajeOk('Método de autenticación eliminado exitosamente');
