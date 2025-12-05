@@ -1,7 +1,7 @@
 import { IBilletera, ITransaccionBackend } from "../types";
 
 const rawBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
-
+//const rawBase = process.env.NEXT_PUBLIC_API_URL || "https://wallletback.vercel.app";
 const API_BASE_URL = rawBase.endsWith("/api")
   ? rawBase.slice(0, -4)
   : rawBase;
