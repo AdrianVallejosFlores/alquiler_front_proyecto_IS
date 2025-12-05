@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef  } from "react";
 import { Bell } from "lucide-react";
 import { getNewServicesCount } from "@/lib/checkNewServices";
 import { useRouter } from "next/navigation";
@@ -14,35 +14,55 @@ export default function NotificationBell() {
   const [showPanel, setShowPanel] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const goToAgenda = () => {
-    router.push("/booking/agenda");
-    setShowPanel(false);
+  const [lastSeenServiceCount, setLastSeenServiceCount] = useState(0);
+
+  // 👉 Control total leído
+  const [lastTotalUnread, setLastTotalUnread] = useState(0);
+
+  // 👉 Control de si hay novedades reales
+  const [hasNew, setHasNew] = useState(false);
+
+  // ============================
+  // LOCALSTORAGE
+  // ============================
+  const getReadIds = (key: string) => {
+    if (typeof window === "undefined") return [];
+    try {
+      return JSON.parse(localStorage.getItem(key) || "[]");
+    } catch {
+      return [];
+    }
   };
 
-  const loadTempAppointments = () => {
-    const appointments = [];
-    let index = 1;
-
-    while (localStorage.getItem(`temp_appointment${index}`)) {
-      const appointment = JSON.parse(localStorage.getItem(`temp_appointment${index}`) || "{}");
-      if (appointment) appointments.push(appointment);
-      index++;
-    }
-
-    return appointments;
+  const setReadIds = (key: string, ids: string[]) => {
+    if (typeof window === "undefined") return;
+    localStorage.setItem(key, JSON.stringify(ids));
   };
 
   const loadTempServices = () => {
+    if (typeof window === "undefined") return [];
     const services = [];
     let index = 1;
 
     while (localStorage.getItem(`temp_service${index}`)) {
       const service = JSON.parse(localStorage.getItem(`temp_service${index}`) || "{}");
-      if (service) services.push(service);
+      if (service) services.push({ ...service, _id: `service_${index}` });
       index++;
     }
-
     return services;
+  };
+
+  const loadTempAppointments = () => {
+    if (typeof window === "undefined") return [];
+    const appointments = [];
+    let index = 1;
+
+    while (localStorage.getItem(`temp_appointment${index}`)) {
+      const ap = JSON.parse(localStorage.getItem(`temp_appointment${index}`) || "{}");
+      if (ap) appointments.push({ ...ap, _id: `appointment_${index}` });
+      index++;
+    }
+    return appointments;
   };
 
   const clearAppointments = () => {
@@ -52,8 +72,49 @@ export default function NotificationBell() {
       index++;
     }
     setAppointments([]);
+    setReadIds("read_appointments", []);
   };
 
+  const markAllAsRead = () => {
+    const readServices = serviceNotifications.map((s) => s._id);
+    const readAppointments = appointments.map((a) => a._id);
+
+    setReadIds("read_local_services", readServices);
+    setReadIds("read_appointments", readAppointments);
+  };
+
+  // ============================
+  // CUANDO ABRES PANEL
+  // ============================
+
+  const prevShow = useRef(false);
+
+
+  useEffect(() => {
+    if (prevShow.current === true && showPanel === false) {
+      // 🔥 Se cerró el panel -> ahora sí marcar como leído
+      markAllAsRead();
+      setHasNew(false);
+
+      const total =
+        serviceCount +
+        serviceNotifications.length +
+        appointments.length;
+
+      setLastSeenServiceCount(serviceCount);
+      setLastTotalUnread(total);
+    }
+
+    prevShow.current = showPanel;
+  }, [showPanel]);
+
+
+  const readServices = getReadIds("read_local_services");
+  const readAppts = getReadIds("read_appointments");
+
+  // ============================
+  // CHECK AUTOMÁTICO
+  // ============================
   useEffect(() => {
     let active = true;
 
@@ -62,7 +123,6 @@ export default function NotificationBell() {
         setIsLoading(true);
 
         const newServicesCount = await getNewServicesCount();
-
         const newAppointments = loadTempAppointments();
         const newServicesLocal = loadTempServices();
 
@@ -71,8 +131,21 @@ export default function NotificationBell() {
         setServiceCount(newServicesCount);
         setAppointments(newAppointments);
         setServiceNotifications(newServicesLocal);
-      } catch (error) {
-        console.error("❌ Error verificando notificaciones:", error);
+
+        // --------------------------
+        // DETECTAR SI HAY NOVEDADES
+        // --------------------------
+        const unreadLocalServices = newServicesLocal.filter(s => !readServices.includes(s._id)).length;
+        const unreadLocalAppts = newAppointments.filter(a => !readAppts.includes(a._id)).length;
+
+        const backendHasNew = newServicesCount > lastSeenServiceCount;
+        const localHasNew = unreadLocalServices > 0 || unreadLocalAppts > 0;
+
+        const totalCurrent = newServicesCount + newServicesLocal.length + newAppointments.length;
+
+        const realNew = totalCurrent > lastTotalUnread || backendHasNew || localHasNew;
+
+        setHasNew(realNew);
       } finally {
         setIsLoading(false);
       }
@@ -85,92 +158,91 @@ export default function NotificationBell() {
       active = false;
       clearInterval(interval);
     };
-  }, []);
+  }, [lastSeenServiceCount, lastTotalUnread]);
 
-  const totalAppointmentsCount = appointments.length;
-  const newServicesCount = serviceNotifications.length;
+  // ============================
+  // VALORES DERIVADOS
+  // ============================
 
-  const total = serviceCount + totalAppointmentsCount + newServicesCount;
+  // 1️⃣ Contar backend NO LEÍDO
+  const unreadBackend = Math.max(serviceCount - lastSeenServiceCount, 0);
+
+  // 2️⃣ Contar servicios locales NO LEÍDOS
+  const unreadLocalServices = serviceNotifications.filter(s => !readServices.includes(s._id)).length;
+
+  // 3️⃣ Contar citas locales NO LEÍDAS
+  const unreadLocalAppts = appointments.filter(a => !readAppts.includes(a._id)).length;
+
+  // 4️⃣ TOTAL NO LEÍDO
+  const unreadTotal = unreadBackend + unreadLocalServices + unreadLocalAppts;
+
+  // Este será el numerito del ícono 🔴
+  const totalUnread = unreadTotal;
+
+
 
   return (
-    <div className="relative" id="notification-bell-container">
-      {/* 🔔 Botón campanita */}
+    <div className="relative">
+
       <button
-        id="btn-notification-bell"
-        onClick={() => setShowPanel((p) => !p)}
+        onClick={() => setShowPanel(p => !p)}
         className="relative p-2 rounded-full hover:bg-gray-100 transition duration-200"
-        aria-label="Notificaciones"
       >
         <Bell className="w-6 h-6 text-gray-700" />
 
-        {!showPanel && total > 0 && (
-          <span
-            id="badge-notification-count"
-            className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center animate-pulse"
-          >
-            {total}
+        {/* 🔴 NUMERITO SOLO SI HAY NUEVO */}
+        {!showPanel && totalUnread > 0 && (
+          <span className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center animate-pulse">
+            {totalUnread}
           </span>
-        )}
-
-        {showPanel && total > 0 && (
-          <span
-            id="badge-notification-dot"
-            className="absolute top-1 right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"
-          />
         )}
       </button>
 
-      {/* 📩 Panel */}
       {showPanel && (
-       <div
-          id="notification-panel"
-          className="absolute right-0 mt-2 w-80 bg-white shadow-xl rounded-xl border border-gray-200 z-50 max-h-80 overflow-y-auto"
-        >
+        <div className="absolute right-0 mt-2 w-80 bg-white shadow-xl rounded-xl border border-gray-200 z-50 max-h-80 overflow-y-auto">
           <div className="p-3">
             {isLoading ? (
-              <p id="notification-loading" className="text-gray-400 text-sm italic">
-                Actualizando...
-              </p>
-            ) : total === 0 ? (
-              <p id="notification-empty" className="text-gray-500 text-sm">
-                No hay nuevas notificaciones.
-              </p>
+              <p className="text-gray-400 text-sm italic">Actualizando...</p>
+            ) : (serviceCount + serviceNotifications.length + appointments.length) === 0 ? (
+              <p className="text-gray-500 text-sm">No hay nuevas notificaciones.</p>
             ) : (
-              <div id="notification-list" className="flex flex-col gap-3 text-sm">
-                {/* 🔵 Servicios desde BD */}
+              <div className="flex flex-col gap-3 text-sm">
+
                 {serviceCount > 0 && (
                   <div
-                    id="btn-notification-new-services"
-                    onClick={goToAgenda}
+                    onClick={() => {
+                      router.push("/booking/agenda");
+                      setShowPanel(false);
+                    }}
                     className="p-2 border-l-4 border-blue-500 bg-blue-50 rounded cursor-pointer hover:bg-blue-100 transition"
                   >
                     <b>{serviceCount}</b> nuevas ofertas de trabajo publicadas.
-                    <div className="text-xs text-blue-600">
-                      Haz clic para ir a la agenda
-                    </div>
                   </div>
                 )}
 
-                {/* 🟡 Servicios cargados localmente */}
-                {serviceNotifications.length > 0 &&
-                  serviceNotifications.map((s, idx) => (
-                    <div
-                      key={idx}
-                      id={`notification-service-${idx}`}
-                      className="p-2 border-l-4 border-yellow-500 bg-yellow-50 rounded"
-                    >
-                      <b>Servicio cargado recientemente</b>
-                      <div>📌 {s.nombre}</div>
-                      <div>💲 {s.precio}</div>
-                    </div>
-                  ))}
-
-                {/* 🟢 Citas */}
-                {appointments.map((ap, idx) => (
+                {serviceNotifications.slice().reverse().map((s, idx) => (
                   <div
                     key={idx}
-                    id={`notification-appointment-${idx}`}
-                    className="p-2 border-l-4 border-green-500 bg-green-50 rounded"
+                    className={`p-2 border-l-4 rounded ${
+                      readServices.includes(s._id)
+                        ? "border-green-300 bg-green-50"
+                        : "border-green-800 bg-green-100"
+                    }`}
+                  >
+                    <b>Servicio cargado recientemente</b>
+                    <div>📌 {s.nombre}</div>
+                    <div>💲 {s.precio}</div>
+                  </div>
+                ))}
+
+                {appointments.slice().reverse().map((ap, idx) => (
+                  <div
+                    key={idx}
+                    className={`p-2 border-l-4 rounded ${
+                      readAppts.includes(ap._id)
+                        ? "border-green-300 bg-green-50"
+                        : "border-green-800 bg-green-100"
+                    }`}
                   >
                     <b>
                       {ap.type === "update"
@@ -185,7 +257,9 @@ export default function NotificationBell() {
                     <div>📅 Fecha: {ap.fecha}</div>
 
                     {ap.type !== "cancel" && (
-                      <div>⏰ Hora: {ap.horaInicio} - {ap.horaFin}</div>
+                      <div>
+                        ⏰ Hora: {ap.horaInicio} - {ap.horaFin}
+                      </div>
                     )}
                   </div>
                 ))}
@@ -193,10 +267,8 @@ export default function NotificationBell() {
             )}
           </div>
 
-          {/* Botón para limpiar notificaciones */}
           <div className="p-3">
             <button
-              id="btn-clear-notifications"
               onClick={clearAppointments}
               className="w-full p-1 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400"
             >
