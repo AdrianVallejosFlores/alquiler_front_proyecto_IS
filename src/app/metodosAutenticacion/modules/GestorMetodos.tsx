@@ -379,7 +379,7 @@ const activarMetodoGoogle = (): void => {
         throw new Error('No se encontraron datos de usuario en sessionStorage');
       }
 
-      const userData = JSON.parse(userDataString) as unknown;
+      const userData = JSON.parse(userDataString);
       const userId = getStr(userData, '_id') ?? getStr(userData, 'id');
       if (!userId) {
         throw new Error('No se pudo obtener el id del usuario desde sessionStorage');
@@ -388,7 +388,9 @@ const activarMetodoGoogle = (): void => {
       const resp = await agregarAutenticacion(userId, 'local', contrasena);
       if (!resp.success) throw new Error(resp.message);
       setMensajeOk('Método de correo y contraseña activado exitosamente');
-
+      userData.password=contrasena
+      sessionStorage.removeItem("userData")
+      sessionStorage.setItem("userData", userData)
       if (recargarMetodos) await recargarMetodos();
       setModalContrasenaAbierto(false);
       setMetodoSeleccionadoParaContrasena(null);
