@@ -100,7 +100,7 @@ export default function SimpleProfileMenu() {
 
   useEffect(() => {
     // Obtener usuario desde sessionStorage
-    const storedUser = sessionStorage.getItem("userData");
+    const storedUser = sessionStorage.getItem("userData")|| localStorage.getItem("userData");
     if (!storedUser) return;
 
     try {
