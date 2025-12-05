@@ -1,5 +1,6 @@
 export interface IBilletera {
   _id: string;
+  
   saldo: number;
   moneda: string;
   estado: string;

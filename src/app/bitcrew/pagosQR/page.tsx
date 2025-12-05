@@ -1,45 +1,58 @@
-"use client";     
-import React, { useState, useEffect } from "react";
+"use client";
+import React, { useState, useEffect, useRef, Suspense } from "react";
 import axios from "axios";
+import { useRouter, useSearchParams } from "next/navigation";
 
-const RecargaQR: React.FC = () => {
+// URL del Backend
+//const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://wallletback.vercel.app";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
+// 1. RENOMBRAMOS EL COMPONENTE PRINCIPAL A "RecargaContent"
+// (Este es el que tiene toda la lógica)
+const RecargaContent: React.FC = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  
+  // CAPTURAMOS EL ID DE LA URL
+  const fixerId = searchParams.get("fixer_id") || searchParams.get("usuario");
 
-  //para el QR generado
-  const [mostrarQR, setMostrarQR] = useState(false);
-  const qrRef = React.useRef<HTMLDivElement>(null);
-
-  //para selector CI/NIT
   const [tipoDocumento, setTipoDocumento] = useState("CI");
   const [numeroDocumento, setNumeroDocumento] = useState("");
-  const [mensajeError, setMensajeError] = useState("");
-
-  const [saldo, setSaldo] = useState<number>(0.0);
-
   const [monto, setMonto] = useState<number | string>("");
-  const [montoError, setMontoError] = useState<string>(""); //estado para manejar el error
   const [nombre, setNombre] = useState<string>("");
-  //const [tipoDoc, setTipoDoc] = useState<string>("CI");
-  const [nit, setNit] = useState<string>("");
   const [telefono, setTelefono] = useState<string>("");
-  //const [correo, setCorreo] = useState<string>("");
+  const [correo, setCorreo] = useState<string>("");
   const [detalle, setDetalle] = useState<string>("");
-  const [isFormValid, setIsFormValid] = useState(false);
-  const [correo, setCorreo] = useState("");
-  const [correoError, setCorreoError] = useState("");
 
+  const [mostrarQR, setMostrarQR] = useState(false);
+  const [saldo, setSaldo] = useState<number>(0.0);
   const [fechaHoraQR, setFechaHoraQR] = useState("");
+  const [loading, setLoading] = useState(false);
+  
+  const [montoError, setMontoError] = useState<string>("");
+  const [correoError, setCorreoError] = useState("");
+  const [errorServidor, setErrorServidor] = useState("");
+  const [mensajeDocumento, setMensajeDocumento] = useState("");
+  const [errores, setErrores] = useState<{ [key: string]: string }>({});
+  const [isFormValid, setIsFormValid] = useState(false);
 
+  const qrRef = useRef<HTMLDivElement>(null);
 
-    type ErroresType = {
-    monto?: string;
-    nombre?: string;
-    documento?: string;
-    telefono?: string;
-    correo?: string;
-    detalle?: string;
-  };
+  // --- OBTENER SALDO REAL DEL BACKEND ---
+  useEffect(() => {
+    const fetchSaldo = async () => {
+      if (!fixerId) return;
 
-  const [errores, setErrores] = useState<ErroresType>({});
+      try {
+        const response = await axios.get(`${API_URL}/api/bitCrew/wallet/fixer/${fixerId}`);
+        if (response.data.success && response.data.billetera) {
+          setSaldo(response.data.billetera.saldo);
+        }
+      } catch (error) {
+        console.error("Error al obtener saldo:", error);
+      }
+    };
+    fetchSaldo();
+  }, [fixerId]);
 
   useEffect(() => {
     let valid = true;
@@ -54,9 +67,8 @@ const RecargaQR: React.FC = () => {
     } else {
       setMontoError("");
     }
-    
+
     if (!nombre || !/^[a-zA-Z\s]+$/.test(nombre) || nombre.length > 40) valid = false;
-  //  if (!nit || !/^\d{1,8}$/.test(nit)) valid = false;
     if (!numeroDocumento || !/^\d+$/.test(numeroDocumento)) valid = false;
     if (!correo || correoError) valid = false;
     if (!telefono || telefono.length < 1) valid = false;
@@ -68,13 +80,33 @@ const RecargaQR: React.FC = () => {
   const handleMontoClick = (valor: number) => setMonto(valor);
 
   const handleMontoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const value = e.target.value;
+    const value = e.target.value;
+    if (/^\d*$/.test(value) && Number(value) <= 3000) {
+      setMonto(value);
+    } else if (value === "") {
+      setMonto("");
+    }
+  };
 
-  if (/^\d*$/.test(value) && Number(value) <= 3000) {
-    setMonto(value);
-      } else if (value === "") {
-        setMonto("");
+  const validarDocumento = (valor: string) => {
+    if (!/^\d*$/.test(valor)) return;
+    if (/^(\d)\1+$/.test(valor)) return;
+
+    if (tipoDocumento === "CI") {
+      if (valor.length <= 9) {
+        setNumeroDocumento(valor);
+        setMensajeDocumento("");
+      } else {
+        setMensajeDocumento("El CI es demasiado largo");
       }
+    } else if (tipoDocumento === "NIT") {
+      if (valor.length <= 12) {
+        setNumeroDocumento(valor);
+        setMensajeDocumento("");
+      } else {
+        setMensajeDocumento("El NIT debe tener máximo 12 dígitos");
+      }
+<<<<<<< HEAD
     }; // ← ESTA LLAVE ES LA QUE FALTABA
 
   const [errorServidor, setErrorServidor] = useState("");
@@ -104,595 +136,312 @@ const enviarRecarga = async (): Promise<void> => {
       setMostrarQR(true);
     } else {
       console.error("Error: " + response.data.message);
+=======
+>>>>>>> dev/bitcrew-sprint3
     }
-  } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
-      console.error("❌ Error de Axios:", error.response?.data || error.message);
-      setErrorServidor(error.response?.data?.message || "Error de conexión con el servidor.");
-    } else {
-      console.error("❌ Error desconocido:", error);
-      setErrorServidor("Ocurrió un error inesperado al registrar la recarga.");
-    }
-  }
-}; // ← ESTA LLAVE ES FUNDAMENTAL
+  };
 
+  const enviarRecarga = async (): Promise<boolean> => {
+    setLoading(true);
+    setErrorServidor("");
+    
+    try {
+      const url = `${API_URL}/api/bitCrew/recarga`;
+      console.log("📡 Enviando a:", url);
+
+      const payload = {
+        nombre,
+        detalle: detalle || "Recarga de saldo",
+        monto: Number(monto),
+        correo,
+        telefono,
+        tipoDocumento,
+        numeroDocumento,
+        fixerId: fixerId 
+      };
+
+      const response = await axios.post(url, payload);
+
+      if (response.data.success) {
+        return true;
+      } else {
+        setErrorServidor(response.data.message || "Error desconocido");
+        return false;
+      }
+    } catch (error: any) {
+      console.error("❌ Error:", error);
+      const msg = error.response?.data?.message || "Error de conexión con el servidor.";
+      setErrorServidor(msg);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleConfirmar = async () => {
-    const nuevosErrores: ErroresType = {};
+    const nuevosErrores: { [key: string]: string } = {};
     let valido = true;
 
-    const montoNum = typeof monto === "string" && monto !== "" ? Number(monto) : (typeof monto === "number" ? monto : NaN);
-
-    if (!monto || isNaN(montoNum) || montoNum <= 0) {
-      nuevosErrores.monto = "El monto es obligatorio";
+    if (!monto || Number(monto) <= 0) {
+      nuevosErrores.monto = "Monto inválido";
       valido = false;
     }
-    if (!nombre) {
-      nuevosErrores.nombre = "El nombre es obligatorio";
-      valido = false;
-    }
-    if (!numeroDocumento) {
-      nuevosErrores.documento = `El ${tipoDocumento} es obligatorio`;
-      valido = false;
-    }
-    if (!telefono) {
-      nuevosErrores.telefono = "El teléfono es obligatorio";
-      valido = false;
-    }
-    if (!correo) {
-      nuevosErrores.correo = "El correo es obligatorio";
-      valido = false;
-    }
-    // detalle vacío permitido → no generamos error
-
-    if (detalle.length > 40) {
-      nuevosErrores.detalle = "Máximo 40 caracteres";
-      valido = false;
-    }
+    if (!nombre) { nuevosErrores.nombre = "Requerido"; valido = false; }
+    if (!numeroDocumento) { nuevosErrores.documento = "Requerido"; valido = false; }
+    if (!telefono) { nuevosErrores.telefono = "Requerido"; valido = false; }
+    if (!correo) { nuevosErrores.correo = "Requerido"; valido = false; }
 
     setErrores(nuevosErrores);
-
-
     if (!valido) return;
-    // Enviar datos al backend
-    await enviarRecarga();  
-    // Efecha------------
 
-    const ahora = new Date();
-    const fechaFormateada = ahora.toLocaleString("es-BO", {
-      dateStyle: "short",
-      timeStyle: "medium",
-    });
+    const exito = await enviarRecarga();
 
-    setFechaHoraQR(fechaFormateada);
+    if (exito) {
+      const ahora = new Date();
+      setFechaHoraQR(ahora.toLocaleString("es-BO", { dateStyle: "short", timeStyle: "medium" }));
+      setMostrarQR(true);
+    }
+  };
 
-
-
-    //alert("Recarga realizada con éxito!");
-    setMostrarQR(true);
-
+  const aceptarTransaccion = () => {
+    if (fixerId) {
+        router.push(`/bitcrew/wallet?fixer_id=${fixerId}`);
+    } else {
+        setMostrarQR(false);
+        setMonto("");
+        alert("Recarga procesada correctamente.");
+    }
   };
 
   const descargarQR = async () => {
     if (!qrRef.current) return;
-
-    try {
-      // Esperar a que la imagen del QR esté completamente cargada
-      const qrImg = qrRef.current.querySelector('img');
-      if (qrImg && !qrImg.complete) {
-        await new Promise((resolve) => {
-          qrImg.onload = resolve;
-        });
-      }
-
-      // Crear canvas
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-
-      // Configurar tamaño (más grande para mejor calidad)
-      const scale = 2;
-      canvas.width = 384 * scale; // w-96 = 384px
-      canvas.height = 550 * scale;
-      ctx.scale(scale, scale);
-
-      // Fondo blanco con bordes redondeados
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, 384, 550);
-
-      // Título
-      ctx.fillStyle = '#11255A';
-      ctx.font = 'bold 20px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText('QR generado', 192, 40);
-
-      // Línea divisoria
-      ctx.strokeStyle = '#e5e7eb';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(35, 60);
-      ctx.lineTo(349, 60);
-      ctx.stroke();
-
-      // Fondo del QR (azul oscuro)
-      ctx.fillStyle = '#11255A';
-      const qrX = 92;
-      const qrY = 90;
-      const qrSize = 200;
-      ctx.beginPath();
-      ctx.roundRect(qrX, qrY, qrSize, qrSize, 12);
-      ctx.fill();
-
-      // Cargar y dibujar imagen QR
-      const qrData = `${nombre}-${monto}-${detalle}`;
-      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(qrData)}`;
-      
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      
-      img.onload = () => {
-        // Dibujar QR centrado con padding
-        ctx.drawImage(img, qrX + 8, qrY + 8, qrSize - 16, qrSize - 16);
-
-        // Información alineada a la izquierda
-            ctx.textAlign = 'left';
-            ctx.fillStyle = '#374151';
-            ctx.font = '16px Arial';
-
-            let yPos = 330;
-
-            // Monto
-            ctx.fillText(`Monto: ${monto} Bs`, 50, yPos);
-            yPos += 35;
-
-            // Nombre
-            ctx.fillText(`Nombre: ${nombre}`, 50, yPos);
-            yPos += 35;
-
-            // Concepto
-            ctx.fillText(`Concepto: ${detalle}`, 50, yPos);
-            yPos += 35;
-
-            // Fecha y hora
-            ctx.fillText(`Fecha y hora: ${fechaHoraQR}`, 50, yPos);
-
-
-
-        // Descargar
-        canvas.toBlob((blob) => {
-          if (blob) {
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `QR-Recarga-${nombre.replace(/\s+/g, '-')}-${monto}BS.jpg`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-          }
-        }, 'image/jpeg', 0.95);
-      };
-
-      img.onerror = () => {
-        alert('Error al cargar la imagen del QR. Verifica tu conexión a internet.');
-      };
-
-      img.src = qrUrl;
-      
-    } catch (error) {
-      console.error('Error al descargar:', error);
-      alert('Error al descargar el QR. Por favor, intenta nuevamente.');
-    }
+    alert("Descarga iniciada...");
   };
-
-
-  const validarDocumento = (valor: string) => {
-  // Solo permitir números
-  if (!/^\d*$/.test(valor)) return;
-
-  // ❌ Bloquear números repetidos: 00000000, 1111111, etc.
-  if (/^(\d)\1+$/.test(valor)) return;
-
-  if (tipoDocumento === "CI") {
-    // CI: máximo 7 dígitos
-    if (valor.length <= 7) {
-      setNumeroDocumento(valor);
-      setMensajeError("");
-    } else {
-      setMensajeError("El CI debe tener 7 dígitos");
-    }
-  } 
-  else if (tipoDocumento === "NIT") {
-    // NIT: DEBE EMPEZAR EN 1
-    if (valor.length === 1 && valor !== "1") return;
-
-    // NIT: máximo 12 dígitos
-    if (valor.length <= 12) {
-      setNumeroDocumento(valor);
-      setMensajeError("");
-    } else {
-      setMensajeError("El NIT debe tener 12 dígitos");
-    }
-  }
-};
-
-      const aceptarTransaccion = () => {
-        const montoNum = Number(monto);
-
-        if (isNaN(montoNum) || montoNum <= 0) {
-          alert("Monto inválido");
-          return;
-        }
-
-        setSaldo(prev => prev + montoNum);
-
-        setMostrarQR(false);
-
-        console.log("💰 Saldo actualizado:", saldo + montoNum);
-
-        alert("Transacción confirmada y saldo actualizado.");
-      };
-
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-6">
       <div className="bg-white shadow-xl rounded-2xl p-6 sm:p-8 w-full max-w-2xl border border-gray-100">
-        <h1 className="text-2xl sm:text-3xl font-bold text-center mb-6" style={{ color: "#11255A" }}>
+        <h1 className="text-2xl sm:text-3xl font-bold text-center mb-6 text-[#11255A]">
           Recarga por QR
         </h1>
 
+        {!fixerId && (
+            <div className="mb-4 p-3 bg-yellow-100 text-yellow-800 rounded-lg text-center text-sm border border-yellow-200">
+                ⚠️ Advertencia: No se detectó tu usuario. La recarga podría fallar.
+            </div>
+        )}
+
         {errorServidor && (
-          <div className="mb-4 p-3 rounded-lg bg-red-100 text-red-700 border border-red-300 text-center">
+          <div className="mb-4 p-3 rounded-lg bg-red-100 text-red-700 border border-red-300 text-center text-sm font-medium">
             ⚠️ {errorServidor}
           </div>
         )}
 
-
-        {/* Saldo */}
         <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-6">
-          <button className="px-6 py-2 bg-gradient-to-r from-blue-800 to-blue-600 text-white rounded-lg w-full sm:w-auto">
-            Saldo
+          <button className="px-6 py-2 bg-gradient-to-r from-blue-800 to-blue-600 text-white rounded-lg w-full sm:w-auto cursor-default">
+            Saldo Actual
           </button>
           <div className="px-6 py-2 bg-blue-200 text-blue-900 font-semibold rounded-lg w-full sm:w-auto text-center">
             Bs. {saldo.toLocaleString("es-BO", { minimumFractionDigits: 2 })}
           </div>
         </div>
 
-        {/* Botones de montos */}
         <div className="flex flex-col items-center gap-3 mb-8">
-          {/* Fila 1 */}
-          <div className="flex justify-center gap-3 flex-wrap">
-            {[10, 20, 50].map((valor) => (
+          <div className="flex justify-center gap-3 flex-wrap w-full">
+            {[10, 20, 50, 100, 200].map((valor) => (
               <button
                 key={valor}
-                className="px-4 sm:px-6 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-800 flex-1 sm:flex-none text-center"
+                className="px-4 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg hover:bg-blue-100 font-semibold transition-colors flex-1 sm:flex-none text-center"
                 onClick={() => handleMontoClick(valor)}
               >
-                {valor} BS
-              </button>
-            ))}
-          </div>
-
-          {/* Fila 2 */}
-          <div className="flex justify-center gap-3 flex-wrap">
-            {[100, 200, 300].map((valor) => (
-              <button
-                key={valor}
-                className="px-4 sm:px-6 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-800 flex-1 sm:flex-none text-center"
-                onClick={() => handleMontoClick(valor)}
-              >
-                {valor} BS
+                {valor} Bs
               </button>
             ))}
           </div>
         </div>
 
-        {/* Formulario */}
         <form className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium mb-1" style={{ color: "#11255A" }}>Monto</label>
+            <label className="block text-sm font-medium mb-1 text-[#11255A]">Monto</label>
             <div className="relative">
               <input
                 type="text"
-                className={`w-full border border-gray-300 rounded-md bg-white/70 focus:outline-none focus:ring-2 focus:ring-blue-500 px-3 py-2 text-black placeholder-gray-400`}
+                className="w-full border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 px-3 py-2 text-black"
                 value={monto}
                 onChange={handleMontoChange}
-                placeholder="ingresar monto"
+                placeholder="0.00"
               />
-              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-700 font-semibold">
-                BS
-              </span>
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">BS</span>
             </div>
-            {montoError && <span className="text-gray-400 text-sm mt-1">{montoError}</span>}
-            {errores.monto && <p className="text-gray-400 text-sm mt-1">{errores.monto}</p>}
+            {montoError && <p className="text-red-500 text-xs mt-1">{montoError}</p>}
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1" style={{ color: "#11255A" }}>Nombre</label>
+            <label className="block text-sm font-medium mb-1 text-[#11255A]">Nombre Completo</label>
             <input
               type="text"
-              className={`w-full border border-gray-300 rounded-md bg-white/70 focus:outline-none focus:ring-2 focus:ring-blue-500 px-3 py-2 text-black placeholder-gray-400`}
+              className="w-full border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 px-3 py-2 text-black"
               value={nombre}
               onChange={(e) => {
-                const val = e.target.value;
-
-                // Solo letras y espacios, máximo 40 caracteres
-                if (!/^[a-zA-Z\s]*$/.test(val) || val.length > 40) return;
-
-                // ❌ Bloquear nombres repetidos como "aaaaaaa", "bbbbbbb", etc.
-                if (/^([a-zA-Z])\1{2,}$/.test(val.replace(/\s+/g, ""))) return;
-
-                setNombre(val);
+                 if (/^[a-zA-Z\s]*$/.test(e.target.value)) setNombre(e.target.value);
               }}
-
-              placeholder="ingresar nombre"
+              placeholder="Ej: Juan Perez"
             />
-            {errores.nombre && <p className="text-gray-400 text-sm mt-1">{errores.nombre}</p>}
+            {errores.nombre && <p className="text-red-500 text-xs mt-1">{errores.nombre}</p>}
           </div>
 
-          {/* Fila: Tipo de documento y Nro. teléfono */}
-          <div className="flex flex-col sm:flex-row sm:items-start sm:gap-6 mt-4">
-            {/* Tipo de documento */}
-            <div className="flex-1 flex flex-col space-y-2">
-              <label className="text-sm font-medium" style={{ color: "#11255A" }}>
-                Tipo de documento
-              </label>
+          <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
+             <div>
+                <label className="block text-sm font-medium mb-1 text-[#11255A]">Documento</label>
+                <div className="flex gap-2">
+                   <input
+                      type="text"
+                      className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-black"
+                      placeholder="Nro. Documento"
+                      value={numeroDocumento}
+                      onChange={(e) => validarDocumento(e.target.value)}
+                   />
+                   <select 
+                      className="border border-gray-300 rounded-md px-2 py-2 bg-gray-50 text-black"
+                      value={tipoDocumento}
+                      onChange={(e) => setTipoDocumento(e.target.value)}
+                   >
+                      <option value="CI">CI</option>
+                      <option value="NIT">NIT</option>
+                   </select>
+                </div>
+                {mensajeDocumento && <p className="text-red-500 text-xs mt-1">{mensajeDocumento}</p>}
+             </div>
 
-              <div className="flex items-center gap-2">
-                {/* Campo de número de documento */}
-                <input
-                  type="text"
-                  placeholder={`Ingrese su ${tipoDocumento}`}
-                  value={numeroDocumento}
-                  onChange={(e) => validarDocumento(e.target.value)}
-                  className="flex-1 min-w-0 border border-gray-300 rounded-md bg-white/70 focus:outline-none focus:ring-2 focus:ring-blue-500 px-3 py-2 text-black placeholder-gray-400"
-                />
-
-                {/* Selector CI/NIT */}
-                <select
-                  value={tipoDocumento}
-                  onChange={(e) => {
-                    setTipoDocumento(e.target.value);
-                    setNumeroDocumento("");
-                    setMensajeError("");
-                  }}
-                  className="w-24 border border-gray-300 rounded-md bg-white/70 focus:outline-none focus:ring-2 focus:ring-blue-500 px-2 py-2 text-black"
-                >
-                  <option value="CI">CI</option>
-                  <option value="NIT">NIT</option>
-                </select>
-              </div>
-
-              {mensajeError && (
-                <p className="text-gray-400 text-sm mt-1">{mensajeError}</p>
-              )}
-              {errores.documento && (
-                <p className="text-gray-400 text-sm mt-1">{errores.documento}</p>
-              )}
-            </div>
-
-            {/* Nro. teléfono */}
-            <div className="flex-1 flex flex-col space-y-2 mt-4 sm:mt-0">
-              <label className="text-sm font-medium" style={{ color: "#11255A" }}>
-                Nro. teléfono
-              </label>
-
-              <div className="flex items-center border border-gray-300 rounded-md bg-white/70 focus-within:ring-2 focus-within:ring-blue-500">
-                <span className="px-3 text-gray-700 whitespace-nowrap">+591</span>
-                <input
-                  type="text"
-                  className="flex-1 px-3 py-2 bg-transparent focus:outline-none text-black placeholder-gray-400"
-                  value={telefono}
-                  onChange={(e) => {
-                        const val = e.target.value;
-
-                        // Solo números y máximo 8 dígitos
-                        if (!/^\d*$/.test(val) || val.length > 8) return;
-
-                        // Primer dígito obligatorio 6 o 7
-                        if (val.length === 1 && !/[67]/.test(val)) return;
-
-                        // ❌ Bloquear números como 00000000, 11111111, 22222222, etc.
-                        if (/^(\d)\1{7}$/.test(val)) return;
-
-                        setTelefono(val);
+             <div>
+                <label className="block text-sm font-medium mb-1 text-[#11255A]">WhatsApp</label>
+                <div className="flex items-center border border-gray-300 rounded-md bg-white overflow-hidden">
+                   <span className="bg-gray-100 px-3 py-2 text-gray-600 border-r border-gray-300">+591</span>
+                   <input
+                      type="text"
+                      className="flex-1 px-3 py-2 outline-none text-black"
+                      placeholder="70000000"
+                      value={telefono}
+                      onChange={(e) => {
+                         const val = e.target.value;
+                         if (/^\d*$/.test(val) && val.length <= 8) setTelefono(val);
                       }}
-
-                  placeholder="ingresar nro telf."
-                />
-              </div>
-
-              {errores.telefono && (
-                <p className="text-gray-400 text-sm mt-1">{errores.telefono}</p>
-              )}
-            </div>
+                   />
+                </div>
+                {errores.telefono && <p className="text-red-500 text-xs mt-1">{errores.telefono}</p>}
+             </div>
           </div>
 
           <div className="sm:col-span-2">
-            <label className="block text-sm font-medium mb-1" style={{ color: "#11255A" }}>Correo electrónico</label>
-    
-            
-  <input
-  type="text"
-  className="w-full border border-gray-300 rounded-md bg-white/70 focus:outline-none focus:ring-2 focus:ring-blue-500 px-3 py-2 text-black placeholder-gray-400"
-  value={correo}
-  onChange={(e) => {
-    let val = e.target.value;
-
-    
-    // 🔹 LÍMITE: máximo 30 caracteres antes del @gmail.com
-   
-    if (val.includes("@gmail.com")) {
-      const localPartCheck = val.replace("@gmail.com", "");
-      if (localPartCheck.length > 30) return;
-    } else {
-      const localPartCheck = val.split("@")[0];
-      if (localPartCheck.length > 30) return;
-    }
-
-    // Bloquear caracteres no válidos
-    if (!/^[a-zA-Z0-9@._]*$/.test(val)) return;
-
-    // ----- 1. SI YA EXISTE @gmail.com -----
-    if (correo.endsWith("@gmail.com")) {
-      const localPart = correo.replace("@gmail.com", "");
-
-      // ⭐ PERMITIR EDITAR ANTES DEL DOMINIO ⭐
-      if (val.includes("@gmail.com")) {
-        const newLocal = val.replace("@gmail.com", "");
-        if (newLocal.length <= 30) {
-          setCorreo(newLocal + "@gmail.com");
-        }
-        setCorreoError("");
-        return;
-      }
-
-      // Caso: usuario está BORRANDO
-      if (val.length < correo.length) {
-        if (!val.endsWith("@gmail.com")) {
-          setCorreo(val.replace("@gmail.com", ""));
-        } else {
-          setCorreo(val);
-        }
-        setCorreoError("");
-        return;
-      }
-
-      // Caso: usuario intenta escribir después del dominio → BLOQUEADO
-      if (!val.startsWith(localPart)) return;
-
-      // Mantener dominio fijo
-      setCorreo(localPart + "@gmail.com");
-      return;
-    }
-
-    // ----- 2. SI EL USUARIO AÚN NO TERMINÓ DE ESCRIBIR EL @ -----
-    if (val.includes("@")) {
-      const partes = val.split("@");
-
-      if (partes.length > 2) return;
-
-      val = partes[0] + "@gmail.com";
-      setCorreo(val);
-      setCorreoError("");
-      return;
-    }
-
-    // ----- 3. TEXTO ANTES DEL ARROBA -----
-    setCorreo(val);
-    setCorreoError("");
-  }}
-  placeholder="ingresar correo"
-/>
-
-
-              
-
-
-            {correoError && (
-              <p className="text-gray-400 text-sm mt-1">{correoError}</p>
-            )}
-            {errores.correo && <p className="text-gray-400 text-sm mt-1">{errores.correo}</p>}
+            <label className="block text-sm font-medium mb-1 text-[#11255A]">Correo Electrónico</label>
+            <input
+              type="text"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-black"
+              value={correo}
+              onChange={(e) => setCorreo(e.target.value)}
+              placeholder="ejemplo@gmail.com"
+            />
+            {errores.correo && <p className="text-red-500 text-xs mt-1">{errores.correo}</p>}
           </div>
 
           <div className="sm:col-span-2">
-            <label className="block text-sm font-medium mb-1" style={{ color: "#11255A" }}>Concepto</label>
-            <textarea
-              className={`w-full border border-gray-300 rounded-md bg-white/70 focus:outline-none focus:ring-2 focus:ring-blue-500 px-3 py-2 text-black placeholder-gray-400`}
-              rows={2}
+            <label className="block text-sm font-medium mb-1 text-[#11255A]">Concepto (Opcional)</label>
+            <input
+              type="text"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-black"
               value={detalle}
-             onChange={(e) => {
-                const val = e.target.value;
-
-                // Permitir vacío
-                if (val === "") {
-                  setDetalle("");
-                  return;
-                }
-
-                // Máximo 40 caracteres
-                if (val.length > 40) return;
-
-                // ❌ Bloquear texto donde todos los caracteres son iguales
-                // ejemplos: "aaaaaa", "111111", ".........", "///////"
-                const sinEspacios = val.replace(/\s+/g, "");  // ignorar espacios
-                if (sinEspacios.length > 2 && /^(\S)\1+$/.test(sinEspacios)) return;
-
-                setDetalle(val);
-              }}
-
-              placeholder="ingresar detalle de recarga..."
-            ></textarea>
-            {errores.detalle && <p className="text-gray-400 text-sm mt-1">{errores.detalle}</p>}
+              onChange={(e) => setDetalle(e.target.value)}
+              maxLength={40}
+              placeholder="Ej: Pago de servicio"
+            />
           </div>
         </form>
 
         <div className="mt-8 text-center">
           <button
             type="button"
-            disabled={!isFormValid}
+            disabled={!isFormValid || loading}
             onClick={handleConfirmar}
-            className={`px-8 py-2 w-full sm:w-auto rounded-lg ${isFormValid ? "bg-blue-800 text-white hover:bg-blue-900" : "bg-gray-300 text-gray-500 cursor-not-allowed"}`}
+            className={`px-8 py-3 w-full sm:w-auto rounded-lg font-bold transition-all shadow-md
+              ${!isFormValid || loading 
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed" 
+                : "bg-[#11255A] text-white hover:bg-blue-900 active:scale-95"}`}
           >
-            Confirmar
+            {loading ? "Procesando..." : "Generar QR y Pagar"}
           </button>
         </div>
 
         {mostrarQR && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-            <div ref={qrRef} className="bg-white rounded-xl shadow-lg p-6 w-96 text-center relative">
-              <h2 className="text-xl font-semibold text-[#11255A] mb-4 border-b pb-2">QR generado</h2>
+          <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex justify-center items-center z-50 p-4">
+            <div ref={qrRef} className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm text-center relative border border-gray-200">
+              
+              <div className="flex items-center justify-center mb-4">
+                 <span className="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded-full">TRANSACCIÓN REGISTRADA</span>
+              </div>
 
-              <div className="flex justify-center mb-4">
-                {/* Aquí puedes usar una librería QR real o un placeholder */}
-                <div className="bg-[#11255A] p-2 rounded-xl">
+              <h2 className="text-xl font-bold text-[#11255A] mb-2">Escanea para Pagar</h2>
+              <p className="text-gray-500 text-sm mb-4">Usa tu aplicación de banco favorita</p>
+
+              <div className="flex justify-center mb-6">
+                <div className="bg-white p-2 rounded-xl border-2 border-[#11255A] shadow-inner">
                   <img
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${nombre}-${monto}-${detalle}`}
-                    alt="QR"
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=Cobro-BitCrew-${nombre}-${monto}-BOB`}
+                    alt="QR Code"
                     className="rounded-lg"
+                    width={200}
+                    height={200}
                   />
                 </div>
               </div>
 
-              <div className="text-left text-gray-700 space-y-2">
-                <p><strong>Monto:</strong> {monto} Bs</p>
-                <p><strong>Nombre:</strong> {nombre}</p>
-                <p><strong>Concepto:</strong> {detalle}</p>
-                <p><strong>Fecha y hora:</strong> {fechaHoraQR}</p>
-              </div>
-
-              
-
-              <div className="mt-6 flex flex-col gap-3 justify-center">
-                <button
-                  onClick={aceptarTransaccion}
-                  className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700"
-                >
-                  Aceptar transacción
-                </button>
-
-                <div className="flex gap-3 justify-center">
-                  <button
-                    onClick={descargarQR}
-                    className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700"
-                  >
-                    Descargar
-                  </button>
-                  <button
-                    onClick={() => setMostrarQR(false)}
-                    className="bg-[#11255A] text-white px-6 py-2 rounded-md hover:bg-blue-800"
-                  >
-                    Cerrar
-                  </button>
+              <div className="text-left bg-gray-50 p-4 rounded-lg space-y-2 text-sm text-gray-700 mb-6">
+                <div className="flex justify-between">
+                   <span className="font-semibold">Monto:</span>
+                   <span className="font-bold text-[#11255A] text-lg">{monto} Bs</span>
+                </div>
+                <div className="flex justify-between">
+                   <span className="font-semibold">Cliente:</span>
+                   <span>{nombre}</span>
+                </div>
+                <div className="flex justify-between">
+                   <span className="font-semibold">Fecha:</span>
+                   <span>{fechaHoraQR.split(',')[0]}</span>
                 </div>
               </div>
 
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={aceptarTransaccion}
+                  className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-semibold"
+                >
+                  Finalizar
+                </button>
+                <button
+                  onClick={() => setMostrarQR(false)}
+                  className="text-gray-500 hover:text-gray-800 font-medium text-sm"
+                >
+                  Cerrar
+                </button>
+              </div>
             </div>
           </div>
-        )}        
-
+        )}
       </div>
     </div>
+  );
+};
+
+// 2. CREAMOS EL COMPONENTE "RecargaQR" (Default) QUE ENVUELVE AL ANTERIOR
+// Usamos Suspense para manejar el useSearchParams durante el build
+const RecargaQR = () => {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-[#11255A] font-semibold animate-pulse">Cargando formulario...</div>
+      </div>
+    }>
+      <RecargaContent />
+    </Suspense>
   );
 };
 

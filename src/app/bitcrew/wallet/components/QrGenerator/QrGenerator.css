@@ -1,0 +1,120 @@
+/* --- Contenedor Principal (La Tarjeta) --- */
+.qr-container {
+  background-color: #ffffff;
+  padding: 2rem;
+  border-radius: 1.5rem; /* Bordes muy redondeados como en el mockup */
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  max-width: 380px; /* Ancho similar a un móvil */
+  margin: 0 auto;
+  border: 1px solid #edf2f7;
+  transition: all 0.3s ease;
+}
+
+/* Título */
+.qr-container h3 {
+  color: #2d3748;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+/* --- Monto Grande --- */
+.monto-display {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #1a202c;
+  margin-bottom: 2rem;
+}
+
+/* --- Caja del QR (El Marco Azul) --- */
+.qr-box {
+  position: relative; /* Necesario para posicionar la capa de "Expirado" encima */
+  display: inline-block;
+  padding: 1.5rem;
+  border: 3px solid #3182ce; /* El borde azul del mockup */
+  border-radius: 1.5rem; /* Coincide con el borde de la tarjeta */
+  background-color: #ffffff;
+  margin-bottom: 1.5rem;
+  transition: border-color 0.3s ease;
+}
+
+/* El SVG del QR */
+.qr-wrapper svg {
+  display: block; /* Elimina espacios extra */
+  width: 100%;
+  height: auto;
+  transition: filter 0.3s ease, opacity 0.3s ease;
+}
+
+/* --- Estado Expirado (CSS Magic ✨) --- */
+/* Cuando el contenedor tiene la clase 'expired', cambiamos el borde a rojo/gris */
+.qr-container.expired .qr-box {
+  border-color: #cbd5e0; /* O rojo #e53e3e si prefieres alarma */
+}
+
+/* Efecto borroso en el QR cuando expira */
+.qr-container.expired .qr-wrapper {
+  filter: blur(6px);
+  opacity: 0.3;
+}
+
+/* Capa de texto encima del QR borroso */
+.expired-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.expired-overlay span {
+  background-color: #fff5f5;
+  color: #c53030;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  border: 1px solid #feb2b2;
+}
+
+/* --- Temporizador --- */
+.timer-display {
+  font-size: 0.95rem;
+  color: #718096;
+  font-weight: 500;
+  min-height: 1.5rem; /* Para que no salte si cambia el texto */
+}
+
+.timer-display strong {
+  color: #3182ce; /* Azul para los números */
+  font-feature-settings: "tnum"; /* Números de ancho fijo para que no "bailen" */
+}
+
+.text-red {
+  color: #e53e3e;
+  font-weight: 600;
+}
+
+/* --- Botón Compartir (Si decides agregarlo) --- */
+.share-button {
+  margin-top: 1.5rem;
+  background-color: #3182ce;
+  color: white;
+  border: none;
+  padding: 0.75rem 2rem;
+  border-radius: 9999px; /* Pill shape */
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: 100%;
+}
+
+.share-button:hover {
+  background-color: #2b6cb0;
+}
