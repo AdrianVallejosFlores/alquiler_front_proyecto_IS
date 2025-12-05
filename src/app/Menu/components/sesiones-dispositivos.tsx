@@ -48,7 +48,6 @@ export default function SesionesDispositivos() {
         setStatus("loading");
 
         const usuario = sessionStorage.getItem("userData");
-        //nuevo
         const authToken = sessionStorage.getItem("authToken") || null;
 
         if (!usuario) throw new Error("No hay usuario en sessionStorage.");
@@ -69,24 +68,33 @@ export default function SesionesDispositivos() {
           throw new Error("Formato inválido de datos recibidos.");
         }
 
+        // Ajuste de la fecha (restando 4 horas) y asegurando el formato adecuado
+        for (let i = 0; i < sessionsData.length; i++) {
+          if (sessionsData[i].lastActivity) {
+            const lastActivityDate = new Date(sessionsData[i].lastActivity);
+            
+            // Restar 4 horas
+            lastActivityDate.setHours(lastActivityDate.getHours() - 4);
+
+            // Asegúrate de actualizar `lastActivity` en el formato ISO después de modificarlo
+            sessionsData[i].lastActivity = lastActivityDate.toISOString();
+          }
+        }
+
         setTokens(authToken);  //guardar token actual
         setSessions(sessionsData);
-        setStatus("success")  //pone sucess
-
-        /*/ Delay opcional
-        setTimeout(() => {
-          setStatus("success");
-        }, 300);*/
+        setStatus("success");
 
       } catch (error) {
         console.error(error);
         setStatus("error");
-        setErrorMessage((error as Error).message || "Error")
+        setErrorMessage((error as Error).message || "Error");
       }
     };
 
     loadSessions();
   }, []);
+
 
 
   const hasOtherSessions = useMemo(
