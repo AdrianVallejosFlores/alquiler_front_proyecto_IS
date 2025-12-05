@@ -37,12 +37,10 @@ export default function VentanaPrueba() {
   const [montoRecarga, setMontoRecarga] = useState("");
   const [nombreServicio, setNombreServicio] = useState("");
   const [days, setDays] = useState("");
-  
 
   const { crearServicio, loading: loadingServicio, error: errorServicio } =
     useCrearServicio();
 
-  // Load localStorage data only in client
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -72,7 +70,6 @@ export default function VentanaPrueba() {
     }));
   };
 
-
   const handleDaysSave = () => {
     const base = localStorage.getItem("appLoadedAt");
 
@@ -93,18 +90,14 @@ export default function VentanaPrueba() {
       return;
     }
 
-    // ➕ Sumamos días
     fecha.setDate(fecha.getDate() + n);
 
-    // Guardamos en ISO
     const nuevaFechaISO = fecha.toISOString();
     localStorage.setItem("appLoadedAt", nuevaFechaISO);
 
-    // 🔄 LEER OTRA VEZ DEL LOCALSTORAGE
     const verificadoISO = localStorage.getItem("appLoadedAt");
     const fechaVerificada = verificadoISO ? new Date(verificadoISO) : null;
 
-    // 🟢 Formato bonito dd/mm/yyyy HH:MM
     const formatDate = (d: Date) => {
       const pad = (x: number) => String(x).padStart(2, "0");
       return (
@@ -169,7 +162,6 @@ export default function VentanaPrueba() {
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        {/* 🎯 Modal compacto */}
         <DialogContent className="w-[650px] max-h-[85vh] overflow-y-auto rounded-xl p-6">
           <DialogHeader>
             <DialogTitle className="text-xl">Configuración RECODE</DialogTitle>
@@ -178,19 +170,18 @@ export default function VentanaPrueba() {
             </DialogDescription>
           </DialogHeader>
 
-          {/* 🎯 GRID de dos columnas */}
           <div className="grid grid-cols-2 gap-4 mt-6">
-            {/* =============== HORARIO DEL SISTEMA (OCUPA DOS COLUMNAS) =============== */}
+
+            {/* HORARIO SISTEMA */}
             <div className="p-4 rounded-xl border bg-white col-span-2">
-              <h3 className="font-semibold text-pink-500">
-                Horario del Sistema
-              </h3>
+              <h3 className="font-semibold text-pink-500">Horario del Sistema</h3>
 
               <label className="text-sm text-gray-500 mt-2 block">
                 Seleccione un horario:
               </label>
 
               <select
+                id="select-horario"
                 value={horaSistema}
                 onChange={(e) => setHoraSistema(e.target.value)}
                 className="w-full p-2 border rounded mb-3"
@@ -202,6 +193,7 @@ export default function VentanaPrueba() {
               </select>
 
               <Button
+                id="btn-guardar-horario"
                 onClick={() => {
                   if (!horaSistema) {
                     alert("⚠️ Selecciona un horario primero");
@@ -217,16 +209,13 @@ export default function VentanaPrueba() {
               </Button>
             </div>
 
-            {/* =============== DÍAS EXTRA =============== */}
+            {/* DIAS EXTRA */}
             <div className="p-4 rounded-xl border bg-gray-50">
-              <h3 className="font-semibold text-indigo-600">
-                Añadir dias Inactividad
-              </h3>
+              <h3 className="font-semibold text-indigo-600">Añadir dias Inactividad</h3>
 
-              <label className="text-sm text-gray-500 mt-2 block">
-                Cantidad de días:
-              </label>
+              <label className="text-sm text-gray-500 mt-2 block">Cantidad de días:</label>
               <Input
+                id="input-dias"
                 type="number"
                 value={days}
                 onChange={(e) => setDays(e.target.value)}
@@ -234,6 +223,7 @@ export default function VentanaPrueba() {
               />
 
               <Button
+                id="btn-guardar-dias"
                 onClick={handleDaysSave}
                 className="bg-indigo-600 hover:bg-indigo-700 text-white w-full"
               >
@@ -241,14 +231,13 @@ export default function VentanaPrueba() {
               </Button>
             </div>
 
-            {/* =============== WALLET =============== */}
+            {/* WALLET */}
             <div className="p-4 rounded-xl border bg-gray-50">
-              <h3 className="font-semibold text-purple-600">
-                Recargar Wallet del Fixer
-              </h3>
+              <h3 className="font-semibold text-purple-600">Recargar Wallet del Fixer</h3>
 
               <label className="text-sm text-gray-500">Monto:</label>
               <Input
+                id="input-monto"
                 type="number"
                 value={montoRecarga}
                 onChange={(e) => setMontoRecarga(e.target.value)}
@@ -256,6 +245,7 @@ export default function VentanaPrueba() {
               />
 
               <Button
+                id="btn-recargar-wallet"
                 onClick={handleRecharge}
                 className="bg-purple-600 hover:bg-purple-700 text-white w-full"
               >
@@ -263,16 +253,15 @@ export default function VentanaPrueba() {
               </Button>
             </div>
 
-            {/* =============== REQUESTER =============== */}
+            {/* REQUESTER */}
             <div className="p-4 rounded-xl border bg-white">
               <h3 className="font-semibold text-blue-600">Datos del Requester</h3>
 
               {["nombre", "correo", "numero"].map((field) => (
                 <div key={field} className="mb-3">
-                  <label className="text-sm text-gray-500 capitalize">
-                    {field}:
-                  </label>
+                  <label className="text-sm text-gray-500 capitalize">{field}:</label>
                   <Input
+                    id={`input-request-${field}`}
                     value={data.request[field as keyof UserData["request"]]}
                     onChange={(e) =>
                       handleChange("request", field as any, e.target.value)
@@ -282,6 +271,7 @@ export default function VentanaPrueba() {
               ))}
 
               <Button
+                id="btn-guardar-requester"
                 onClick={handleSave}
                 className="bg-blue-600 hover:bg-blue-700 text-white w-full"
               >
@@ -289,16 +279,15 @@ export default function VentanaPrueba() {
               </Button>
             </div>
 
-            {/* =============== FIXER =============== */}
+            {/* FIXER */}
             <div className="p-4 rounded-xl border bg-white">
               <h3 className="font-semibold text-green-600">Datos del Fixer</h3>
 
               {["nombre", "correo", "numero"].map((field) => (
                 <div key={field} className="mb-3">
-                  <label className="text-sm text-gray-500 capitalize">
-                    {field}:
-                  </label>
+                  <label className="text-sm text-gray-500 capitalize">{field}:</label>
                   <Input
+                    id={`input-fixer-${field}`}
                     value={data.fixer[field as keyof UserData["fixer"]]}
                     onChange={(e) =>
                       handleChange("fixer", field as any, e.target.value)
@@ -308,6 +297,7 @@ export default function VentanaPrueba() {
               ))}
 
               <Button
+                id="btn-guardar-fixer"
                 onClick={handleSave}
                 className="bg-green-600 hover:bg-green-700 text-white w-full"
               >
@@ -315,14 +305,13 @@ export default function VentanaPrueba() {
               </Button>
             </div>
 
-            {/* =============== SERVICIO (OCUPA LAS 2 COLUMNAS) =============== */}
+            {/* SERVICIO */}
             <div className="p-4 rounded-xl border bg-white col-span-2">
-              <h3 className="font-semibold text-orange-600">
-                Crear Servicio
-              </h3>
+              <h3 className="font-semibold text-orange-600">Crear Servicio</h3>
 
               <label className="text-sm text-gray-500">Nombre:</label>
               <Input
+                id="input-nombre-servicio"
                 value={nombreServicio}
                 onChange={(e) => setNombreServicio(e.target.value)}
                 className="mb-3"
@@ -333,6 +322,7 @@ export default function VentanaPrueba() {
               )}
 
               <Button
+                id="btn-crear-servicio"
                 onClick={handleCrearServicio}
                 disabled={loadingServicio}
                 className="bg-orange-600 hover:bg-orange-700 text-white w-full"
