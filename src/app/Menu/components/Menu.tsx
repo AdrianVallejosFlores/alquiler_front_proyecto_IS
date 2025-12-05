@@ -189,6 +189,12 @@ export default function SimpleProfileMenu() {
         Trabajos Agendados
       </button>
 
+      <button
+        onClick={() => router.push("/agenda_proveedor")}
+        className="text-base sm:text-base font-semibold text-gray-800 hover:bg-gray-100 rounded-2xl px-4 py-3 w-full text-left transition duration-150"
+      >
+        Agendar tu Servicio
+      </button>
 
       {/* Botón Configuración */}
       <button
