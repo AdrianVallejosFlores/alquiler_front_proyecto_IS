@@ -73,7 +73,7 @@ export default function OffersList() {
     router.push(`/offers/${offer.id}`);
   }
   function onOpenPromotions(offer: Offer) {
-    router.push(`/promociones/${offer._id}`);
+    router.push(`/promociones/${encodeURIComponent(offer._id)}`);
   }
   return (
     <section style={{ display: 'grid', gap: 16 }}>
