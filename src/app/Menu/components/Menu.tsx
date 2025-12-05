@@ -11,6 +11,7 @@ import PaginaMetodosAutenticacion from "../../metodosAutenticacion/metodosAuten/
 import { MessageSeguridad } from "./messageSeguridad";
 import { MensajeCerrarSesion } from "./mensajeCerrarSesion";
 import SesionesDispositivos from "./sesiones-dispositivos"; // <-- NUEVO: import
+import { fetchTrabajosProveedor } from "@/app/epic_VisualizadorDeTrabajosAgendadosVistaProveedor/services/api";
 
 export default function SimpleProfileMenu() {
   const [showCerrarSesionMessage, setShowCerrarSesionMessage] = useState(false);
@@ -162,6 +163,32 @@ export default function SimpleProfileMenu() {
       >
         Gestionar Citas
       </button>
+
+      <button
+        onClick={() => {
+          const storedUser = sessionStorage.getItem("userData");
+          if (!storedUser) return;
+
+          try {
+            const parsed = JSON.parse(storedUser);
+
+            // El fixerId puede venir en cualquiera de estos campos según tu backend
+            const fixerId = parsed.fixerId || parsed.id || parsed._id;
+
+            if (fixerId) {
+              router.push(`/fixers/${fixerId}#seccion-trabajos`);
+            } else {
+              console.error("No se encontró fixerId en userData");
+            }
+          } catch {
+            console.error("Error leyendo userData");
+          }
+        }}
+        className="text-base sm:text-base font-semibold text-gray-800 hover:bg-gray-100 rounded-2xl px-4 py-3 w-full text-left transition duration-150"
+      >
+        Trabajos Agendados
+      </button>
+
 
       {/* Botón Configuración */}
       <button
