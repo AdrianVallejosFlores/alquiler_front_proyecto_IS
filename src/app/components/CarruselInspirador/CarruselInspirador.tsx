@@ -143,15 +143,8 @@ export default function CarruselInspirador() {
             <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto justify-center items-center">
               {/* LÓGICA CONDICIONAL DE BOTONES */}
               {slides[current].type === "chatbot" ? (
-                // Botón especial para WhatsApp (del HEAD)
-                <a
-                  href="https://wa.me/59160379823?text=Hola%20necesito%20ayuda"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 text-white font-semibold rounded-full shadow-md hover:bg-green-700 hover:scale-105 transition-all"
-                >
-                  🤖 Iniciar Chat con Servineo
-                </a>
+                // Botón especial para WhatsApp fue removido(del HEAD)
+                null
               ) : (
                 // Botones normales (del ORIGIN)
                 <>
