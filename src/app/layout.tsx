@@ -1,14 +1,18 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import "leaflet/dist/leaflet.css";
 import type { Metadata } from "next";
 import { Inter, Roboto_Mono } from "next/font/google";
 import "./globals.css";
 import "maplibre-gl/dist/maplibre-gl.css";
 
-// 🟢 Importamos la campanita global
-import NotificationBell from "@/components/NotificationBell";
+import { NotificationProvider } from "@/context/NotificationContext";
+import Header from "./components/Header/Header";
+import NotificationBell from "../components/NotificationBell"; // ⬅️ AÑADIDO
 
-// Fuentes principales
-const inter = Inter({
-  variable: "--font-inter",
+const geistSans = Geist({
+  variable: "--font-geist-sans",
   subsets: ["latin"],
 });
 
@@ -17,37 +21,108 @@ const robotoMono = Roboto_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "FixerApp",
-  description: "Gestión de citas y notificaciones",
-};
-
 export default function RootLayout({
   children,
-}: Readonly<{ children: React.ReactNode }>) {
+}: {
+  children: React.ReactNode;
+}) {
+  const [isOnline, setIsOnline] = useState(true);
+
+  useEffect(() => {
+    // Si ya se ejecutó antes en esta pestaña, no volver a correr
+    if (sessionStorage.getItem("appLoadedOnce")) return;
+
+    const now = new Date().toISOString();
+    localStorage.setItem("appLoadedAt", now);
+
+    // 🔹 Reiniciar la condición de días cada vez que se carga desde cero
+    localStorage.setItem("condicion_envio", "1");
+    localStorage.setItem("lista_nuevos_servicios", "0");
+
+
+    const now_hour = new Date().toISOString();
+    localStorage.setItem("hora_local_actual", now_hour);
+
+    // Marcar que ya se ejecutó
+    sessionStorage.setItem("appLoadedOnce", "1");
+  }, []);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    if (typeof window !== "undefined") {
+      setIsOnline(navigator.onLine);
+    }
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
   return (
-    <html lang="es" className={`${inter.variable} ${robotoMono.variable}`}>
-      <head>
-        {/* Carga optimizada de fuentes */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <NotificationProvider>
 
-      <body className="bg-blue-50 text-gray-900 antialiased min-h-screen">
-        {/* 🟣 Header global con campanita */}
-        <header className="flex items-center justify-between px-6 py-3 bg-white border-b shadow-sm">
-          <h1 className="text-lg font-semibold text-gray-800">FixerApp</h1>
+          {!isOnline && (
+            <div className="fixed top-0 left-0 w-full bg-red-600 text-white text-center p-2 z-50 shadow-lg animate-pulse">
+              <p className="font-semibold">Estás sin conexión</p>
+              <p className="text-sm">Comprueba tu conexión a internet.</p>
+            </div>
+          )}
 
-          {/* 🔔 Campanita de notificaciones */}
-          <NotificationBell />
-        </header>
+          <Header />
 
-        {/* Contenido dinámico de cada página */}
-        <main className="p-4">{children}</main>
+          {/* 🔔 Campanita flotante global + BOTONES a la derecha */}
+          <div className="fixed top-20 right-4 z-50 flex items-center gap-3">
+            <div className="flex gap-2">
+
+              <a
+                id="btn-ir-agenda"
+                href="/booking/agenda"
+                className="px-3 py-2 bg-gray-700 text-white rounded-md text-sm hover:bg-gray-800 transition shadow"
+              >
+                Ir Agenda
+              </a>
+
+              <a
+                id="btn-ir-agenda-fixer"
+                href="/booking/worker"
+                className="px-3 py-2 bg-gray-700 text-white rounded-md text-sm hover:bg-gray-800 transition shadow"
+              >
+                Ir Agenda (Fixer)
+              </a>
+
+              <a
+                id="btn-ir-comision"
+                href="/bitcrew/comision"
+                className="px-3 py-2 bg-gray-700 text-white rounded-md text-sm hover:bg-gray-800 transition shadow"
+              >
+                Ir a Comisión
+              </a>
+
+              <a
+                id="btn-ir-billetera"
+                href="/bitcrew/wallet"
+                className="px-3 py-2 bg-gray-700 text-white rounded-md text-sm hover:bg-gray-800 transition shadow"
+              >
+                Ir a Billetera
+              </a>
+
+            </div>
+
+            <NotificationBell />
+          </div>
+
+          <div className="pt-16 sm:pt-20">
+            {children}
+          </div>
+        </NotificationProvider>
       </body>
     </html>
   );

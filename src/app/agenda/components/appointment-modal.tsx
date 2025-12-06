@@ -33,6 +33,9 @@ interface AppointmentModalProps {
   initialAppointment?: any;
   isEditing?: boolean;
   appointmentId?: string;
+  slotMinutes?: number;
+  hours?: string;
+
 }
 
 const APPOINTMENT_STATES = {
@@ -44,7 +47,7 @@ const APPOINTMENT_STATES = {
 };
 
 const toYYYYMMDD = (d: Date) =>
-  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
 
 export function AppointmentModal({
   open,
@@ -78,44 +81,39 @@ export function AppointmentModal({
   // Confirmación
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [saving, setSaving] = useState(false);
-  // 🔔 Estados para alertas visuales
-  const [showAlert, setShowAlert] = useState(false);
-  const [alertType, setAlertType] = useState<"success" | "error">("success");
-  const [alertMessage, setAlertMessage] = useState("");
-
-  const isEdit = false;
 
   // Días feriados
   const holidays = ["2025-11-01", "2025-11-02", "2025-12-24"];
 
   // Días ya ocupados
   const [bookedDays, setBookedDays] = useState<string[]>([]);
+  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
 
-  // Cargar días con citas del proveedor desde el backend
   async function loadBookedDays() {
     try {
       if (!providerId) return;
       const res = await fetch(`${API_URL}/api/devcode/citas/proveedor/${providerId}`);
       if (!res.ok) throw new Error(`Error HTTP ${res.status}`);
-      const data: any[] = await res.json();
+      const data = await res.json();
 
-      // Si estamos editando, excluimos la cita actual de los días ocupados
+      const citasArray = Array.isArray(data) ? data : data?.citas ?? [];
+
       let fechasOcupadas: string[];
       if (isEditing && appointmentId) {
-        fechasOcupadas = data
+        fechasOcupadas = citasArray
           .filter((cita: any) => cita._id !== appointmentId)
           .map((cita: any) => cita.fecha);
       } else {
-        fechasOcupadas = data.map((cita: any) => cita.fecha);
+        fechasOcupadas = citasArray.map((cita: any) => cita.fecha);
       }
 
       const fechasUnicas: string[] = [...new Set(fechasOcupadas)];
-      console.log("Fechas con citas para proveedor:", fechasUnicas);
       setBookedDays(fechasUnicas);
     } catch (error) {
       console.error("Error cargando citas del proveedor:", error);
     }
   }
+
 
   // ---- UI helpers ----
   const formatDateForSummary = (date: Date) =>
@@ -130,7 +128,10 @@ export function AppointmentModal({
     setSelectedDate(date);
     setSelectedTime(null);
     setSelectedSlot(null);
-    if (date) setDateInput(date.toLocaleDateString("es-ES"));
+    if (date) {
+      setDateInput(date.toLocaleDateString("es-ES"));
+      setCurrentMonth(date);
+    }
   };
 
   const handleToday = () => handleDateSelect(new Date());
@@ -138,7 +139,6 @@ export function AppointmentModal({
   const handleTimeSelect = (slot: UISlot) => {
     setSelectedTime(slot.label);
     setSelectedSlot(slot);
-    // Scroll suave hacia el formulario
     setTimeout(() => {
       locationFormRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 100);
@@ -153,7 +153,6 @@ export function AppointmentModal({
   async function loadAvailable(date: Date) {
     if (!date || !providerId) return;
 
-    // Mock: Simular horarios disponibles sin fetch
     const dateStr = toYYYYMMDD(date);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -195,8 +194,8 @@ export function AppointmentModal({
         });
       }
 
-      // añadir el slot actual si estamos editando
-      if (isEditing && initialAppointment && initialAppointment.fecha === fechaStr) {
+      // Añadir slot actual si estamos editando
+      if (isEditing && initialAppointment?.horario && initialAppointment.fecha === fechaStr) {
         const currentTimeSlot = {
           startISO: new Date(`${initialAppointment.fecha}T${initialAppointment.horario.inicio}`).toISOString(),
           endISO: new Date(`${initialAppointment.fecha}T${initialAppointment.horario.fin}`).toISOString(),
@@ -207,10 +206,7 @@ export function AppointmentModal({
           slot.startISO === currentTimeSlot.startISO && slot.endISO === currentTimeSlot.endISO
         );
 
-        if (!slotExists) {
-          slots.unshift(currentTimeSlot);
-        }
-
+        if (!slotExists) slots.unshift(currentTimeSlot);
         if (!selectedTime) {
           setSelectedTime(currentTimeSlot.label);
           setSelectedSlot(currentTimeSlot);
@@ -228,30 +224,20 @@ export function AppointmentModal({
   // Init cuando se abre el modal
   useEffect(() => {
     if (open) {
-      console.log(" Inicializando modal en modo:", isEditing ? "EDICIÓN" : "CREACIÓN");
-      console.log(" Cita inicial:", initialAppointment);
-
       if (isEditing && initialAppointment) {
-        // MODO EDICIÓN
         const initialDate = new Date(initialAppointment.fecha);
         setSelectedDate(initialDate);
         setDateInput(initialDate.toLocaleDateString("es-ES"));
-
+        setCurrentMonth(initialDate);
         if (initialAppointment.ubicacion) {
           setLocationData(initialAppointment.ubicacion);
           setFormSubmitted(true);
         }
-
-        console.log(" Datos precargados para edición:", {
-          fecha: initialAppointment.fecha,
-          horario: initialAppointment.horario,
-          ubicacion: initialAppointment.ubicacion
-        });
       } else {
-        // MODO CREACIÓN
         const today = new Date();
         setSelectedDate(today);
         setDateInput(today.toLocaleDateString("es-ES"));
+        setCurrentMonth(today);
         setSelectedTime(null);
         setSelectedSlot(null);
         setFormSubmitted(false);
@@ -260,7 +246,7 @@ export function AppointmentModal({
 
       loadBookedDays();
     }
-  }, [open, isEditing, initialAppointment]);
+  }, [open, isEditing, initialAppointment, providerId]);
 
   // Recargar disponibilidad cuando cambia fecha/props
   useEffect(() => {
@@ -274,114 +260,88 @@ export function AppointmentModal({
     const dateStr = toYYYYMMDD(day);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
     const isWeekend = (d: Date) => d.getDay() === 0 || d.getDay() === 6;
 
-    // Días pasados
     if (day < today) return true;
-
-    // Fines de semana
     if (isWeekend(day)) return true;
 
-    // Feriados
+    const maxDate = new Date();
+    maxDate.setMonth(maxDate.getMonth() + 6);
+    if (day > maxDate) return true;
+
     if (holidays.includes(dateStr)) return true;
-
-    // Permitir la fecha actual de la cita cuando editamos
-    if (isEditing && initialAppointment && dateStr === initialAppointment.fecha) {
-      return false;
-    }
-
-    // Días ocupados
+    if (isEditing && initialAppointment && dateStr === initialAppointment.fecha) return false;
     return bookedDays.includes(dateStr);
   };
 
-  // ---- POST/PUT para crear/actualizar cita ----
   const handleConfirm = async () => {
-  if (!API_URL) {
-    setAlertType("error");
-    setAlertMessage("Falta configuración del servidor (API_URL).");
-    setShowAlert(true);
-    return;
-  }
-
-  if (!selectedDate || !selectedSlot || !locationData) {
-    setAlertType("error");
-    setAlertMessage("Debe completar todos los campos obligatorios antes de continuar");
-    setShowAlert(true);
-    return;
-  }
-
-  try {
-    setSaving(true);
-    const formatHour = (iso: string) => {
-      const date = new Date(iso);
-      return `${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}`;
-    };
-
-    const payload = {
-      proveedorId: providerId,
-      servicioId,
-      clienteId,
-      fecha: toYYYYMMDD(selectedDate),
-      horario: {
-        inicio: formatHour(selectedSlot.startISO),
-        fin: formatHour(selectedSlot.endISO),
-      },
-      ubicacion: locationData,
-      estado: "pendiente",
-      cliente: {
-        nombre: patientName,
-        email: "adrianvallejosflores24@gmail.com",
-        phone: "59177484270",
-      },
-    };
-
-    console.log("Enviando payload:", payload);
-
-    const url = isEditing && appointmentId
-      ? `${API_URL}/api/devcode/citas/${appointmentId}`
-      : `${API_URL}/api/devcode/citas`;
-    const method = isEditing ? "PUT" : "POST";
-
-    const res = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-
-    if (!res.ok) throw new Error("Error al crear la cita");
-
-    // 🔵 ÉXITO
-    setAlertType("success");
-    setAlertMessage("Cita creada correctamente");
-    setShowAlert(true);
-
-    // 🔔 Notificaciones (no tocamos lógica)
-    if (isEditing) {
-      await Promise.allSettled([
-        updateAndNotify(payload),
-        updateAndNotifyWhatsApp(payload),
-      ]);
-    } else {
-      await Promise.allSettled([
-        createAndNotify(payload),
-        createAndNotifyWhatsApp(payload),
-      ]);
+    if (!API_URL) {
+      setAlertType("error");
+      setAlertMessage("Falta configuración del servidor (API_URL).");
+      setShowAlert(true);
+      return;
     }
 
-    setShowConfirmationModal(true);
-    onOpenChange(false);
+    if (!selectedDate || !selectedSlot || !locationData) {
+      setAlertType("error");
+      setAlertMessage("Debe completar todos los campos obligatorios antes de continuar");
+      setShowAlert(true);
+      return;
+    }
 
-    setTimeout(() => setShowAlert(false), 3000);
-  } catch (error) {
-    console.error(error);
-    setAlertType("error");
-    setAlertMessage("Error al crear la cita");
-    setShowAlert(true);
-  } finally {
-    setSaving(false);
-  }
-};
+    try {
+      setSaving(true);
+      const formatHour = (iso: string) => {
+        const date = new Date(iso);
+        return `${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}`;
+      };
+
+      const payload = {
+        proveedorId: providerId,
+        servicioId,
+        clienteId,
+        fecha: toYYYYMMDD(selectedDate),
+        horario: {
+          inicio: formatHour(selectedSlot.startISO),
+          fin: formatHour(selectedSlot.endISO),
+        },
+        ubicacion: locationData,
+        estado: "pendiente",
+      };
+
+      let url = `${API_URL}/api/devcode/citas`;
+      let method = "POST";
+
+      if (isEditing && appointmentId) {
+        url = `${API_URL}/api/devcode/citas/${appointmentId}`;
+        method = "PUT";
+      }
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const body = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        if (res.status === 409) return alert(body?.message || "Horario no disponible.");
+        return alert(body?.message || `Error HTTP ${res.status}`);
+      }
+
+      setShowConfirmationModal(true);
+      onOpenChange(false);
+      setSelectedTime(null);
+      setSelectedSlot(null);
+
+    } catch (err) {
+      console.error(err);
+      alert("No se pudo crear la cita");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <>
@@ -401,24 +361,47 @@ export function AppointmentModal({
           <div className="p-6">
             {/* Barra superior */}
             <div className="flex items-center justify-between mb-6">
-              <Input 
-                type="text" 
-                placeholder="dd/mm/aaaa" 
-                value={dateInput} 
-                onChange={e => setDateInput(e.target.value)} 
-                className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-32" 
+              <Input
+                type="text"
+                placeholder="dd/mm/aaaa"
+                value={dateInput}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setDateInput(val);
+                  const [dd, mm, yyyy] = val.split("/").map(Number);
+                  if (!isNaN(dd) && !isNaN(mm) && !isNaN(yyyy)) {
+                    const newDate = new Date(yyyy, mm - 1, dd);
+                    if (!isNaN(newDate.getTime())) {
+                      setCurrentMonth(newDate);
+                    }
+                  }
+                }}
+                className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-32"
               />
               <div className="flex gap-2">
-                <Button 
-                  onClick={() => selectedDate && loadAvailable(selectedDate)} 
-                  className="bg-blue-100 hover:bg-blue-200 px-4 py-2 rounded-lg text-sm font-medium text-blue-600"
-                >
+                <Button onClick={() => {
+                  const [dd, mm, yyyy] = dateInput.split("/").map(Number);
+                  if (!isNaN(dd) && !isNaN(mm) && !isNaN(yyyy)) {
+                    const newDate = new Date(yyyy, mm - 1, dd);
+                    const isValidDate =
+                      newDate.getFullYear() === yyyy &&
+                      newDate.getMonth() === mm - 1 &&
+                      newDate.getDate() === dd;
+                    if (isValidDate) {
+                      setSelectedDate(newDate);
+                      setCurrentMonth(newDate);
+                      loadAvailable(newDate);
+                    } else {
+                      alert("Fecha inválida. Asegúrate de que el día y el mes sean correctos (dd/mm/aaaa).");
+                    }
+                  } else {
+                    alert("Ingresa una fecha completa en formato (dd/mm/aaaa)");
+                  }
+                }}
+                  className="bg-blue-100 hover:bg-blue-200 px-4 py-2 rounded-lg text-sm font-medium text-blue-600">
                   Buscar
                 </Button>
-                <Button 
-                  onClick={handleToday} 
-                  className="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg text-sm font-medium text-gray-800"
-                >
+                <Button onClick={handleToday} className="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg text-sm font-medium text-gray-800">
                   Hoy
                 </Button>
               </div>
@@ -431,13 +414,15 @@ export function AppointmentModal({
                   mode="single"
                   selected={selectedDate}
                   onSelect={handleDateSelect}
+                  month={currentMonth}
+                  onMonthChange={setCurrentMonth}
                   className="w-full"
                   captionLayout="dropdown-months"
                   disabled={isDayDisabled}
                   modifiers={{
                     booked: (day: Date) => bookedDays.includes(toYYYYMMDD(day)),
                     holiday: (day: Date) => holidays.includes(toYYYYMMDD(day)),
-                    weekend: (day: Date) => [0,6].includes(day.getDay()),
+                    weekend: (day: Date) => [0, 6].includes(day.getDay()),
                     ...(isEditing && initialAppointment ? {
                       currentAppointment: (day: Date) => toYYYYMMDD(day) === initialAppointment.fecha
                     } : {})
@@ -451,6 +436,7 @@ export function AppointmentModal({
                     } : {})
                   }}
                 />
+
                 <div className="mt-4 text-xs space-y-2">
                   {Object.entries(APPOINTMENT_STATES).map(([key, state]) => (
                     <div key={key} className="flex items-center space-x-2">
@@ -458,7 +444,6 @@ export function AppointmentModal({
                       <span>{state.label}</span>
                     </div>
                   ))}
-                  {/* Leyenda extra: fin de semana */}
                   <div className="flex items-center space-x-2">
                     <div className="w-4 h-4 rounded bg-gray-200" />
                     <span>Fin de semana</span>
@@ -483,10 +468,10 @@ export function AppointmentModal({
                     )}
                   </h4>
                   <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => selectedDate && loadAvailable(selectedDate)} 
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => selectedDate && loadAvailable(selectedDate)}
                       disabled={loadingSlots || !selectedDate}
                     >
                       {loadingSlots ? "Cargando..." : "Recargar"}
@@ -513,27 +498,26 @@ export function AppointmentModal({
                       No hay horarios disponibles para este día.
                     </div>
                   )}
-                  
+
                   {!selectedDate && (
                     <div className="text-center p-6 text-gray-500 border border-gray-200 rounded-lg">
                       Selecciona una fecha para ver los horarios disponibles.
                     </div>
                   )}
-                  
+
                   {availableSlots.map(slot => {
-                    const isCurrentAppointmentSlot = isEditing && 
-                      initialAppointment && 
-                      initialAppointment.horario && 
+                    const isCurrentAppointmentSlot = isEditing &&
+                      initialAppointment?.horario &&
                       `${initialAppointment.horario.inicio} - ${initialAppointment.horario.fin}` === slot.label;
-                    
+
                     return (
-                      <button 
-                        key={slot.startISO} 
-                        onClick={() => handleTimeSelect(slot)} 
+                      <button
+                        key={slot.startISO}
+                        onClick={() => handleTimeSelect(slot)}
                         className={cn(
                           "w-full p-3 text-left rounded-lg border transition-colors font-medium relative",
-                          selectedTime === slot.label 
-                            ? "bg-blue-600 text-white border-blue-700 shadow-md" 
+                          selectedTime === slot.label
+                            ? "bg-blue-600 text-white border-blue-700 shadow-md"
                             : "bg-white hover:bg-blue-50 text-gray-700 border-gray-300 hover:border-blue-300",
                           isCurrentAppointmentSlot && "ring-2 ring-green-500"
                         )}
@@ -554,8 +538,8 @@ export function AppointmentModal({
             {/* Formulario ubicación */}
             {!formSubmitted && selectedDate && selectedTime && (
               <div ref={locationFormRef} className="mt-6">
-                <LocationForm 
-                  onSubmit={handleFormSubmit} 
+                <LocationForm
+                  onSubmit={handleFormSubmit}
                   initialData={locationData}
                 />
               </div>
@@ -574,9 +558,9 @@ export function AppointmentModal({
                 </div>
 
                 <div className="mt-4 flex gap-3">
-                  <Button 
-                    className="flex-1 text-white bg-blue-600 hover:bg-blue-700" 
-                    onClick={handleConfirm} 
+                  <Button
+                    className="flex-1 text-white bg-blue-600 hover:bg-blue-700"
+                    onClick={handleConfirm}
                     disabled={saving}
                   >
                     {saving ? "Guardando..." : isEditing ? "Guardar cambios" : "Confirmar Cita"}
@@ -611,9 +595,9 @@ export function AppointmentModal({
           </div>
         </DialogContent>
 
-        <ModalConfirmacion 
-          isOpen={showConfirmationModal} 
-          onClose={() => setShowConfirmationModal(false)} 
+        <ModalConfirmacion
+          isOpen={showConfirmationModal}
+          onClose={() => setShowConfirmationModal(false)}
         />
       </Dialog>
 
