@@ -4,6 +4,7 @@ export type OfferStatus = 'active' | 'inactive' | 'deleted';
 
 export interface Offer {
   id: string;
+  _id: string;
   ownerId?: string;
   title: string;
   description: string;
@@ -12,6 +13,9 @@ export interface Offer {
   createdAt: string;   // ISO
   status: OfferStatus;
   images?: string[];
+  
+  // ✅ AGREGADO: Campo opcional para compatibilidad con tu formulario
+  isActive?: boolean; 
 }
 
 export interface ListOffersParams {
@@ -35,15 +39,21 @@ function qs(params: Record<string, any>) {
 }
 
 function normalize(o: any): Offer {
+  // Calculamos el status primero
+  const status = (o?.status === 'inactive' || o?.status === 'deleted') ? o.status : 'active';
+  
   return {
     id: String(o?.id ?? o?._id ?? ''),
+    _id: String(o?._id ?? ''),
     ownerId: o?.ownerId ?? undefined,
     title: o?.title ?? o?.descripcion ?? 'Oferta sin título',
     description: o?.description ?? o?.descripcion ?? '',
     category: o?.category ?? o?.categoria ?? 'General',
     contact: o?.contact ?? {},
     createdAt: o?.createdAt ? new Date(o.createdAt).toISOString() : new Date().toISOString(),
-    status: (o?.status === 'inactive' || o?.status === 'deleted') ? o.status : 'active',
+    status: status,
+    // ✅ AGREGADO: Mapeamos isActive basado en el status para que el frontend lo lea fácil
+    isActive: status === 'active',
     images: Array.isArray(o?.images)
       ? o.images.filter((x: any) => typeof x === 'string')
       : (o?.imagen ? [String(o.imagen)] : []),
@@ -92,6 +102,9 @@ type CreateOfferPayload = {
   // alias en español
   descripcion?: string;
   categoria?: string;
+  
+  // ✅ AGREGADO: Para que createOffer acepte el campo isActive
+  isActive?: boolean;
 };
 
 export async function createOffer(input: CreateOfferPayload): Promise<Offer> {
@@ -100,10 +113,16 @@ export async function createOffer(input: CreateOfferPayload): Promise<Offer> {
     headers['x-owner-id'] = input.ownerId;
   }
 
+  // Conversión opcional: si tu backend espera 'status' en lugar de 'isActive'
+  const payload = {
+    ...input,
+    status: input.isActive ? 'active' : 'inactive'
+  };
+
   const res = await fetch(`${API_BASE}/api/offers`, {
     method: 'POST',
     headers,
-    body: JSON.stringify(input),
+    body: JSON.stringify(payload), // Enviamos el payload procesado
   });
   if (!res.ok) {
     const msg = await res.text().catch(() => '');
@@ -125,15 +144,25 @@ export async function updateOffer(
     status: OfferStatus;
     descripcion: string;
     categoria: string;
+    
+    // ✅ AGREGADO: Para que updateOffer acepte isActive
+    isActive: boolean;
   }>,
   ownerId: string
 ): Promise<Offer> {
   const headers: HeadersInit = { 'Content-Type': 'application/json' };
   if (ownerId) headers['x-owner-id'] = ownerId;
+
+  // Lógica para convertir isActive a status si viene en el patch
+  const payload = { ...patch, ownerId };
+  if (patch.isActive !== undefined) {
+    payload.status = patch.isActive ? 'active' : 'inactive';
+  }
+
   const res = await fetch(`${API_BASE}/api/offers/${id}`, {
     method: 'PUT',
     headers,
-    body: JSON.stringify({ ...patch, ownerId }),
+    body: JSON.stringify(payload),
   });
   if (!res.ok) throw new Error('No se pudo editar la oferta');
   const o = await res.json();

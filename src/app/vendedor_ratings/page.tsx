@@ -152,7 +152,7 @@ export default function VendorRatingsPage() {
   const RATINGS_PER_PAGE = 6; // Máximo de calificaciones por página
   const REVIEWS_PER_VIEW = 3; // Número de calificaciones visibles en el scroll
 
-  const API_URL = "http://localhost:5000/api/los_vengadores/trabajos/proveedor/6902c43438df4e88b6680640/calificaciones";
+  const API_URL = "https://back-segundosprint-1.onrender.com/api/los_vengadores/trabajos/proveedor/6902c43438df4e88b6680640/calificaciones";
 
   useEffect(() => {
     const fetchRatings = async () => {
@@ -245,8 +245,8 @@ export default function VendorRatingsPage() {
 
   return (
     // Contenedor principal centrado vertical y horizontalmente
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-      <div className="bg-white p-6 rounded-xl shadow-2xl max-w-2xl w-full">
+    <div className="max-w-screen-lg mx-auto flex items-start justify-center bg-white-100 p-4">
+      <div className="bg-white p-6 rounded-xl justify- shadow-1xl max-w-2xl w-full">
         <h2 className="text-2xl font-bold text-blue-800 mb-4 text-center">
           Calificaciones del proveedor 🛠️
         </h2>

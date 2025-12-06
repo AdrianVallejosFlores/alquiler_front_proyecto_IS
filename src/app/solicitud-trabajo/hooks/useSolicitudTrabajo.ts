@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import {
   ISolicitud,
@@ -38,11 +36,11 @@ export function useSolicitudTrabajo(
   const [enviado, setEnviado] = useState(false);
   const [mensaje, setMensaje] = useState("");
 
-  const enviar = async (data: Pick<ISolicitud, "horaInicio" | "horaFin">) => {
+  const enviar = async (data: ISolicitud) => {
     setMensaje("");
     setEnviado(false);
 
-    const { horaInicio, horaFin } = data;
+    const { horaInicio, horaFin, descripcion, costo, categoria } = data;
 
     // 0) Validaciones de presencia (con mensajes específicos)
     if (!horaInicio && !horaFin) {
@@ -87,11 +85,14 @@ export function useSolicitudTrabajo(
       return;
     }
 
-    // 4) Payload con el nuevo campo `date` (para backend)
+    // 4) Payload con el nuevo campo `categoria` y `date` (para backend)
     const payload: ISolicitud = {
       date,
       horaInicio,
       horaFin,
+      descripcion,
+      costo,
+      categoria, 
     };
 
     setLoading(true);
@@ -101,8 +102,7 @@ export function useSolicitudTrabajo(
 
       // Normalizamos un status para decidir el copy del frontend
       const status: Status =
-        (resp?.status as Status) ??
-        (resp && resp.ok === false ? "error" : "ok");
+        (resp?.status as Status) ?? (resp && resp.ok === false ? "error" : "ok");
 
       setEnviado(status === "ok");
       setMensaje(COPY[status]); // 💡 priorizamos SIEMPRE el mensaje del front
