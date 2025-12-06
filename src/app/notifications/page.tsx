@@ -43,6 +43,8 @@ export default function NotificationsPage() {
      }
 
 
+     
+
       await notifyClientAccepted(
         "adrianvallejosflores24@gmail.com",
         "Fixer Carlos"
