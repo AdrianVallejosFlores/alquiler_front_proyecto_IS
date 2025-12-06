@@ -9,8 +9,8 @@ export function useCrearServicio() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
   /**
-   * Crear un nuevo servicio enviando solo el nombre.
-   * Llena datos básicos por defecto.
+   * Crear un nuevo servicio enviando  solo el nombre.
+   * Llena  datos básicos por defecto.
    */
   async function crearServicio(nombre: string) {
     setLoading(true);

@@ -16,7 +16,7 @@ export type CreateAppointmentPayload = {
   citaId?: string;
   [key: string]: any;
 };
-
+// 
 export type CreateResponse = {
   ok: boolean;
   data?: any;
@@ -126,8 +126,7 @@ export async function sendNotification(payload: {
       }
 
       console.info(
-        `✅ Notificación enviada correctamente en intento ${attempt} (${
-          Date.now() - startTime
+        `✅ Notificación enviada correctamente en intento ${attempt} (${Date.now() - startTime
         }ms)`
       );
 
@@ -160,7 +159,7 @@ export async function sendNotification(payload: {
 }
 
 /* ===========================================================
-   📧 CREAR CITA — Requester + Fixer
+   📧 CREAR  CITA — Requester + Fixer
    =========================================================== */
 
 export async function notifyNewServicesAvailable() {
@@ -253,7 +252,7 @@ export async function notifyNewPromotionsAvailable() {
     const requestNombre = request.nombre || "Usuario";
     const requestCorreo = request.correo || "";
     const requestNumero = request.numero || "";
-    
+
     const appURL = process.env.NEXT_PUBLIC_URL_DEPLOY; // 🔹 cámbiala cuando quieras
 
     // 🔹 3️⃣ Determinar saludo según la hora

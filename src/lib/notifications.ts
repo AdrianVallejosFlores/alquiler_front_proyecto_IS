@@ -11,7 +11,7 @@ export const notifyUserRegister = async (email: string, name: string) => {
   });
 };
 
-// 2️⃣ Usuario solicita a un fixer (libre)
+// 2️⃣   Usuario solicita a un fixer (libre)
 export const notifyFixerRequest = async (fixerEmail: string, clientName: string, details: string) => {
   return sendNotification({
     subject: "🛠️ Nueva consulta de trabajo",
