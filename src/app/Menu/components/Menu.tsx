@@ -10,7 +10,7 @@ import ActualizarUbicacion from "./actualizarUbicacion";
 import PaginaMetodosAutenticacion from "../../metodosAutenticacion/metodosAuten/pagina";
 import { MessageSeguridad } from "./messageSeguridad";
 import { MensajeCerrarSesion } from "./mensajeCerrarSesion";
-import SesionesDispositivos from "./sesiones-dispositivos"; // <-- NUEVO: import
+import SesionesDispositivos from "./sesiones-dispositivos";
 import { fetchTrabajosProveedor } from "@/app/epic_VisualizadorDeTrabajosAgendadosVistaProveedor/services/api";
 
 export default function SimpleProfileMenu() {
@@ -24,54 +24,51 @@ export default function SimpleProfileMenu() {
   const [showSubMenu, setShowSubMenu] = useState(false);
   const [showSesionesDispositivos, setShowSesionesDispositivos] = useState(false);
 
+  const [loadingWallet, setLoadingWallet] = useState(false);
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
+  const getToken = () => {
+    return localStorage.getItem("authToken") || sessionStorage.getItem("authToken") || null;
+  };
+
   const [user, setUser] = useState<{
     id: string;
     nombre: string;
     correo: string;
     fotoPerfil: string;
     telefono: string;
+    fixerId?: string; // Aseguramos que el tipo incluya fixerId
   } | null>(null);
 
   const router = useRouter();
 
-  // 🔴 Cerrar sesión: limpia storage y muestra mensaje de salida
-  // (mantengo tu comportamiento original: limpia y activa el modal)
   const handleLogout = () => {
     localStorage.removeItem("authToken");
     sessionStorage.removeItem("authToken");
     localStorage.removeItem("userData");
     sessionStorage.removeItem("userData");
-
     setShowMensajeCerrarSesion(true);
   };
 
-  // ✅ Handlers que usará MensajeCerrarSesion (onContinue / onCancel)
   const handleConfirmLogout = () => {
-    // Realizar logout inmediato (igual que la lógica del useEffect original)
     const eventLogout = new CustomEvent("logout-exitoso");
     window.dispatchEvent(eventLogout);
-
     setShowMensajeCerrarSesion(false);
     router.push("/");
   };
 
   const handleCancelLogout = () => {
-    // Solo cerrar el modal (el useEffect tiene cleanup si había timer)
     setShowMensajeCerrarSesion(false);
   };
 
-  // ⏳ Cuando se muestra el mensaje de cierre, esperamos 2s, emitimos evento y redirigimos
-  // (mantengo este efecto porque estaba en tu código original)
   useEffect(() => {
     if (showMensajeCerrarSesion) {
       const timer = setTimeout(() => {
         const eventLogout = new CustomEvent("logout-exitoso");
         window.dispatchEvent(eventLogout);
-
         setShowMensajeCerrarSesion(false);
         router.push("/");
       }, 2000);
-
       return () => clearTimeout(timer);
     }
   }, [showMensajeCerrarSesion, router]);
@@ -94,14 +91,67 @@ export default function SimpleProfileMenu() {
   const handleMetodosAutenticacionClick = () => setShowMetodosAutenticacion(true);
   const handleCerrarMetodosAutenticacion = () => setShowMetodosAutenticacion(false);
 
-  // --- NUEVO: abrir Sesiones y dispositivos
   const handleSesionesDispositivosClick = () => {
     setShowSesionesDispositivos(true);
   };
 
+  const handleWalletAccess = async () => {
+    if (loadingWallet) return;
+
+    // AQUI FALLABA: Ahora user.fixerId existirá gracias al arreglo en el useEffect
+    const fixerId = user?.fixerId;
+
+    if (!fixerId) {
+        console.warn("Fixer ID no disponible en el estado. Intentando recargar...");
+        // Intento de emergencia leyendo storage si el estado falló
+        const stored = sessionStorage.getItem("userData") || localStorage.getItem("userData");
+        if(stored) {
+             const parsed = JSON.parse(stored);
+             const idRescate = parsed.fixerId || parsed.id || parsed._id;
+             if(idRescate) {
+                 router.push(`/bitcrew/wallet?fixer_id=${idRescate}`);
+                 return;
+             }
+        }
+        console.warn("No se pudo recuperar Fixer ID. Redirigiendo a login.");
+        router.push('/login'); 
+        return;
+    }
+
+    setLoadingWallet(true);
+
+    try {
+        const token = getToken();
+        if (!token) {
+            router.push('/login'); 
+            return;
+        }
+
+        const response = await fetch(`${API_URL}/api/bitcrew/wallet/fixer/${fixerId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            router.push(`/bitcrew/wallet?fixer_id=${fixerId}`);
+        } else {
+            console.error("Error al obtener billetera:", data.message);
+        }
+    } catch (error) {
+        console.error("Error de conexión:", error);
+    } finally {
+        setLoadingWallet(false);
+    }
+  };
+
   useEffect(() => {
-    // Obtener usuario desde sessionStorage
-    const storedUser = sessionStorage.getItem("userData")|| localStorage.getItem("userData");
+    // CORRECCIÓN: Leer de ambos storages
+    const storedUser = sessionStorage.getItem("userData") || localStorage.getItem("userData");
     if (!storedUser) return;
 
     try {
@@ -115,10 +165,12 @@ export default function SimpleProfileMenu() {
           "Usuario",
         correo: parsed.correo || parsed.email || "correo@desconocido.com",
         fotoPerfil: `${parsed.fotoPerfil}` || "/default-avatar.png",
-        telefono: parsed.telefono || ""
+        telefono: parsed.telefono || "",
+        // CORRECCIÓN: Guardamos el fixerId en el estado para que handleWalletAccess no falle
+        fixerId: parsed.fixerId || parsed.id || parsed._id 
       });
     } catch (error) {
-      console.error("Error al leer userData del sessionStorage:", error);
+      console.error("Error al leer userData del storage:", error);
     }
   }, []);
 
@@ -165,9 +217,22 @@ export default function SimpleProfileMenu() {
       </button>
 
       <button
+        onClick={handleWalletAccess}
+        disabled={loadingWallet}
+        className="text-base sm:text-base font-semibold text-gray-800 hover:bg-gray-100 rounded-2xl px-4 py-3 w-full text-left transition duration-150 disabled:opacity-50"
+      >
+        {loadingWallet ? 'Cargando Billetera...' : 'Mi Billetera'}
+      </button>
+
+      <button
         onClick={() => {
-          const storedUser = sessionStorage.getItem("userData");
-          if (!storedUser) return;
+          // CORRECCIÓN: Buscamos en ambos storages, no solo en sessionStorage
+          const storedUser = sessionStorage.getItem("userData") || localStorage.getItem("userData");
+          
+          if (!storedUser) {
+             console.error("No hay datos de usuario en storage");
+             return;
+          }
 
           try {
             const parsed = JSON.parse(storedUser);
@@ -301,7 +366,6 @@ export default function SimpleProfileMenu() {
         <MessageSeguridad onClose={() => setShowMessageSeguridad(false)} />
       )}
 
-      {/* ------------- CORRECCIÓN: pasar las props que espera MensajeCerrarSesion ------------- */}
       {showMensajeCerrarSesion && (
         <MensajeCerrarSesion
           onContinue={handleConfirmLogout}
@@ -352,7 +416,9 @@ export default function SimpleProfileMenu() {
               onClick={() => setShowSesionesDispositivos(false)}
               className="absolute right-6 top-6 z-10 bg-white rounded-full w-9 h-9 flex items-center justify-center text-gray-700 shadow-md hover:bg-gray-100"
             >
-            
+             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </button>
 
             {/* Contenido de sesiones y dispositivos */}

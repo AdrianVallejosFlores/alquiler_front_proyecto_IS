@@ -1,4 +1,4 @@
-/* eslint-disable @next/next/no-img-element */
+
 // components/FixerPopup.tsx
 "use client";
 import { FC } from "react";
@@ -31,16 +31,7 @@ const FixerPopup: FC<{ fixer: Fixer }> = ({ fixer }) => {
 
   return (
     <div className="w-[220px] p-2">
-      <div className="flex justify-center mb-2">
-        <img 
-          src={fixer.imagenPerfil}
-          alt={`Perfil de ${fixer.nombre}`}
-          className="w-12 h-12 rounded-full object-cover border-2 border-blue-200"
-          onError={(e) => {
-            e.currentTarget.src = "/imagenes_respaldo/perfil-default.jpg";
-          }}
-        />
-      </div>
+      
 
       <h3 className="text-sm sm:text-base font-bold text-[#2a87ff] mb-1">
         {fixer.nombre}

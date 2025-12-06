@@ -2,15 +2,15 @@ import { useState, useEffect, useCallback } from "react";
 import { fetchWalletData } from "../service/walletApiService";
 import { IBilletera, IFrontendTransaction } from "../types";
 
-export const useWallet = (usuario: string | null) => {
+export const useWallet = (fixerId: string | null) => {
   const [balanceData, setBalanceData] = useState<IBilletera | null>(null);
   const [transactions, setTransactions] = useState<IFrontendTransaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
-    if (!usuario) {
-      setError("No se especificó un usuario.");
+    if (!fixerId) {
+      setError("No se especificó un ID de Fixer.");
       setLoading(false);
       return;
     }
@@ -19,19 +19,21 @@ export const useWallet = (usuario: string | null) => {
     setError(null);
 
     try {
-      // Llamamos al nuevo servicio
-      const { billetera, transacciones } = await fetchWalletData(usuario);
+      // Pasamos fixerId al servicio
+      const { billetera, transacciones } = await fetchWalletData(fixerId);
       
       setBalanceData(billetera);
 
-      // Tu lógica original de mapeo se mantiene intacta aquí
+      // Mapeo a formato Frontend
       const frontendTransactions: IFrontendTransaction[] = transacciones.map((tx) => ({
         id: tx._id,
         type: tx.tipo,
         date: tx.fecha,
         amount: tx.monto,
         descripcion: tx.descripcion,
+        currency: billetera.moneda 
       }));
+
       setTransactions(frontendTransactions);
 
     } catch (err: any) {
@@ -41,7 +43,7 @@ export const useWallet = (usuario: string | null) => {
     } finally {
       setLoading(false);
     }
-  }, [usuario]);
+  }, [fixerId]);
 
   useEffect(() => {
     loadData();
