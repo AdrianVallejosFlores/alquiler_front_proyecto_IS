@@ -176,6 +176,9 @@ export function AppointmentModal({
 
       let slots: UISlot[] = [];
 
+
+
+
       if (res.ok) {
         const data = await res.json();
         const hours: string[] = data[fechaStr] || [];

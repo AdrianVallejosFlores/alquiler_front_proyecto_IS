@@ -1,16 +1,39 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AppointmentModal } from "./appointment-modal";
+import { useClientSession } from "@/lib/auth/useSession";
 
 interface AgendarCitaButtonProps {
-  proveedorId: string;  // <-- definir props aquí
+  proveedorId: string;  
   servicioId: string;
 }
 
 export default function AgendarCitaButton({ proveedorId, servicioId }: AgendarCitaButtonProps) {
   const [open, setOpen] = useState(false);
-  const clienteId = "6927e784567c50dddae45310"; 
-  
+
+  // ⬇️ Traemos la sesión del usuario autenticado
+  const { user, loading } = useClientSession();
+
+  // Depuración: estado de la sesión
+  useEffect(() => {
+    console.log("🔹 Sesión cargada:", { user, loading });
+  }, [user, loading]);
+
+  // Mientras carga la sesión
+  if (loading) {
+    console.log("🔹 Cargando sesión...");
+    return null;
+  }
+
+  // Si no hay usuario => no puede agendar
+  if (!user) {
+    console.log("🔹 No hay usuario autenticado.");
+    return null;
+  }
+
+  const clienteId = user._id; // ⬅️ El ID real del usuario desde tu JWT / sesión
+  console.log("🔹 Cliente ID:", clienteId);
+
   return (
     <>
       <button
@@ -23,9 +46,9 @@ export default function AgendarCitaButton({ proveedorId, servicioId }: AgendarCi
       <AppointmentModal
         open={open}
         onOpenChange={setOpen}
-        patientName="Juan Pérez"
-        providerId={proveedorId} 
-        servicioId={servicioId}  
+        patientName={`${user.nombre} ${user.apellido ?? ""}`}
+        providerId={proveedorId}
+        servicioId={servicioId}
         clienteId={clienteId}
         slotMinutes={30}
         hours="08:00-12:00,14:00-18:00"

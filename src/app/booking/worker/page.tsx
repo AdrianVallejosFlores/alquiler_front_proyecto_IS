@@ -4,18 +4,36 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export default function GestionCitasPage() {
-  const proveedorId = "6927f418475360050f2016e9"; 
+  const [proveedorId, setProveedorId] = useState<string | null>(null);
 
   const [totalPendientes, setPendientes] = useState(0);
   const [totalHoy, setHoy] = useState(0);
   const [totalCanceladas, setCanceladas] = useState(0);
 
   useEffect(() => {
+    // Obtener userData y token guardados desde Google callback
+    const user = JSON.parse(localStorage.getItem("userData") || "{}");
+
+    if (!user || !user._id) {
+      console.error("No se encontró un usuario en sesión");
+      return;
+    }
+
+    setProveedorId(user._id);
+
     async function cargarCitas() {
       try {
+        const token = localStorage.getItem("authToken");
+
         const res = await fetch(
-          `http://localhost:5000/api/devcode/citas/proveedor/${proveedorId}`
+          `http://localhost:5000/api/devcode/citas/proveedor/${user._id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
+
         const json = await res.json();
         if (!json.success) return;
 
@@ -28,7 +46,6 @@ export default function GestionCitasPage() {
         let canceladas = 0;
 
         citas.forEach((cita: any) => {
-          // Contadores por estado
           switch (cita.estado) {
             case "pendiente":
               pendientes++;
@@ -38,7 +55,6 @@ export default function GestionCitasPage() {
               break;
           }
 
-          // Contador para hoy
           const fechaCita = cita.fecha ? cita.fecha.slice(0, 10) : null;
           if (fechaCita === hoy) paraHoy++;
         });
@@ -46,7 +62,6 @@ export default function GestionCitasPage() {
         setPendientes(pendientes);
         setHoy(paraHoy);
         setCanceladas(canceladas);
-
       } catch (err) {
         console.error("Error cargando citas:", err);
       }
