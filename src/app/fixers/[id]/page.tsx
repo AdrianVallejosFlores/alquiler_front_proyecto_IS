@@ -295,11 +295,8 @@ export default async function FixerDetailPage({ params }: PageProps) {
         )}
       </div>
 
-      <div
-        id="seccion-disponibilidad"
-        className="mt-8 scroll-mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
-      >
-        <Calendario proveedorId={id} nombreProveedor={name} profesionProveedor={mainProfession} />
+      <div id="seccion-disponibilidad" className="mt-8 scroll-mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <Calendario />
       </div>
 
       <div
