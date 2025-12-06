@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useEffect, useState } from 'react';
 import { getStoredUser, getToken, SESSION_EVENTS, type StoredUser } from './session';
@@ -6,14 +6,14 @@ import { getStoredUser, getToken, SESSION_EVENTS, type StoredUser } from './sess
 type SessionState = {
   user: StoredUser | null;
   token: string | null;
-  ready: boolean;
+  loading: boolean;
 };
 
 export function useClientSession(): SessionState {
   const [state, setState] = useState<SessionState>(() => ({
     user: null,
     token: null,
-    ready: false,
+    loading: true,
   }));
 
   useEffect(() => {
@@ -21,7 +21,7 @@ export function useClientSession(): SessionState {
       setState({
         user: getStoredUser(),
         token: getToken(),
-        ready: true,
+        loading: false,
       });
     };
 

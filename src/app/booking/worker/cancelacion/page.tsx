@@ -3,25 +3,27 @@
 import { useState, useEffect, Fragment } from "react";
 import { CalendarDays, AlertTriangle } from "lucide-react";
 import { Dialog, Transition } from "@headlessui/react";
-import Link from "next/link"; // 🔹 Asegúrate de importar Link
+import Link from "next/link";
 
 import { cancelAndNotify } from "@/lib/appointments_gmail";
 import { cancelAndNotifyWhatsApp } from "@/lib/appointments_whatsapp";
 
-const PROVEEDOR_ID = "6927e823567c50dddae45313";
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 interface Cita {
   _id: string;
   fecha: string;
   horario: { inicio: string; fin: string };
-  clienteId?: { nombre?: string; apellido?: string; email?: string };
-  servicioId?: { nombre?: string; descripcion?: string };
-  ubicacion?: { direccion?: string };
+  clienteId?: { nombre?: string; apellido?: string; email?: string; phone?: string };
+  servicioId?: { _id?: string; nombre?: string; descripcion?: string };
+  ubicacion?: { direccion?: string; notas?: string };
   estado?: string;
 }
 
 export default function GestionCitas() {
+  const [proveedorId, setProveedorId] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+
   const [citas, setCitas] = useState<Cita[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<"programadas" | "cancelar">("programadas");
@@ -36,30 +38,51 @@ export default function GestionCitas() {
   minDate.setDate(minDate.getDate() + 1);
   const minDateStr = minDate.toISOString().split("T")[0];
 
+  // 🔹 Cargar datos de sesión
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("userData") || "{}");
+    const savedToken = localStorage.getItem("authToken");
+
+    if (user?._id) setProveedorId(user._id);
+    if (savedToken) setToken(savedToken);
+  }, []);
+
   // 🔹 Cargar citas
   useEffect(() => {
+    if (!proveedorId) return;
+
     const fetchCitas = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/devcode/citas/proveedor/${PROVEEDOR_ID}`);
+        const res = await fetch(
+          `${API_URL}/api/devcode/citas/proveedor/${proveedorId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
         const data = await res.json();
         if (!data.success) throw new Error(data.error || "Error al cargar citas");
+
         setCitas(data.data);
       } catch (err) {
         console.error("Error cargando citas:", err);
       }
     };
+
     fetchCitas();
-  }, []);
+  }, [proveedorId, token]);
 
   // 🔹 Agrupar citas por fecha
   useEffect(() => {
-    const agrupadas: Record<string, Cita[]> = {};
+    const grouped: Record<string, Cita[]> = {};
     citas.forEach((cita) => {
       const fecha = cita.fecha.split("T")[0];
-      if (!agrupadas[fecha]) agrupadas[fecha] = [];
-      agrupadas[fecha].push(cita);
+      if (!grouped[fecha]) grouped[fecha] = [];
+      grouped[fecha].push(cita);
     });
-    setGroupedCitas(agrupadas);
+    setGroupedCitas(grouped);
   }, [citas]);
 
   // 🔹 Filtro de fechas
@@ -84,6 +107,7 @@ export default function GestionCitas() {
   const formatearFecha = (fechaStr: string) => {
     const [year, month, day] = fechaStr.split("-").map(Number);
     const fecha = new Date(year, month - 1, day);
+
     return fecha.toLocaleDateString("es-ES", {
       weekday: "long",
       day: "numeric",
@@ -99,7 +123,7 @@ export default function GestionCitas() {
     setShowConfirmModal(true);
   };
 
-
+  // 🔹 Cancelar citas y notificar
   const confirmarCancelacion = async () => {
     try {
       const citasAEliminar = citas.filter((c) =>
@@ -107,35 +131,36 @@ export default function GestionCitas() {
       );
 
       for (const cita of citasAEliminar) {
-        const res = await fetch(`${API_URL}/api/devcode/citas/${cita._id}/proveedor`, {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ proveedorId: PROVEEDOR_ID }),
-        });
+        const res = await fetch(
+          `${API_URL}/api/devcode/citas/${cita._id}/proveedor`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ proveedorId }),
+          }
+        );
 
         const result = await res.json();
         if (!result.success) throw new Error(result.error || "Error al eliminar cita");
 
         const payload = {
-          proveedorId: PROVEEDOR_ID,
-          servicioId: (cita.servicioId as any)?._id || (cita.servicioId as any),
+          proveedorId: proveedorId || "",   // ✅ Nunca será null
+          servicioId: cita.servicioId?._id || "",
           fecha: cita.fecha,
-          horario: {
-            inicio: cita.horario?.inicio,
-            fin: cita.horario?.fin,
-          },
+          horario: cita.horario,
           clienteId: {
-            id: (cita.clienteId as any)?._id || (cita.clienteId as any),
-            nombre: (cita.clienteId as any)?.nombre || "",
-            phone: (cita.clienteId as any)?.phone || "",
+            id: cita.clienteId as any,
+            nombre: cita.clienteId?.nombre || "",
+            phone: cita.clienteId?.phone || "",
           },
-          ubicacion: {
-            direccion: cita.ubicacion?.direccion || "",
-            notas: (cita.ubicacion as any)?.notas || "",
-          },
+          ubicacion: cita.ubicacion || {},
           cambios: ["Cita cancelada por el proveedor"],
           citaId: cita._id,
         };
+
 
         try {
           await cancelAndNotify(payload);
@@ -148,39 +173,36 @@ export default function GestionCitas() {
       setCitas((prev) =>
         prev.filter((c) => !selectedIds.includes(c.fecha.split("T")[0]))
       );
+
       setSelectedIds([]);
       setShowConfirmModal(false);
       setShowSuccessModal(true);
-
     } catch (err) {
       console.error(err);
       alert("Error al cancelar las citas");
     }
   };
 
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex flex-col">
+      {/* MAIN */}
+      <main className="flex flex-col items-center py-8 px-4 flex-1">
+        <div className="w-full max-w-4xl bg-white rounded-2xl shadow-md p-6">
 
+          {/* Botón Volver */}
+          <a
+            href="/booking/worker"
+            className="inline-block px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Volver
+          </a>
 
-    {/* MAIN */}
-    <main className="flex flex-col items-center py-8 px-4 flex-1">
-
-    <div className="w-full max-w-4xl bg-white rounded-2xl shadow-md p-6">
-					  {/* 🔹 Botón Volver */}
-        <a
-          href="/booking/worker"
-          className="inline-block px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          Volver
-        </a>
-
-        <h2 className="text-2xl font-bold text-gray-900 mb-1">
-        Gestiona tus citas programadas
-        </h2>
-        <p className="text-gray-600 mb-6">
-        Administra tus citas recibidas o cancela días completos de atención.
-        </p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-1">
+            Gestiona tus citas programadas
+          </h2>
+          <p className="text-gray-600 mb-6">
+            Administra tus citas recibidas o cancela días completos de atención.
+          </p>
 
           {/* Pestañas */}
           <div className="flex w-full mb-8 justify-center gap-4">
