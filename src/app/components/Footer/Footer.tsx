@@ -1,4 +1,3 @@
-
 // components/Footer/Footer.tsx
 
 'use client';
@@ -6,12 +5,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-// ELIMINADO: Ya no se usa Image
-// import Image from 'next/image';
-import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaFacebookF, FaInstagram } from 'react-icons/fa';
+import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaFacebookF, FaInstagram, FaBookOpen } from 'react-icons/fa';
 import { SiTiktok } from 'react-icons/si';
 import Modal from '../reutilizables/Modal';
-// AÑADIDO: Importamos tu componente de icono
 import Icono from '../Header/Icono';
 
 // Contenido para cada modal (sin cambios)
@@ -22,18 +18,18 @@ const modalContents = {
       <>
         <div className="mb-6 p-3 bg-[#f8fafc] border-l-4 border-[#52abff] rounded-r">
           <p className="text-sm font-medium text-[#11255a]">
-            <span className="text-[#52abff]">Última actualización:</span> 22/10/25
+            <span className="text-[#52abff]">Última actualización:</span> 14/11/25
           </p>
         </div>
         <p>En <strong>Servineo</strong>, valoramos la privacidad de nuestros usuarios. Esta política explica cómo recopilamos, usamos y protegemos tu información personal:</p>
         <p><strong>Datos recopilados:</strong> nombre, correo electrónico, teléfono y datos necesarios para prestar el servicio.</p>
         <p><strong>Uso de la información:</strong> solo utilizamos tus datos para gestionar solicitudes, brindar soporte y mejorar nuestros servicios.</p>
         <p><strong>Protección:</strong> aplicamos medidas técnicas y organizativas para resguardar tu información.</p>
-        <p><strong>Derechos del usuario:</strong> puedes acceder, rectificar o eliminar tus datos personales escribiéndonos a <a href="mailto:servineobol@gmail.com" className="text-blue-600 hover:underline">nuestro correo de contacto</a>.</p>
+        <p><strong>Derechos del usuario:</strong> puedes acceder, rectificar o eliminar tus datos personales escribiéndonos a <button type="button" onClick={() => openMailClientOrGmail('Consulta sobre privacidad - Servineo', 'Hola, tengo una consulta sobre la política de privacidad...')} className="text-blue-600 hover:underline cursor-pointer bg-transparent border-0 p-0 m-0">nuestro correo de contacto</button>.</p>
         <p>Adicionalmente, almacenamos algunos registros de actividad (logs) para mejorar la seguridad y detectar patrones anómalos que puedan indicar fraudes o mal uso de la plataforma.</p>
         <p>Cuando compartes información en tu perfil o en mensajes con otros usuarios, recuerda que parte de esos datos pueden ser visibles a terceros según la configuración de privacidad que hayas seleccionado.</p>
         <p>Podemos compartir datos agregados y anonimizados con socios para análisis estadístico. Nunca compartiremos información personal identificable con terceros sin tu consentimiento explícito, salvo en los casos previstos por la ley.</p>
-        <p>Si tienes dudas sobre el tratamiento de tus datos, puedes solicitar un informe o ejercer tus derechos enviando una solicitud a <a href="mailto:servineobol@gmail.com" className="text-blue-600 hover:underline">servineobol@gmail.com</a>. Responderemos en los plazos legales correspondientes.</p>
+        <p>Si tienes dudas sobre el tratamiento de tus datos, puedes solicitar un informe o ejercer tus derechos enviando una solicitud a <button type="button" onClick={() => openMailClientOrGmail('Contacto desde Servineo', 'Hola, me gustaría contactarme contigo...')} className="text-blue-600 hover:underline cursor-pointer bg-transparent border-0 p-0 m-0">servineobol@gmail.com</button>. Responderemos en los plazos legales correspondientes.</p>
         <p>Esta política puede actualizarse periódicamente; te recomendamos revisarla con regularidad para estar al tanto de los cambios.</p>
       </>
     )
@@ -44,7 +40,7 @@ const modalContents = {
       <>
         <div className="mb-6 p-3 bg-[#f8fafc] border-l-4 border-[#52abff] rounded-r">
           <p className="text-sm font-medium text-[#11255a]">
-            <span className="text-[#52abff]">Última actualización:</span> 22/10/25
+            <span className="text-[#52abff]">Última actualización:</span> 14/11/25
           </p>
         </div>
         <p>Al usar este sitio web, aceptas los siguientes términos:</p>
@@ -56,7 +52,7 @@ const modalContents = {
         <p>El incumplimiento de estas condiciones puede derivar en la suspensión o eliminación de la cuenta, sin perjuicio de otras acciones legales que procedan.</p>
         <p>En caso de disputas entre usuarios, Servineo actúa únicamente como plataforma de intermediación y podrá facilitar mecanismos de resolución, pero no asume responsabilidad directa por acuerdos privados entre partes.</p>
         <p>Para garantizar una experiencia segura, recomendamos mantener actualizada tu información de contacto y reportar inmediatamente cualquier actividad sospechosa a nuestro equipo de soporte.</p>
-  <p>Estos términos pueden ser actualizados; la fecha de &quot;Última actualización&quot; indica la versión vigente.</p>
+        <p>Estos términos pueden ser actualizados; la fecha de &quot;Última actualización&quot; indica la versión vigente.</p>
       </>
     )
   },
@@ -66,7 +62,7 @@ const modalContents = {
       <>
         <div className="mb-6 p-3 bg-[#f8fafc] border-l-4 border-[#52abff] rounded-r">
           <p className="text-sm font-medium text-[#11255a]">
-            <span className="text-[#52abff]">Última actualización:</span> 22/10/25
+            <span className="text-[#52abff]">Última actualización:</span> 14/11/25
           </p>
         </div>
         <p>Este sitio utiliza cookies para mejorar la experiencia del usuario:</p>
@@ -76,7 +72,7 @@ const modalContents = {
         <p>Puedes configurar o desactivar las cookies en la configuración de tu navegador.</p>
         <p>Algunas cookies son gestionadas por terceros (por ejemplo, proveedores de analítica). Te recomendamos revisar las políticas de estos servicios si te interesa un control más detallado.</p>
         <p>Si prefieres no aceptar cookies de análisis, puedes cambiar tu configuración en cualquier momento; sin embargo, esto puede limitar algunas funcionalidades o la personalización del contenido.</p>
-        <p>Para consultas sobre las cookies que utilizamos o para solicitar su eliminación, contacta a <a href="mailto:servineobol@gmail.com" className="text-blue-600 hover:underline">servineobol@gmail.com</a>.</p>
+        <p>Para consultas sobre las cookies que utilizamos o para solicitar su eliminación, contacta a <button type="button" onClick={() => openMailClientOrGmail('Consulta sobre cookies - Servineo', 'Hola, tengo una consulta sobre las cookies utilizadas...')} className="text-blue-600 hover:underline cursor-pointer bg-transparent border-0 p-0 m-0">servineobol@gmail.com</button>.</p>
         <p>En algunos casos, las cookies nos permiten recordar el estado de tu carrito o guardar progresos en formularios para que no pierdas tu trabajo si cierras la pestaña accidentalmente.</p>
         <p>También utilizamos cookies para experimentar mejoras en la interfaz (A/B testing). Estos experimentos nos ayudan a decidir qué cambios benefician más a los usuarios en términos de usabilidad y rendimiento.</p>
         <p>Si utilizas varios dispositivos, algunas preferencias pueden sincronizarse mediante cookies asociadas a tu cuenta para ofrecer una experiencia coherente entre dispositivos.</p>
@@ -134,6 +130,47 @@ const languageOptions = [
 
 type LanguageCode = typeof languageOptions[number]['code'];
 
+// Dirección de contacto usada en todo el footer
+const CONTACT_EMAIL = 'servineobol@gmail.com';
+
+// Intenta abrir la app de correo predeterminada vía mailto.
+// Solo abre Gmail web si no hay app de correo instalada.
+const openMailClientOrGmail = (subjectText = 'Contacto desde Servineo', bodyText = 'Hola, me gustaría contactarme contigo...') => {
+  const subject = encodeURIComponent(subjectText);
+  const body = encodeURIComponent(bodyText);
+
+  const mailto = `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
+  const gmailWeb = `https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1&to=${CONTACT_EMAIL}&su=${subject}&body=${body}`;
+
+  try {
+    let isHidden = false;
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        isHidden = true;
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Intenta abrir el cliente de correo predeterminado
+    const mailtoLink = document.createElement('a');
+    mailtoLink.href = mailto;
+    mailtoLink.click();
+
+    // Espera un tiempo para detectar si se abrió la app de correo
+    // Si se abre, el documento cambia a "hidden"
+    setTimeout(() => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      // Solo abre Gmail si NO se detectó que se abrió una app
+      if (!isHidden) {
+        window.open(gmailWeb, '_blank', 'noopener');
+      }
+    }, 1500);
+  } catch {
+    window.open(gmailWeb, '_blank', 'noopener');
+  }
+};
+
 const Footer = () => {
   const [activeModal, setActiveModal] = useState<keyof typeof modalContents | null>(null);
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
@@ -166,6 +203,10 @@ const Footer = () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [isLanguageMenuOpen]);
+  const showTutorial = () => {
+    // Disparar evento personalizado para mostrar el tutorial
+    window.dispatchEvent(new CustomEvent('show-tutorial'));
+  };
 
   const selectedLanguage = languageOptions.find((option) => option.code === currentLanguage) ?? languageOptions[0];
 
@@ -193,37 +234,21 @@ const Footer = () => {
 
             <div className="space-y-4">
               <h4 className="text-xl font-semibold font-heading">Categorías</h4>
+              {/* ===== SECCIÓN "CATEGORÍAS" ACTUALIZADA (SIN MANUAL) ===== */}
               <nav className="flex flex-col space-y-2 items-center md:items-start">
-  <a
-    href="#trabajos-recientes"
-    className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded"
-  >
-    Trabajos recientes
-  </a>
-
-  <a
-    href="#mapa"
-    className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded"
-  >
-    Mapa
-  </a>
-
-  <a
-    href="#servicios"
-    className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded"
-  >
-    Lista de servicios
-  </a>
-
-  {/* 🔹 Nuevo botón agregado */}
- <a
-  href="/panel"
-  className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded"
->
-  Ver manual usuario
-</a>
-</nav>
-
+                <a href="#trabajos-recientes" className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">
+                  Trabajos recientes
+                </a>
+                <a href="#mapa" className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">
+                  Mapa
+                </a>
+                <a href="#servicios" className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">
+                  Lista de servicios
+                </a>
+                <a href="#carrusel" className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">
+                  Sección carrusel
+                </a>
+              </nav>
             </div>
 
             <div className="space-y-4">
@@ -231,25 +256,42 @@ const Footer = () => {
               <nav className="flex flex-col space-y-2 items-center md:items-start">
                 <a href="/convertir-fixer" className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">Convertir en fixer</a>
                 <button type="button" onClick={() => setActiveModal('howItWorks')} className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 text-left focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">¿Cómo funciona?</button>
+                {/* ✅ NUEVO BOTÓN: Guía de Usuario */}
+                <button 
+                  type="button" 
+                  onClick={showTutorial}
+                  className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 text-left focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded flex items-center gap-2"
+                >
+                  <span>Guía de Usuario</span>
+                </button>
                 <a href="/login" className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">Iniciar sesión</a>
                 <a href="/registro" className="transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">Registrarse</a>
               </nav>
             </div>
 
-            <div className="space-y-4">
+             <div 
+              className="space-y-4"
+              data-tutorial="support-section" // ✅ NUEVO: Para paso 2 del tutorial
+            >
               <h4 className="text-xl font-semibold font-heading">Soporte</h4>
+              {/* ===== SECCIÓN "SOPORTE" ACTUALIZADA (CON MANUAL) ===== */}
               <ul className="space-y-3">
                 <li className="flex items-center justify-center md:justify-start">
-                  <a href="https://wa.me/59173782241" target="_blank" rel="noopener noreferrer" className="flex items-center transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">
+                  <a href="https://wa.me/59160379823" target="_blank" rel="noopener noreferrer" className="flex items-center transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">
                     <FaPhone className="mr-3 text-[#52abff]" />
-                    <span className="text-sm">+591 73782241</span>
+                    <span className="text-sm">+591 60379823</span>
                   </a>
                 </li>
                 <li className="flex items-center justify-center md:justify-start">
-                  <a href="mailto:servineobol@gmail.com" className="flex items-center transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">
+                  <button 
+                    type="button"
+                    onClick={() => openMailClientOrGmail()}
+                    className="flex items-center transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded cursor-pointer"
+                    aria-label="Enviar correo a servineobol@gmail.com"
+                  >
                     <FaEnvelope className="mr-3 text-[#52abff]" />
                     <span className="text-sm">servineobol@gmail.com</span>
-                  </a>
+                  </button>
                 </li>
                 <li className="flex items-center justify-center md:justify-start">
                   <a href="https://www.google.com/maps/search/?api=1&query=Cochabamba,Cercado" target="_blank" rel="noopener noreferrer" className="flex items-center transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">
@@ -257,36 +299,21 @@ const Footer = () => {
                     <span className="text-sm">Cochabamba, Cercado</span>
                   </a>
                 </li>
+                <li className="flex items-center justify-center md:justify-start">
+                  <a href="/panel" className="flex items-center transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] px-2 py-1 rounded">
+                    <FaBookOpen className="mr-3 text-[#52abff]" />
+                    <span className="text-sm">Ver manual usuario</span>
+                  </a>
+                </li>
               </ul>
-              {/* Social icons placed below support links */}
               <div className="flex items-center gap-6 mt-4 justify-center md:justify-start">
-                <a
-                  href="https://www.facebook.com/share/1CympwHFao/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Servineo en Facebook"
-                  className="text-[#52abff] hover:text-[#89c9ff] transition transform duration-150 ease-in-out hover:scale-110 p-1.5 rounded"
-                >
+                <a href="https://www.facebook.com/share/1CympwHFao/" target="_blank" rel="noopener noreferrer" aria-label="Servineo en Facebook" className="text-[#52abff] hover:text-[#89c9ff] transition transform duration-150 ease-in-out hover:scale-110 p-1.5 rounded">
                   <FaFacebookF size={24} />
                 </a>
-
-                <a
-                  href="https://www.tiktok.com/@servineobol?_r=1&_t=ZM-91DYkqESBGi"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Servineo en TikTok"
-                  className="text-[#52abff] hover:text-[#89c9ff] transition transform duration-150 ease-in-out hover:scale-110 p-1.5 rounded"
-                >
+                <a href="https://www.tiktok.com/@servineobol?_r=1&_t=ZM-91DYkqESBGi" target="_blank" rel="noopener noreferrer" aria-label="Servineo en TikTok" className="text-[#52abff] hover:text-[#89c9ff] transition transform duration-150 ease-in-out hover:scale-110 p-1.5 rounded">
                   <SiTiktok size={26} />
                 </a>
-
-                <a
-                  href="https://www.instagram.com/servineobol?igsh=Z2U2c3hpZmp5ODQ2"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Servineo en Instagram"
-                  className="text-[#52abff] hover:text-[#89c9ff] transition transform duration-150 ease-in-out hover:scale-110 p-1.5 rounded"
-                >
+                <a href="https://www.instagram.com/servineobol?igsh=Z2U2c3hpZmp5ODQ2" target="_blank" rel="noopener noreferrer" aria-label="Servineo en Instagram" className="text-[#52abff] hover:text-[#89c9ff] transition transform duration-150 ease-in-out hover:scale-110 p-1.5 rounded">
                   <FaInstagram size={24} />
                 </a>
               </div>
@@ -296,11 +323,11 @@ const Footer = () => {
           <div className="border-t border-[#1140bc] mt-8 pt-8 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <p className="text-sm text-[#89c9ff]">© {new Date().getFullYear()} Servineo. Todos los derechos reservados.</p>
             <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
-              <div className="relative" ref={languageMenuRef}>
+              <div className="relative w-full md:w-auto" ref={languageMenuRef}>
                 <button
                   type="button"
                   onClick={() => setIsLanguageMenuOpen((prev) => !prev)}
-                  className="flex items-center gap-2 text-sm border border-[#1140bc] px-4 py-2 rounded-md transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] focus:ring-offset-2 focus:ring-offset-[#11255a]"
+                  className="w-full md:w-auto flex items-center justify-center gap-2 text-sm border border-[#1140bc] px-4 py-2 rounded-md transition transform duration-150 ease-in-out hover:text-[#52abff] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#52abff] focus:ring-offset-2 focus:ring-offset-[#11255a]"
                   aria-haspopup="listbox"
                   aria-expanded={isLanguageMenuOpen}
                 >
@@ -315,7 +342,7 @@ const Footer = () => {
                   <span className="text-xs" aria-hidden>▾</span>
                 </button>
                 {isLanguageMenuOpen && (
-                  <div className="absolute left-0 bottom-full mb-2 w-40 rounded-md border border-[#1140bc] bg-[#0e2358] shadow-lg">
+                  <div className="absolute left-0 bottom-full mb-2 w-full md:w-40 rounded-md border border-[#1140bc] bg-[#0e2358] shadow-lg z-10">
                     <ul role="listbox" aria-label="Seleccionar idioma">
                       {languageOptions.map((option) => (
                         <li key={option.code}>

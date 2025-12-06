@@ -20,7 +20,7 @@ export interface IFrontendTransaction {
   date: string;
   amount: number;
   descripcion: string;
-  currency: string;
+  currency?: string;
 }
 
 export interface BalanceCardProps {

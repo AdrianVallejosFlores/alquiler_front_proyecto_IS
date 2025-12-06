@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { useLoginForm } from '../hooks/useLoginForm';
 import AppleIcon from '../assets/icons8-apple-50.png';
 import Link from 'next/link';
@@ -8,16 +8,15 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { loginUsuario } from '@/app/teamsys/services/UserService';
 import { useGoogleAuth } from '../../google/hooks/useGoogleAuth';
 import { GoogleButton } from '../../google/components/GoogleButton';
-import Image from 'next/image';
 import { getFixerByUser } from '@/lib/api/fixer';
 import { STORAGE_KEYS, saveToStorage } from '@/app/convertirse-fixer/storage';
 import { persistSession, SESSION_EVENTS } from '@/lib/auth/session';
+import Image from 'next/image';
 
 export const LoginForm: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const nextRoute = searchParams.get('next');
-
   const {
     datosFormulario,
     errores,
@@ -26,21 +25,18 @@ export const LoginForm: React.FC = () => {
     manejarBlur,
     validarFormulario,
   } = useLoginForm();
-
   const [errorBackend, setErrorBackend] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const {
-    isLoading: googleLoading,
-    error: googleError,
-    handleGoogleAuth,
-  } = useGoogleAuth();
+  const { isLoading: googleLoading, error: googleError, handleGoogleAuth } = useGoogleAuth();
 
   const handleGoogleClick = async () => {
-    // Para login, usar tipo "login" específicamente
-    await handleGoogleAuth('login');
+    await handleGoogleAuth();
   };
-
+  useEffect(()=>{
+      
+sessionStorage.clear()
+    },[]);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorBackend(null);
@@ -51,81 +47,82 @@ export const LoginForm: React.FC = () => {
       return;
     }
 
-    console.log('Formulario válido, listo para enviar:', datosFormulario);
-
     try {
       const res = await loginUsuario(
         datosFormulario.email,
         datosFormulario.password
       );
 
-      console.log('Login exitoso:', res);
+      if (res.data) {
+      const token = res.data.accessToken ?? res.data.token; 
 
+      if (token) sessionStorage.setItem('authToken', token);
+
+      sessionStorage.setItem('userData', JSON.stringify(res.data.user));
+    }
       let fixerId: string | null = null;
-
-      if (res?.user?.id) {
+      if (res?.data?.user._id) {
         try {
-          const fixer = await getFixerByUser(res.user.id);
+          const fixer = await getFixerByUser(res.data.user._id);
           fixerId = fixer?.id ?? null;
         } catch {
           fixerId = null;
         }
       }
 
-      if (res?.user?.id) {
-        saveToStorage(STORAGE_KEYS.userId, res.user.id);
+      // Persistencia de datos y sesión (Lógica HEAD)
+      if (res?.data.user?._id) {
+        saveToStorage(STORAGE_KEYS.userId, res.data.user._id);
       }
       saveToStorage(STORAGE_KEYS.fixerId, fixerId);
 
       const storedUser = {
-        ...(res.user ?? {}),
+        ...(res.data.user ?? {}),
         fixerId,
       };
+      persistSession({ token: res.data.accessToken ?? res.data.token, user: storedUser });
 
-      persistSession({
-        token: res.token ?? null,
-        user: storedUser,
-      });
-
+      // Disparar eventos de sesión (Ambas ramas)
+      if(res.data.user.twoFactorEnabled){
+        sessionStorage.setItem("checkSeguridad", "true");
+      router.push('/loginSeguridad')
+      return
+      }
       window.dispatchEvent(new CustomEvent(SESSION_EVENTS.updated));
       window.dispatchEvent(new CustomEvent(SESSION_EVENTS.login));
-
+      window.dispatchEvent(new CustomEvent("login-exitoso"));
+      sessionStorage.setItem("intentos","0" )
+      sessionStorage.setItem("login",'true')
+      
+      // Redirección: Usa 'next' si existe, si no va a Homepage (Sprint 2)
       const normalizedNext = nextRoute?.trim();
-      const fallbackRoute = '/';
-
-      router.push(
-        normalizedNext && normalizedNext !== '/login'
-          ? normalizedNext
-          : fallbackRoute
-      );
+      const fallbackRoute = "/Homepage";
+      router.push(normalizedNext && normalizedNext !== "/login" ? normalizedNext : fallbackRoute);
+      
     } catch (error: unknown) {
       console.error('Error completo al iniciar sesión:', error);
-
+      
       let mensajeError = 'Error al iniciar sesión';
-
-      if (
-        error instanceof Error &&
-        (
+      
+      if (error instanceof Error) {
+        if (
           error.message.includes('401') ||
           error.message.includes('Unauthorized') ||
           error.message.includes('contraseña') ||
           error.message.includes('password') ||
           error.message.includes('Credenciales')
-        )
-      ) {
-        mensajeError = 'Contraseña incorrecta.';
-      } else if (
-        error instanceof Error &&
-        (
+        ) {
+          mensajeError = 'Contraseña incorrecta.';
+        } else if (
           error.message.includes('404') ||
           error.message.includes('No encontrado') ||
           error.message.includes('Usuario') ||
           error.message.includes('user')
-        )
-      ) {
-        mensajeError = 'Usuario no encontrado. Verifica tu correo electrónico.';
-      } else if (error instanceof Error) {
-        mensajeError = error.message || 'Error al conectar con el servidor';
+        ) {
+          mensajeError = 'Usuario no encontrado. Verifica tu correo electrónico.';
+        } else {
+          mensajeError = error.message || 'Error al conectar con el servidor';
+        }
       } else {
         mensajeError = 'Error al conectar con el servidor';
       }
@@ -140,16 +137,12 @@ export const LoginForm: React.FC = () => {
     <div className="min-h-screen bg-blue-500 flex items-center justify-center py-8 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md lg:max-w-2xl bg-white rounded-3xl shadow-md p-4 sm:p-6 lg:p-8">
         <div className="text-center mb-6 sm:mb-8">
-          <h2 className="text-xl sm:text-2xl font-bold text-blue-500">
-            Iniciar sesión
-          </h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-blue-500">Iniciar sesión</h2>
         </div>
 
         {/* Mostrar errores de Google */}
         {googleError && (
-          <p className="text-red-600 text-sm text-center mb-4">
-            {googleError}
-          </p>
+          <p className="text-red-600 text-sm text-center mb-4">{googleError}</p>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
@@ -174,9 +167,7 @@ export const LoginForm: React.FC = () => {
                 placeholder="Correo electrónico"
               />
               {errores.email && tocados.email && (
-                <p className="mt-1 text-xs sm:text-sm text-red-600">
-                  {errores.email}
-                </p>
+                <p className="mt-1 text-xs sm:text-sm text-red-600">{errores.email}</p>
               )}
             </div>
           </div>
@@ -195,23 +186,19 @@ export const LoginForm: React.FC = () => {
                 }}
                 onBlur={() => manejarBlur('password')}
                 className={`w-full px-3 py-2 sm:py-3 text-sm sm:text-base border rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:border-transparent placeholder-gray-600 text-gray-950 ${
-                  (errores.password && tocados.password) || errorBackend
+                  (errores.password && tocados.contraseña) || errorBackend
                     ? 'border-red-300 focus:ring-red-500'
                     : 'border-gray-300 focus:ring-blue-500'
                 }`}
                 placeholder="Contraseña"
               />
               {/* Mostrar errores de validación frontend */}
-              {errores.password && tocados.password && (
-                <p className="mt-1 text-xs sm:text-sm text-red-600">
-                  {errores.password}
-                </p>
+              {(errores.password && tocados.contraseña) && (
+                <p className="mt-1 text-xs sm:text-sm text-red-600">{errores.password}</p>
               )}
               {/* Mostrar TODOS los errores del backend aquí */}
               {errorBackend && !errores.password && (
-                <p className="mt-1 text-xs sm:text-sm text-red-600">
-                  {errorBackend}
-                </p>
+                <p className="mt-1 text-xs sm:text-sm text-red-600">{errorBackend}</p>
               )}
             </div>
           </div>
@@ -230,16 +217,24 @@ export const LoginForm: React.FC = () => {
               {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
             </button>
           </div>
+           <p className="text-sm text-center mt-3">
+    <a
+      href="/auth/ini-link"
+      className="text-blue-600 hover:underline"
+    >
+    ¿Olvidaste tu contraseña?
+    </a>
+  </p>
+
+
 
           {/* Separador visual con "o" */}
           <div className="flex items-center justify-center my-4 sm:my-6">
-            <span className="text-gray-500 text-xs sm:text-sm font-medium">
-              o
-            </span>
+            <span className="text-gray-500 text-xs sm:text-sm font-medium">o</span>
           </div>
 
           {/* Botón de Google */}
-          <GoogleButton
+          <GoogleButton 
             onClick={handleGoogleClick}
             isLoading={googleLoading}
             type="login"
@@ -251,12 +246,9 @@ export const LoginForm: React.FC = () => {
               type="button"
               className="w-full max-w-xs sm:max-w-sm bg-white text-black py-2 sm:py-3 px-4 border border-gray-300 rounded-2xl hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200 transition-colors duration-200 flex items-center justify-center gap-3 text-xs sm:text-sm"
             >
-              {/* Usar next/image */}
-              <Image
+              <img
                 src={AppleIcon.src}
                 alt="Registrarse con Apple"
-                width={16}
-                height={16}
                 className="w-4 h-4 sm:w-5 sm:h-5"
               />
               Registrarse con Apple
@@ -265,9 +257,7 @@ export const LoginForm: React.FC = () => {
 
           {/* Enlace a registro */}
           <div className="flex justify-center items-center gap-2 mt-3 sm:mt-4">
-            <p className="text-xs sm:text-sm text-gray-600">
-              ¿Aún no tienes una cuenta?
-            </p>
+            <p className="text-xs sm:text-sm text-gray-600">¿Aún no tienes una cuenta?</p>
             <Link href="/registro">
               <span className="text-xs sm:text-sm font-medium text-blue-600 hover:text-blue-500 hover:underline cursor-pointer">
                 Regístrate

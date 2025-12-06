@@ -64,7 +64,7 @@ export function LocationField({ value, onChange }: Props) {
         </div>
       )}
 
-      {/* Modal ligero para seleccionar ubicación */}
+      {/* Modal para seleccionar ubicación */}
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
           <div className="w-full max-w-3xl rounded bg-white p-4">
@@ -87,7 +87,7 @@ export function LocationField({ value, onChange }: Props) {
                 }
                 onChange={(coords) => {
                   // Construimos un LocationDTO mínimo con lat/lng.
-                  // Si tu LocationDTO requiere otros campos, añádelos aquí.
+                  // Preservamos otros campos si existen usando spread.
                   const loc = {
                     ...(value ?? {}),
                     lat: coords.lat,

@@ -754,7 +754,7 @@ export default function FixerJobsPage() {
     setLoading(true);
     setMessage("Buscando trabajos...");
     setTrabajos([]); 
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+    const API_URL = process.env.NEXT_PUBLIC_API_URL + "/api" || "http://localhost:5000/api";
     
     try {
       const trabajosRes = await fetch(`${API_URL}/bitCrew/trabajos/${usuario}`);
@@ -795,7 +795,7 @@ export default function FixerJobsPage() {
 
     setIsConfirming(true);
     setModalError(null);
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+    const API_URL = process.env.NEXT_PUBLIC_API_URL + "/api" || "http://localhost:5000/api";
 
     try {
       const response = await fetch(`${API_URL}/bitCrew/trabajos/${selectedTrabajo._id}/pagar-efectivo`, {

@@ -32,6 +32,11 @@ export default function FixerOwnerActions({ fixerId, currentBio, skills }: Props
   const [status, setStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [saving, setSaving] = useState(false);
 
+  // Notificar a otras secciones que el modo edición está activo/inactivo
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('fixer-edit-mode', { detail: { open } }));
+  }, [open]);
+
   useEffect(() => {
     setBaseBio(currentBio ?? '');
     setBioDraft(currentBio ?? '');
@@ -195,7 +200,7 @@ export default function FixerOwnerActions({ fixerId, currentBio, skills }: Props
             <h3 className="mb-3 text-base font-semibold text-slate-900">Mis habilidades personalizadas</h3>
             {skills.length === 0 ? (
               <p className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-500">
-                Aún no registraste oficios. Agrega tipos de trabajo desde el flujo de "Convertirse en Fixer" para
+                Aún no registraste oficios. Agrega tipos de trabajo desde el flujo de Convertirse en Fixer para
                 personalizarlos aquí.
               </p>
             ) : (

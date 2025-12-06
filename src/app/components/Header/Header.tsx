@@ -1,5 +1,4 @@
 'use client';
-
 import Link from 'next/link';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Icono from './Icono';
@@ -12,23 +11,51 @@ import {
   type StoredUser,
 } from '@/lib/auth/session';
 import { STORAGE_KEYS, removeFromStorage } from '@/app/convertirse-fixer/storage';
+import SimpleProfileMenu from '@/app/Menu/components/Menu';
+import { useForceLogout } from "../../teamsys/hooks/useForceLogout";
+import { getSocket } from '@/app/teamsys/realtime/socketClient';
 
 export default function Header() {
   const [isClient, setIsClient] = useState(false);
   const [areButtonsVisible, setAreButtonsVisible] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<StoredUser | null>(null);
-  
-  // --- NUEVO ESTADO PARA CARGA ---
-  const [loadingWallet, setLoadingWallet] = useState(false);
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  // NUEVO: solo cuando esto sea true creamos socket
+  const [canInitSocket, setCanInitSocket] = useState(false);
+  let isSocketReady = useForceLogout(
+    isLoggedIn && canInitSocket ? userId : null,accessToken ?? null 
+  );
+const handleHomeClick = () => {
+    // Si el socket NO está formado, limpiamos
+  const respuesta=sessionStorage.getItem("login") 
+  if (!getSocket()){
+      handleLogout()
 
+    } 
+   if (!respuesta) {
+    
+      // lo que pediste:
+      sessionStorage.clear(); // o solo algunas claves si prefieres
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("userData");
+    }
+     
+    // No hace falta router.push aquí, Link ya navega a "/"
+  };
   const lastScrollY = useRef(0);
   const router = useRouter();
   const pathname = usePathname();
+  const [isMobile, setIsMobile] = useState(false);
 
-  // URL del Backend (Asegúrate de que coincida con tu .env o puerto local)
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
-  //const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://wallletback.vercel.app/api';
+  useEffect(() => {
+  const checkSize = () => setIsMobile(window.innerWidth < 640);
+  checkSize();
+  window.addEventListener("resize", checkSize);
+  return () => window.removeEventListener("resize", checkSize);
+}, []);
 
   const syncSession = useCallback(() => {
     setIsLoggedIn(Boolean(getToken()));
@@ -38,7 +65,24 @@ export default function Header() {
   useEffect(() => {
     setIsClient(true);
     syncSession();
+    const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+    if (token) {
+      setIsLoggedIn(true);
+      setCanInitSocket(true);
+    }
+    try {
+      const raw =
+        sessionStorage.getItem("userData") ||
+        localStorage.getItem("userData");
 
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        const id = parsed._id || null;
+        setUserId(id);
+      }
+    } catch (e) {
+      console.error("[Header] error leyendo userData:", e);
+    }
     const handleScroll = () => {
       if (window.innerWidth < 640) {
         setAreButtonsVisible(
@@ -48,23 +92,63 @@ export default function Header() {
       }
     };
 
+    const handleLoginExitoso = () => {
+      setIsLoggedIn(true);
+      setCanInitSocket(true);
+
+      try {
+        const raw =
+          sessionStorage.getItem("userData") ||
+          localStorage.getItem("userData");
+          const token=sessionStorage.getItem("authToken")
+        if (raw && token) {
+          const parsed = JSON.parse(raw);
+          const id = parsed._id || null;
+          setUserId(id);
+          setAccessToken(token);
+        }
+      } catch (e) {
+        console.error("[Header] error leyendo userData tras login:", e);
+      }
+    };
+
     const handleSessionChange = () => {
       syncSession();
+    };
+
+    const handleLogoutEvent = () => {
+      setIsLoggedIn(false);
+      setCanInitSocket(false);
+      setUserId(null);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener(SESSION_EVENTS.login, handleSessionChange);
     window.addEventListener(SESSION_EVENTS.logout, handleSessionChange);
     window.addEventListener(SESSION_EVENTS.updated, handleSessionChange);
+    window.addEventListener('login-exitoso', handleLoginExitoso);
+    window.addEventListener('logout-exitoso', handleLogoutEvent);
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener(SESSION_EVENTS.login, handleSessionChange);
       window.removeEventListener(SESSION_EVENTS.logout, handleSessionChange);
       window.removeEventListener(SESSION_EVENTS.updated, handleSessionChange);
+      window.removeEventListener('login-exitoso', handleLoginExitoso);
+      window.removeEventListener('logout-exitoso', handleLogoutEvent);
     };
   }, [syncSession]);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!(event.target as HTMLElement).closest(".menu-container")) {
+        setMenuVisible(false);
+      }
+    };
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
+  // Ocultar barra de búsqueda en login y registro
   const shouldShowSearchBar = !['/login', '/registro'].includes(pathname);
 
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -77,11 +161,13 @@ export default function Header() {
   const handleLogout = () => {
     clearSession();
     Object.values(STORAGE_KEYS).forEach((key) => removeFromStorage(key));
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userData');
+    sessionStorage.clear();
     setIsLoggedIn(false);
     setCurrentUser(null);
-
-    window.dispatchEvent(new CustomEvent(SESSION_EVENTS.logout));
-    window.dispatchEvent(new CustomEvent(SESSION_EVENTS.updated));
+    const eventLogout = new CustomEvent("logout-exitoso");
+    window.dispatchEvent(eventLogout);
 
     router.push('/');
   };
@@ -94,51 +180,6 @@ export default function Header() {
     rawName && rawName.length > 0
       ? rawName.split(/\s+/)[0]
       : currentUser?.correo ?? 'Usuario';
-
-  // --- NUEVA FUNCIÓN: VALIDAR/CREAR BILLETERA ---
-  const handleWalletAccess = async () => {
-    if (loadingWallet) return;
-
-    // 1. Validar que sea Fixer
-    if (!fixerId) {
-      router.push('/convertirse-fixer');
-      return;
-    }
-
-    setLoadingWallet(true);
-
-    try {
-      const token = getToken();
-      if (!token) {
-        router.push('/login');
-        return;
-      }
-
-      // 2. Llamar al Backend para buscar o crear la billetera
-      // Ruta: /api/wallet/fixer/:id
-      const response = await fetch(`${API_URL}/api/bitcrew/wallet/fixer/${fixerId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        // Éxito: Redirigir a la vista de billetera
-        // Cambia '/billetera' si tu ruta frontend es diferente (ej: '/bitcrew/wallet')
-        router.push(`/bitcrew/wallet?fixer_id=${fixerId}`);
-      } else {
-        console.error("Error al obtener billetera:", data.message);
-      }
-    } catch (error) {
-      console.error("Error de conexión:", error);
-    } finally {
-      setLoadingWallet(false);
-    }
-  };
 
   if (!isClient) return null;
 
@@ -158,6 +199,7 @@ export default function Header() {
           <span className="ml-2 text-xl font-bold text-[#11255A]">Servineo</span>
         </div>
 
+        {/* BARRA DE BÚSQUEDA - Solo mostrar si no estamos en login/registro */}
         {shouldShowSearchBar ? (
           <div className="grow mx-8">
             <div className="relative">
@@ -165,130 +207,226 @@ export default function Header() {
                 type="text"
                 placeholder="Buscar"
                 onKeyDown={handleSearch}
+                data-tutorial="search-bar"
                 className="w-full px-4 py-2 pl-10 border border-[#D8ECFF] rounded-md focus:outline-none focus:ring-2 focus:ring-[#2a87ff] bg-white text-[#11255A]"
               />
-              <svg className="absolute w-5 h-5 text-[#89C9FF] left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              <svg
+                className="absolute w-5 h-5 text-[#89C9FF] left-3 top-1/2 transform -translate-y-1/2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                ></path>
               </svg>
             </div>
           </div>
         ) : (
+          // Si estamos en login/registro, centrar los elementos
           <div className="grow" />
         )}
 
         <div className="flex items-center space-x-4">
-          {hideAuthButtons ? null : !isLoggedIn ? (
+          {hideAuthButtons
+            ? null
+            : !isLoggedIn
+            ? (
               <>
                 <Link href={fixerEntryHref}>
-                  <button className="px-4 py-2 font-semibold text-white bg-[#2a87ff] rounded-md hover:bg-[#1a347a] transition-colors">{fixerEntryLabel}</button>
+                  <button 
+                    data-tutorial="become-fixer" // ✅ NUEVO: Para paso 5 del tutorial
+                    className="px-4 py-2 font-semibold text-white bg-[#2a87ff] rounded-md hover:bg-[#1a347a] transition-colors"
+                  >
+                    {fixerEntryLabel}
+                  </button>
                 </Link>
                 <Link href="/offers">
-                  <button className="px-4 py-2 font-semibold text-[#2a87ff] border border-[#2a87ff] rounded-md hover:bg-[#EEF7FF] transition-colors">Ofertas de Trabajo</button>
+                  <button className="px-4 py-2 font-semibold text-[#2a87ff] border border-[#2a87ff] rounded-md hover:bg-[#EEF7FF] transition-colors">
+                    Ofertas de Trabajo
+                  </button>
                 </Link>
                 <Link href="/login">
-                  <button className="px-4 py-2 font-semibold text-[#2a87ff] border border-[#2a87ff] rounded-md hover:bg-[#EEF7FF] transition-colors">Iniciar Sesion</button>
+                  <button className="px-4 py-2 font-semibold text-[#2a87ff] border border-[#2a87ff] rounded-md hover:bg-[#EEF7FF] transition-colors">
+                    Iniciar Sesion
+                  </button>
                 </Link>
                 <Link href="/registro">
-                  <button className="px-4 py-2 font-semibold text-white bg-[#2a87ff] rounded-md hover:bg-[#52ABFF] transition-colors">Registrarse</button>
+                  <button className="px-4 py-2 font-semibold text-white bg-[#2a87ff] rounded-md hover:bg-[#52ABFF] transition-colors">
+                    Registrarse
+                  </button>
                 </Link>
               </>
-            ) : (
+            )
+            : (
               <>
                 <Link href={fixerCtaHref}>
-                  <button className="px-4 py-2 font-semibold text-white bg-[#2a87ff] rounded-md hover:bg-[#1a347a] transition-colors">{fixerCtaLabel}</button>
+                  <button 
+                    data-tutorial="become-fixer" // ✅ NUEVO: Para paso 5 del tutorial
+                    className="px-4 py-2 font-semibold text-white bg-[#2a87ff] rounded-md hover:bg-[#1a347a] transition-colors"
+                  >
+                    {fixerCtaLabel}
+                  </button>
                 </Link>
                 <Link href="/offers">
-                  <button className="px-4 py-2 font-semibold text-[#2a87ff] border border-[#2a87ff] rounded-md hover:bg-[#EEF7FF] transition-colors">Ofertas de Trabajo</button>
+                  <button className="px-4 py-2 font-semibold text-[#2a87ff] border border-[#2a87ff] rounded-md hover:bg-[#EEF7FF] transition-colors">
+                    Ofertas de Trabajo
+                  </button>
                 </Link>
                 <div className="flex items-center space-x-2">
-                  <span className="font-semibold text-[#11255A]">{displayName}</span>
-                  <div className="relative group">
-                    <svg className="w-8 h-8 text-[#2a87ff] cursor-pointer" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
-                    </svg>
-                    
-                    {/* DROPDOWN DESKTOP */}
-                    <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                      
-                      {/* BOTÓN MI BILLETERA (Modificado) */}
-                      <button 
-                        onClick={handleWalletAccess}
-                        disabled={loadingWallet}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 font-medium disabled:opacity-50"
-                      >
-                        {loadingWallet ? 'Cargando...' : 'Mi Billetera'}
-                      </button>
+                  <span className="font-semibold text-[#11255A]">
+                    {displayName}
+                  </span>
+                  <div className="relative menu-container">
+                  <svg
+                    onClick={() => setMenuVisible(!menuVisible)} // 👈 Al hacer clic, abre/cierra tu menú
+                    className="w-8 h-8 text-[#2a87ff] cursor-pointer"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
+                  </svg>
 
-                      <button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                        Cerrar Sesion
-                      </button>
+                  {menuVisible && (
+                    <div className="absolute right-0 mt-2 z-50">
+                      <SimpleProfileMenu /> {/* 👈 Tu menú reemplaza el botón Cerrar Sesión */}
                     </div>
-                  </div>
+                  )}
+                </div>
                 </div>
               </>
             )}
         </div>
       </header>
 
-      {/* HEADER MOVIL */}
+      {/* HEADER MOVIL SUPERIOR */}
       <header className="sm:hidden fixed top-0 left-0 w-full p-2 bg-[#EEF7FF] shadow-md z-50">
         <div className="flex items-center space-x-2 w-full">
           <Link href="/">
             <Icono size={28} />
           </Link>
+          {/* BARRA DE BÚSQUEDA MÓVIL - Solo mostrar si no estamos en login/registro */}
           {shouldShowSearchBar && (
             <div className="flex-1 relative">
-              <input type="text" placeholder="Buscar" onKeyDown={handleSearch} className="w-full px-3 py-1.5 pl-9 border border-[#D8ECFF] rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-[#2a87ff] bg-white text-[#11255A]" />
-              <svg className="absolute w-4 h-4 text-[#89C9FF] left-2.5 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              <input
+                type="text"
+                placeholder="Buscar"
+                onKeyDown={handleSearch}
+                data-tutorial="search-bar"
+                className="w-full px-3 py-1.5 pl-9 border border-[#D8ECFF] rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-[#2a87ff] bg-white text-[#11255A]"
+              />
+              <svg
+                className="absolute w-4 h-4 text-[#89C9FF] left-2.5 top-1/2 transform -translate-y-1/2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                ></path>
               </svg>
             </div>
           )}
+          {/* Si estamos en login/registro, ocupar el espacio restante */}
           {!shouldShowSearchBar && <div className="flex-1"></div>}
         </div>
       </header>
 
-      {/* FOOTER MOVIL */}
-      <footer className={`sm:hidden fixed bottom-0 left-0 w-full px-3 py-2 bg-[#EEF7FF] shadow-md z-50 transform transition-transform duration-300 ease-in-out ${areButtonsVisible ? 'translate-y-0' : 'translate-y-full'}`}>
+      {/* FOOTER MOVIL INFERIOR */}
+      <footer
+        className={`sm:hidden fixed bottom-0 left-0 w-full px-3 py-2 bg-[#EEF7FF] shadow-md z-50 transform transition-transform duration-300 ease-in-out ${
+          areButtonsVisible ? 'translate-y-0' : 'translate-y-full'
+        }`}
+      >
         <div className="flex flex-col items-center space-y-1">
           <span className="text-[#11255A] font-bold text-sm">Servineo</span>
-          {hideAuthButtons ? null : !isLoggedIn ? (
+
+          {hideAuthButtons
+            ? null
+            : !isLoggedIn
+            ? (
               <div className="flex w-full space-x-1">
-                <Link href="/offers" className="flex-1"><button className="w-full px-2 py-1.5 font-semibold text-white bg-[#1f7ae5] rounded-md hover:bg-[#1353a8] text-xs">Ofertas</button></Link>
-                <Link href="/login" className="flex-1"><button className="w-full px-2 py-1.5 font-semibold text-[#2a87ff] border border-[#2a87ff] rounded-md hover:bg-[#EEF7FF] text-xs">Iniciar Sesion</button></Link>
-                <Link href="/registro" className="flex-1"><button className="w-full px-2 py-1.5 font-semibold text-white bg-[#2a87ff] rounded-md hover:bg-[#52ABFF] text-xs">Registrarse</button></Link>
+                <Link href="/offers" className="flex-1">
+                  <button className="w-full px-2 py-1.5 font-semibold text-white bg-[#1f7ae5] rounded-md hover:bg-[#1353a8] text-xs">
+                    Ofertas
+                  </button>
+                </Link>
+                <Link href="/login" className="flex-1">
+                  <button className="w-full px-2 py-1.5 font-semibold text-[#2a87ff] border border-[#2a87ff] rounded-md hover:bg-[#EEF7FF] text-xs">
+                    Iniciar Sesion
+                  </button>
+                </Link>
+                <Link href="/registro" className="flex-1">
+                  <button className="w-full px-2 py-1.5 font-semibold text-white bg-[#2a87ff] rounded-md hover:bg-[#52ABFF] text-xs">
+                    Registrarse
+                  </button>
+                </Link>
               </div>
-            ) : (
+            )
+            : (
               <div className="flex items-center justify-center space-x-2 w-full">
-                <Link href="/offers" className="flex-1"><button className="w-full px-2 py-1 text-xs font-semibold text-white bg-[#1f7ae5] rounded-md hover:bg-[#1353a8]">Ofertas</button></Link>
-                <Link href={fixerCtaHref} className="flex-1"><button className="w-full px-2 py-1 text-xs font-semibold text-white bg-[#2a87ff] rounded-md hover:bg-[#1a347a]">{fixerCtaLabel}</button></Link>
+                <Link href="/offers" className="flex-1">
+                  <button className="w-full px-2 py-1 text-xs font-semibold text-white bg-[#1f7ae5] rounded-md hover:bg-[#1353a8]">
+                    Ofertas
+                  </button>
+                </Link>
+                <Link href={fixerCtaHref} className="flex-1">
+                  <button 
+                    data-tutorial="become-fixer" // ✅ NUEVO: Para paso 5 del tutorial
+                    className="w-full px-2 py-1 text-xs font-semibold text-white bg-[#2a87ff] rounded-md hover:bg-[#1a347a]"
+                  >
+                    {fixerCtaLabel}
+                  </button>
+                </Link>
                 <div className="flex items-center space-x-1 flex-1 justify-end">
-                  <span className="text-[#11255A] text-xs font-semibold truncate">{displayName}</span>
+                  <span className="text-[#11255A] text-xs font-semibold truncate">
+                    {displayName}
+                  </span>
                   <div className="relative group">
-                    <svg className="w-5 h-5 text-[#2a87ff] cursor-pointer" fill="currentColor" viewBox="0 0 24 24">
+                    <svg
+                      className="w-5 h-5 text-[#2a87ff] cursor-pointer"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
                       <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
                     </svg>
-                    {/* DROPDOWN MÓVIL */}
                     <div className="absolute right-0 top-full mt-2 w-32 bg-white rounded-md shadow-lg py-1 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                      
-                      {/* BOTÓN MI BILLETERA (Móvil Modificado) */}
-                      <button 
-                        onClick={handleWalletAccess}
-                        disabled={loadingWallet}
-                        className="block w-full text-left px-3 py-1 text-xs text-gray-700 hover:bg-gray-100 font-medium disabled:opacity-50"
+                      <button
+                        onClick={handleLogout}
+                        className="block w-full text-left px-3 py-1 text-xs text-gray-700 hover:bg-gray-100"
                       >
-                        {loadingWallet ? 'Cargando...' : 'Mi Billetera'}
+                        Cerrar Sesion
                       </button>
-
-                      <button onClick={handleLogout} className="block w-full text-left px-3 py-1 text-xs text-gray-700 hover:bg-gray-100">Cerrar Sesion</button>
                     </div>
                   </div>
+                  {menuVisible && !isMobile && (
+  <div className="absolute right-0 top-full mt-2 z-50">
+    <SimpleProfileMenu />
+  </div>
+)}
+
+{/* Móvil: menú sube hacia arriba */}
+{menuVisible && isMobile && (
+  <div className="absolute right-0 bottom-full mb-2 z-50">
+    <SimpleProfileMenu />
+  </div>
+)}
                 </div>
               </div>
             )}
         </div>
       </footer>
-      <div className="h-16 sm:h-20" />
+
+      {/* Espacio para el header fijo */}
+      {/*<div className="h-16 sm:h-0" />*/}
     </>
   );
 }

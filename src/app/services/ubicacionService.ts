@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://alquiler-back-soft-war2.vercel.app//api';
 
 export interface UbicacionFromAPI {
   _id: string;
