@@ -46,14 +46,14 @@
     "typescript": "5.9.3",
     "@types/node": "20.19.23",
     "@types/leaflet": "^1.9.6",
-    "@types/leaflet.markercluster": "^1.5.3"
-  },
-  "devDependencies": {
+    "@types/leaflet.markercluster": "^1.5.3",
     "@types/mongodb": "^4.0.6",
     "@types/react": "19.2.2",
     "@types/react-dom": "^19.2.2",
     "@types/react-modal": "^3.16.3",
-    "@types/socket.io-client": "^1.4.36",
+    "@types/socket.io-client": "^1.4.36"
+  },
+  "devDependencies": {
     "baseline-browser-mapping": "^2.8.32",
     "eslint": "^9",
     "eslint-config-next": "15.5.4",
