@@ -515,9 +515,18 @@ function AddOrEditOfferPageContent() {
               <h2 className="text-sm font-semibold text-slate-900">Imagenes seleccionadas</h2>
               <ul className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {existingImages.map((src, index) => (
-                  <li key={`existing-${index}`} className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+                  <li key={`existing-${index}`} className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
                     <img src={src} alt={`Imagen existente ${index + 1}`} className="h-40 w-full object-cover" />
-                    <div className="px-3 py-2 text-xs text-slate-500">Imagen existente #{index + 1}</div>
+                    <div className="flex items-center justify-between px-3 py-2 text-xs text-slate-600">
+                      <span className="text-slate-500">Imagen existente #{index + 1}</span>
+                      <button
+                        type="button"
+                        onClick={() => setExistingImages((prev) => prev.filter((_, i) => i !== index))}
+                        className="font-semibold text-red-500 hover:text-red-600"
+                      >
+                        Quitar
+                      </button>
+                    </div>
                   </li>
                 ))}
                 {newImages.map(({ file, preview }, index) => (

@@ -100,7 +100,7 @@ export default function SimpleProfileMenu() {
 
   useEffect(() => {
     // Obtener usuario desde sessionStorage
-    const storedUser = sessionStorage.getItem("userData");
+    const storedUser = sessionStorage.getItem("userData")|| localStorage.getItem("userData");
     if (!storedUser) return;
 
     try {
@@ -113,7 +113,7 @@ export default function SimpleProfileMenu() {
           `${parsed.firstName ?? ""} ${parsed.lastName ?? ""}`.trim() ||
           "Usuario",
         correo: parsed.correo || parsed.email || "correo@desconocido.com",
-        fotoPerfil: `${parsed.fotoPerfil}` || "/images/default-profile.jpg",
+        fotoPerfil: `${parsed.fotoPerfil}` || "/default-avatar.png",
         telefono: parsed.telefono || ""
       });
     } catch (error) {
@@ -127,14 +127,14 @@ export default function SimpleProfileMenu() {
       {/* Datos del usuario */}
       <div className="flex items-center mb-4">
         <Image
-          src={user?.fotoPerfil || "/images/default-profile.jpg"}
+          src={user?.fotoPerfil || "/default-avatar.png"}
           alt="Foto de perfil"
           width={50}
           height={50}
           className="rounded-full object-cover border border-gray-300"
           unoptimized
           onError={(e) => {
-            (e.currentTarget as HTMLImageElement).src = "/images/default-profile.jpg";
+            (e.currentTarget as HTMLImageElement).src = "/default-avatar.png";
           }}
         />
         <div className="ml-3 truncate">
@@ -148,6 +148,20 @@ export default function SimpleProfileMenu() {
       </div>
 
       <hr className="border-gray-300 mb-3" />
+
+      <button
+        onClick={() => router.push("/booking/agenda/citas-agendadas")}
+        className="text-base sm:text-base font-semibold text-gray-800 hover:bg-gray-100 rounded-2xl px-4 py-3 w-full text-left transition duration-150"
+      >
+        Mis Citas
+      </button>
+
+      <button
+        onClick={() => router.push("/booking/worker")}
+        className="text-base sm:text-base font-semibold text-gray-800 hover:bg-gray-100 rounded-2xl px-4 py-3 w-full text-left transition duration-150"
+      >
+        Gestionar Citas
+      </button>
 
       {/* Botón Configuración */}
       <button

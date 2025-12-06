@@ -56,10 +56,10 @@ function Inner() {
 
         //console.log(`🔐 Procesando ${authType} con Google...`);
 
-        const backend = process.env.NEXT_PUBLIC_BACKEND_URL ?? 'https://alquiler-back-soft-war2.vercel.app/';
+        const backend = process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://localhost:3000';
         
         // ENVIAR authType al backend
-        const response = await fetch(`${backend}api/teamsys/google/callback`, {
+        const response = await fetch(`${backend}/api/teamsys/google/callback`, {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
