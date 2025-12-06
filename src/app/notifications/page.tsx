@@ -1,34 +1,93 @@
 "use client";
 import { useState } from "react";
 import SendNotificationForm from "./SendNotificationForm";
-import bg from './image.png';
+import bg from "./image.png";
 import {
   notifyUserRegister,
   notifyFixerRequest,
   notifyClientAccepted,
 } from "@/lib/notifications";
+import TopNotificationAlert from "./TopNotificationAlert";
 
 export default function NotificationsPage() {
   const [accepted, setAccepted] = useState(false);
+  const [alert, setAlert] = useState<{
+    show: boolean;
+    type: "success" | "error";
+    message: string;
+  }>({ show: false, type: "success", message: "" });
 
   const handleAccept = async () => {
-    setAccepted(true);
-    await notifyClientAccepted("adrianvallejosflores24@gmail.com", "Fixer Carlos");
-    // vuelve al estado normal después de 3 segundos
-    setTimeout(() => setAccepted(false), 3000);
+    try {
+      setAccepted(true);
+
+      // 🔹 Crear cita real (sin tocar backend)
+      const response = await fetch("http://localhost:5000/api/devcode/citas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          proveedorId: "655e6bbefba59f4a5e9b3f22",
+          servicioId: "655e6bc8fba59f4a5e9b3f23",
+          clienteId: "655e6bd3fba59f4a5e9b3f24",
+          fecha: "2025-11-20",
+          horario: { inicio: "10:00", fin: "11:00" },
+          estado: "pendiente",
+        }),
+      });
+
+      if (!response.ok) {
+           const errorBody = await response.text().catch(() => "");
+          throw new Error(
+          `Error al crear cita: ${errorBody || response.statusText}`
+     );
+     }
+
+
+      await notifyClientAccepted(
+        "adrianvallejosflores24@gmail.com",
+        "Fixer Carlos"
+      );
+
+      // Mostrar alerta de éxito
+      setAlert({
+        show: true,
+        type: "success",
+        message: "Cita creada correctamente",
+      });
+    } catch (error) {
+      console.error("Error en handleAccept:", error);
+      setAlert({
+        show: true,
+        type: "error",
+        message: "Error al crear la cita",
+      });
+    } finally {
+      setTimeout(() => setAccepted(false), 3000);
+    }
   };
 
   return (
     <div
-      className="min-h-screen bg-blue-50 flex flex-col items-center justify-center py-10 px-4"
+      className="min-h-screen flex flex-col items-center justify-center py-10 px-4 bg-blue-50"
       style={{
         backgroundImage: `url(${bg.src})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
+        fontFamily: "Poppins, sans-serif",
       }}
     >
+      <TopNotificationAlert
+        show={alert.show}
+        type={alert.type}
+        message={alert.message}
+        onClose={() => setAlert({ ...alert, show: false })}
+      />
+
       <div className="bg-white/90 backdrop-blur-xl p-10 rounded-3xl max-w-3xl w-full shadow-2xl border border-blue-100">
-        <h1 className="text-3xl font-bold text-center mb-10 text-blue-700 flex items-center justify-center gap-2">
+        <h1
+          className="text-3xl font-bold text-center mb-10 flex items-center justify-center gap-2"
+          style={{ color: "#0c4fe9" }}
+        >
           <span>🚀</span> Escenarios de Notificaciones del Sistema
         </h1>
 
@@ -46,14 +105,16 @@ export default function NotificationsPage() {
             showDetails
           />
 
-          {/* Escenario 3️⃣ */}
           <div className="bg-white rounded-2xl border border-blue-100 shadow-md p-6 w-full max-w-md mx-auto my-6 transition-all duration-300 hover:shadow-lg">
-            <h2 className="text-xl font-semibold text-blue-700 mb-4 text-center">
+            <h2
+              className="text-xl font-semibold mb-4 text-center"
+              style={{ color: "#0c4fe9" }}
+            >
               Fixer acepta la solicitud
             </h2>
 
-            <div className="border border-gray-200 rounded-lg p-4 text-left bg-gray-50 mb-4">
-              <p className="text-sm text-gray-700">
+            <div className="border border-gray-200 rounded-lg p-4 text-left bg-gray-50 mb-4 text-[#11255a]">
+              <p className="text-sm">
                 <strong>Solicitud:</strong> Plomería general
                 <br />
                 <strong>Cliente:</strong> Juanito Pérez
@@ -68,7 +129,7 @@ export default function NotificationsPage() {
               className={`px-5 py-2.5 rounded-xl w-full text-white font-semibold shadow-md transition-all duration-300 ${
                 accepted
                   ? "bg-green-400 cursor-not-allowed"
-                  : "bg-blue-600 hover:bg-blue-700"
+                  : "bg-[#0c4fe9] hover:bg-[#1366fd]"
               }`}
             >
               {accepted ? "✅ Trabajo aceptado" : "Aceptar trabajo"}
