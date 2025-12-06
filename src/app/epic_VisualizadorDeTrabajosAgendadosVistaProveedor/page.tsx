@@ -1,17 +1,25 @@
-//src/app/epic_VisualizadorDeTrabajosAgendadosVistaProveedor/page.tsx
+// src/app/epic_VisualizadorDeTrabajosAgendadosVistaProveedor/page.tsx
 'use client';
-import { useEffect, useMemo, useState } from 'react';
+
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type CSSProperties,
+} from 'react';
+import { useRouter } from 'next/navigation';
+
+// Tipado compartido con la vista Cliente
 import { Job, JobStatus } from './interfaces/types';
 import { fetchTrabajosProveedor } from './services/api';
 import { fmt } from './utils/helpers';
-import { useRouter } from 'next/navigation';
 
 /* --- Props para hacerlo reutilizable --- */
 interface TrabajosWidgetProps {
   proveedorId: string;
 }
 
-/* Paleta (Mantenemos tu diseño original) */
+/* --- Paleta de colores (compartida con la vista Cliente) --- */
 const C = {
   title: '#0C4FE9',
   text: '#1140BC',
@@ -27,230 +35,536 @@ const C = {
 } as const;
 
 type TabKey = 'all' | JobStatus;
-const ITEMS_PER_PAGE = 5; // Reduje a 5 para que se vea mejor en un widget
 
-/* --- Íconos --- */
-const IcoUser = ({ size = 20, color = C.text }: { size?: number; color?: string }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+// Puedes cambiarlo a 10 si quieres que sea igual que la vista Cliente
+const ITEMS_PER_PAGE = 5;
+
+/* --- Íconos (mantenemos la misma paleta) --- */
+const IcoUser = ({ size = 24, color = C.text }: { size?: number; color?: string }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M20 21a8 8 0 0 0-16 0" />
     <circle cx="12" cy="7" r="4" />
   </svg>
 );
-const IcoCalendar = ({ size = 20, color = C.text }: { size?: number; color?: string }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+
+const IcoCalendar = ({ size = 24, color = C.text }: { size?: number; color?: string }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <rect x="3" y="4" width="18" height="18" rx="2" />
     <line x1="16" y1="2" x2="16" y2="6" />
     <line x1="8" y1="2" x2="8" y2="6" />
     <line x1="3" y1="10" x2="21" y2="10" />
   </svg>
 );
-const IcoBrief = ({ size = 20, color = C.text }: { size?: number; color?: string }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+
+const IcoBrief = ({ size = 24, color = C.text }: { size?: number; color?: string }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <rect x="3" y="7" width="18" height="13" rx="2" />
     <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
   </svg>
 );
-const IcoClock = ({ size = 20, color = C.text }: { size?: number; color?: string }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+
+const IcoClock = ({ size = 24, color = C.text }: { size?: number; color?: string }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <circle cx="12" cy="12" r="10" />
     <path d="M12 6v6l4 2" />
   </svg>
 );
 
-/* --- Componente Principal Adaptado --- */
+/* --- Componente principal: Trabajos Agendados (Vista Proveedor) --- */
 export default function TrabajosAgendadosWidget({ proveedorId }: TrabajosWidgetProps) {
   const [tab, setTab] = useState<TabKey>('all');
   const [jobs, setJobs] = useState<Job[] | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const router = useRouter();
 
+  // Para que los detalles sepan que venimos desde proveedor
+  const from = 'proveedor';
+
+  /* --- Carga de trabajos del proveedor --- */
   useEffect(() => {
     let alive = true;
+
+    // Reseteamos mientras carga
+    setJobs(null);
+
     // Usamos el ID que viene por props
     fetchTrabajosProveedor(proveedorId || 'proveedor_123')
       .then((d) => {
         if (!alive) return;
-        // Normaliza posibles estados "completed" → "done"
+
+        // Normalizamos posibles estados
         const normalized = (d ?? []).map((j: Job & { status: string }) => ({
           ...j,
           status: (j.status === 'done' ? 'done' : j.status) as JobStatus,
         }));
+
         setJobs(normalized);
       })
       .catch((err) => {
-        console.error('Error al cargar trabajos:', err);
+        console.error('Error al cargar trabajos (proveedor):', err);
       });
-    return () => { alive = false; };
-  }, [proveedorId]); 
 
+    return () => {
+      alive = false;
+    };
+  }, [proveedorId]);
+
+  /* --- Contadores por estado --- */
   const counts = useMemo(() => {
-    const c = { confirmed: 0, pending: 0, cancelled: 0, done: 0 } as Record<JobStatus, number>;
+    const c = {
+      confirmed: 0,
+      pending: 0,
+      cancelled: 0,
+      done: 0,
+    } as Record<JobStatus, number>;
+
     (jobs ?? []).forEach((j) => c[j.status]++);
     return c;
   }, [jobs]);
 
+  /* --- Filtro por tab --- */
   const filtered = useMemo(() => {
     if (!jobs) return [];
     return tab === 'all' ? jobs : jobs.filter((j) => j.status === tab);
   }, [jobs, tab]);
 
+  /* --- Paginación --- */
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+
   const paginatedJobs = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
-    if (currentPage > Math.ceil(filtered.length / ITEMS_PER_PAGE) && filtered.length > 0) {
+
+    if (
+      currentPage > Math.ceil(filtered.length / ITEMS_PER_PAGE) &&
+      filtered.length > 0
+    ) {
       setCurrentPage(1);
     }
+
     return filtered.slice(startIndex, endIndex);
   }, [filtered, currentPage]);
 
-  // --- Renderizado de Estados de Carga/Vacío ---
+  /* --- Navegación hacia las vistas de detalle --- */
+  const handleVerDetalles = (job: Job) => {
+    const status = job.status;
 
+    if (status === 'cancelled') {
+      // 👉 Vista específica de trabajos cancelados (Proveedor)
+      router.push(
+        `/epic_VerDetallesEstadoCancelado-VistaProveedor?id=${encodeURIComponent(
+          job.id,
+        )}`,
+      );
+    } else {
+      // 👉 Vista compartida, indicando que venimos desde proveedor
+      router.push(
+        `/epic_VerDetallesAmbos?id=${encodeURIComponent(
+          job.id,
+        )}&from=${from}`,
+      );
+    }
+  };
+
+  /* --- Estado de carga (mismo estilo que Cliente) --- */
   if (!jobs) {
     return (
-      <div className="w-full py-12 flex flex-col items-center justify-center text-slate-400 animate-in fade-in">
-        <div className="text-4xl mb-4 animate-spin">⏳</div>
-        <p className="text-sm">Cargando historial...</p>
+      <div
+        style={{
+          padding: 24,
+          maxWidth: 980,
+          margin: '0 auto',
+          fontWeight: 500,
+          color: C.text,
+          fontSize: 20,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          paddingTop: 10,
+        }}
+      >
+        <h1
+          style={{
+            fontSize: 36,
+            fontWeight: 400,
+            color: C.title,
+            width: 660,
+            marginTop: 0,
+          }}
+        >
+          Trabajos Agendados
+        </h1>
+        <div
+          style={{
+            height: 1.5,
+            width: 660,
+            background: C.line,
+            marginBottom: 10,
+          }}
+        />
+        <p style={{ textAlign: 'center' }}>Cargando trabajos del proveedor...</p>
       </div>
     );
   }
 
-  // Renderizado Principal
+  /* --- Render principal --- */
   return (
     <div className="w-full animate-in fade-in duration-300">
-      
-      {/* 1. Header Simplificado (Estilo Calendario) */}
-      <div className="mb-6 border-b border-slate-100 pb-4">
-         <h2 className="text-lg font-bold text-slate-900">Historial de trabajos</h2>
-         <p className="text-slate-500 text-sm">Gestiona tus servicios agendados y confirmados.</p>
-      </div>
+      <div
+        style={{
+          padding: 24,
+          maxWidth: 980,
+          margin: '0 auto',
+          fontWeight: 400,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          paddingTop: 10,
+        }}
+      >
+        {/* --- Header: igual estilo que vista Cliente --- */}
+        <h1
+          style={{
+            fontSize: 36,
+            fontWeight: 400,
+            color: C.title,
+            width: 660,
+            marginTop: 0,
+          }}
+        >
+          Trabajos Agendados
+        </h1>
+        <div
+          style={{
+            height: 1.5,
+            width: 660,
+            background: C.line,
+            marginBottom: 10,
+          }}
+        />
 
-      {/* 2. Tabs Responsivos */}
-      <div className="mb-6 overflow-x-auto pb-2">
-        <TabsComponent tab={tab} setTab={setTab} counts={counts} setCurrentPage={setCurrentPage} />
-      </div>
+        {/* --- Tabs (mismo diseño que Cliente) --- */}
+        <TabsComponent
+          tab={tab}
+          setTab={setTab}
+          counts={counts}
+          setCurrentPage={setCurrentPage}
+        />
 
-      {/* 3. Contenido según estado */}
-      {(tab !== 'all' && counts[tab] === 0) ? (
-        <div className="py-12 flex flex-col items-center justify-center text-center border-2 border-dashed border-slate-200 rounded-xl">
-           <p className="text-amber-500 font-bold text-lg mb-2">Sección vacía</p>
-           <p className="text-slate-400 text-sm">No hay trabajos en estado &quot;{tab}&quot; actualmente.</p>
-        </div>
-      ) : (tab === 'all' && filtered.length === 0) ? (
-        <div className="py-12 flex flex-col items-center justify-center text-center border-2 border-dashed border-slate-200 rounded-xl">
-           <p className="text-slate-500 font-medium text-lg">No tienes trabajos agendados.</p>
-        </div>
-      ) : (
-        /* LISTA DE TRABAJOS */
-        <div className="flex flex-col gap-4">
+        {/* --- Lista de trabajos --- */}
+        <div
+          className="scrollwrap"
+          style={{
+            display: 'grid',
+            gap: 14,
+            maxHeight: 520,
+            overflow: 'auto',
+            paddingRight: 8,
+            width: 660,
+          }}
+        >
           {paginatedJobs.map((job) => {
             const { fecha, hora } = fmt(job.startISO);
             const { hora: horaFin } = fmt(job.endISO);
+
+            // Color según estado
             const chipBg =
-              job.status === 'confirmed' ? C.confirmed
-              : job.status === 'pending' ? C.pending
-              : job.status === 'done' ? C.done
-              : C.cancelled;
+              job.status === 'confirmed'
+                ? C.confirmed
+                : job.status === 'pending'
+                ? C.pending
+                : job.status === 'done'
+                ? C.done
+                : C.cancelled;
 
             return (
-              <article 
-                key={job.id} 
-                className="rounded-xl bg-white p-4 transition-all hover:shadow-md"
-                style={{ border: `1px solid ${C.borderMain}40`, borderLeft: `4px solid ${C.borderMain}` }}
+              <article
+                key={job.id}
+                style={{
+                  border: `2.5px solid ${C.borderMain}`,
+                  borderRadius: 8,
+                  background: C.white,
+                  padding: '14px 18px',
+                }}
               >
-                {/* Layout Grid Responsivo */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-center">
-                  
-                  {/* Cliente */}
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-50 rounded-full"><IcoUser /></div>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1.2fr 1fr 1fr auto',
+                    gridTemplateRows: 'auto auto',
+                    columnGap: 16,
+                    rowGap: 6,
+                    alignItems: 'center',
+                  }}
+                >
+                  {/* --- Cliente --- */}
+                  <div
+                    style={{
+                      gridColumn: '1',
+                      gridRow: '1',
+                      display: 'flex',
+                      gap: 8,
+                      alignItems: 'center',
+                    }}
+                  >
+                    <IcoUser />
                     <div>
-                      <span className="text-xs font-bold" style={{ color: C.text }}>CLIENTE</span>
-                      <div className="text-sm font-semibold text-slate-900">{job.clientName}</div>
+                      <span style={{ color: C.text }}>Cliente</span>
+                      <br />
+                      <span style={{ color: '#000' }}>{job.clientName}</span>
                     </div>
                   </div>
 
-                  {/* Fecha y Hora */}
-                  <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-2">
-                        <IcoCalendar size={16} />
-                        <span className="text-sm text-slate-700">{fecha.replaceAll('-', '/')}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <IcoClock size={16} />
-                        <span className="text-sm text-slate-700">{hora.replace(/^0/, '')} - {horaFin.replace(/^0/, '')}</span>
+                  {/* --- Fecha --- */}
+                  <div
+                    style={{
+                      gridColumn: '2',
+                      gridRow: '1',
+                      display: 'flex',
+                      gap: 8,
+                      alignItems: 'center',
+                    }}
+                  >
+                    <IcoCalendar />
+                    <div style={{ transform: 'translateY(3px)' }}>
+                      <span style={{ color: C.text }}>Fecha</span>
+                      <br />
+                      <span style={{ color: '#000' }}>
+                        {fecha.replaceAll('-', '/')}
+                      </span>
                     </div>
                   </div>
 
-                  {/* Servicio y Estado */}
-                  <div className="flex flex-col gap-2">
-                     <div className="flex items-center gap-2">
-                        <IcoBrief size={16} />
-                        <span className="text-sm font-medium text-slate-900">{job.service}</span>
-                     </div>
-                     <span 
-                        className="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-bold w-fit"
-                        style={{ 
-                            background: `${chipBg}20`, // Fondo con transparencia
-                            color: job.status === 'pending' ? '#B45309' : chipBg 
-                        }}
-                     >
-                        {job.status === 'confirmed' ? 'CONFIRMADO'
-                        : job.status === 'pending' ? 'PENDIENTE'
-                        : job.status === 'done' ? 'TERMINADO'
-                        : 'CANCELADO'}
-                     </span>
+                  {/* --- Hora Inicio --- */}
+                  <div
+                    style={{
+                      gridColumn: '3',
+                      gridRow: '1',
+                      display: 'flex',
+                      gap: 8,
+                      alignItems: 'center',
+                    }}
+                  >
+                    <IcoClock />
+                    <div style={{ transform: 'translateY(3px)' }}>
+                      <span style={{ color: C.text }}>Hora Inicio</span>
+                      <br />
+                      <span style={{ color: '#000' }}>
+                        {hora.replace(/^0/, '')}
+                      </span>
+                    </div>
                   </div>
 
-                  {/* Botón Ver Detalles */}
-                  <div className="flex justify-end">
+                  {/* --- Botón Ver Detalles --- */}
+                  <div
+                    style={{
+                      gridColumn: '4',
+                      gridRow: '1 / span 2',
+                      display: 'flex',
+                      justifyContent: 'flex-end',
+                    }}
+                  >
                     <button
-                      onClick={() => router.push(`/epic_VerDetallesAmbos?id=${encodeURIComponent(job.id)}`)}
-                      className="w-full md:w-auto px-4 py-2 rounded-lg text-sm font-bold text-white transition-transform active:scale-95"
-                      style={{ background: C.confirmed }}
+                      onClick={() => handleVerDetalles(job)}
+                      style={{
+                        padding: '8px 14px',
+                        minWidth: 110,
+                        height: 36,
+                        borderRadius: 8,
+                        background: C.confirmed,
+                        color: C.white,
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontWeight: 700,
+                        fontSize: 14,
+                      }}
                     >
                       Ver Detalles
                     </button>
                   </div>
 
+                  {/* --- Estado (chip sólido, igual que Cliente) --- */}
+                  <div style={{ gridColumn: '1', gridRow: '2' }}>
+                    <div
+                      style={{
+                        display: 'inline-block',
+                        padding: '8px 16px',
+                        borderRadius: 12,
+                        background: chipBg,
+                        color:
+                          job.status === 'pending' ? '#000000' : C.white,
+                        fontWeight: 700,
+                        fontSize: 13,
+                      }}
+                    >
+                      {job.status === 'confirmed'
+                        ? 'Confirmado'
+                        : job.status === 'pending'
+                        ? 'Pendiente'
+                        : job.status === 'done'
+                        ? 'Terminado'
+                        : 'Cancelado'}
+                    </div>
+                  </div>
+
+                  {/* --- Servicio --- */}
+                  <div
+                    style={{
+                      gridColumn: '2',
+                      gridRow: '2',
+                      display: 'flex',
+                      gap: 8,
+                      alignItems: 'center',
+                    }}
+                  >
+                    <IcoBrief />
+                    <div>
+                      <span style={{ color: C.text }}>Servicio</span>
+                      <br />
+                      <span style={{ color: '#000' }}>{job.service}</span>
+                    </div>
+                  </div>
+
+                  {/* --- Hora Fin --- */}
+                  <div
+                    style={{
+                      gridColumn: '3',
+                      gridRow: '2',
+                      display: 'flex',
+                      gap: 8,
+                      alignItems: 'center',
+                    }}
+                  >
+                    <IcoClock />
+                    <div>
+                      <span style={{ color: C.text }}>Hora Fin</span>
+                      <br />
+                      <span style={{ color: '#000' }}>
+                        {horaFin.replace(/^0/, '')}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </article>
             );
           })}
         </div>
-      )}
 
-      {/* FOOTER: Paginación */}
-      {totalPages > 1 && (
-        <div className="flex justify-between items-center mt-6 pt-4 border-t border-slate-100">
-           <span className="text-sm text-slate-500">
-             Página <span className="font-bold text-slate-900">{currentPage}</span> de {totalPages}
-           </span>
-           
-           <div className="flex gap-2">
+        {/* --- Footer: paginación (similar a Cliente) --- */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginTop: 20,
+            width: 660,
+          }}
+        >
+          <span
+            style={{
+              color: C.text,
+              fontSize: 16,
+              fontWeight: 500,
+            }}
+          >
+            Página {currentPage} de {totalPages || 1}
+          </span>
+
+          {totalPages > 1 && (
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                alignItems: 'center',
+                gap: 10,
+              }}
+            >
               <button
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                onClick={() =>
+                  setCurrentPage((prev) => Math.max(prev - 1, 1))
+                }
                 disabled={currentPage === 1}
-                className="px-3 py-1.5 rounded border border-slate-200 text-sm hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{
+                  padding: '10px 15px',
+                  borderRadius: 5,
+                  border: '1px solid #ddd',
+                  background: C.white,
+                  color: C.text,
+                  cursor:
+                    currentPage === 1 ? 'not-allowed' : 'pointer',
+                  opacity: currentPage === 1 ? 0.6 : 1,
+                }}
               >
                 Anterior
               </button>
+
               <button
-                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                onClick={() =>
+                  setCurrentPage((prev) =>
+                    Math.min(prev + 1, totalPages),
+                  )
+                }
                 disabled={currentPage === totalPages}
-                className="px-3 py-1.5 rounded border border-slate-200 text-sm hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{
+                  padding: '10px 15px',
+                  borderRadius: 5,
+                  border: '1px solid #ddd',
+                  background: C.white,
+                  color: C.text,
+                  cursor:
+                    currentPage === totalPages
+                      ? 'not-allowed'
+                      : 'pointer',
+                  opacity: currentPage === totalPages ? 0.6 : 1,
+                }}
               >
                 Siguiente
               </button>
-           </div>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
 
-
-/* --- Componente de Tabs (Adaptado a width 100%) --- */
+/* --- Tabs (replicando el estilo de la vista Cliente) --- */
 interface TabsProps {
   tab: TabKey;
   setTab: (tab: TabKey) => void;
@@ -258,42 +572,69 @@ interface TabsProps {
   counts: Record<JobStatus, number>;
 }
 
-function TabsComponent({ tab, setTab, counts, setCurrentPage }: TabsProps) {
-  const tabs: TabKey[] = ['all', 'confirmed', 'pending', 'cancelled', 'done'];
-  
+function TabsComponent({
+  tab,
+  setTab,
+  counts,
+  setCurrentPage,
+}: TabsProps) {
   return (
-    <div className="flex flex-wrap gap-2 w-full">
-      {tabs.map((k) => {
-        const active = tab === k;
-        const badge = k === 'all'
-          ? (counts.confirmed + counts.pending + counts.cancelled + counts.done) 
-          : counts[k];
+    <div
+      style={{
+        display: 'flex',
+        gap: 12,
+        marginBottom: 14,
+        width: 660,
+      }}
+    >
+      {(['all', 'confirmed', 'pending', 'cancelled', 'done'] as TabKey[]).map(
+        (k) => {
+          const active = tab === k;
+          const badge =
+            k === 'all'
+              ? counts.confirmed +
+                counts.pending +
+                counts.cancelled +
+                counts.done
+              : counts[k];
 
-        return (
-          <button 
-            key={k} 
-            onClick={() => { setTab(k); setCurrentPage(1); }} 
-            className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all"
-            style={{ 
-              border: `1px solid ${active ? C.active : '#E2E8F0'}`, 
-              background: active ? C.active : C.white,
-              color: active ? C.white : '#64748B',
-              flex: '1 0 auto' // Esto hace que los tabs se distribuyan bien
-            }}
-          >
-            <span>
-                {k === 'all' ? 'Todos' 
-                : k === 'confirmed' ? 'Confirmados' 
-                : k === 'pending' ? 'Pendientes' 
-                : k === 'cancelled' ? 'Cancelados' 
-                : 'Terminados'}
-            </span>
-            <span className={`text-xs px-1.5 py-0.5 rounded-full ${active ? 'bg-white/20' : 'bg-slate-100 text-slate-600'}`}>
-                {badge}
-            </span>
-          </button>
-        );
-      })}
+          const baseBtn: CSSProperties = {
+            borderRadius: 8,
+            border: `2px solid ${C.borderBtn}`,
+            background: active ? C.active : C.white,
+            color: active ? C.white : C.text,
+            fontSize: 16,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+            cursor: 'pointer',
+            padding: '8px 12px',
+            flex: '1 0 auto',
+          };
+
+          return (
+            <button
+              key={k}
+              onClick={() => {
+                setTab(k);
+                setCurrentPage(1);
+              }}
+              style={baseBtn}
+            >
+              {k === 'all'
+                ? `Todos (${badge})`
+                : k === 'confirmed'
+                ? `Confirmados (${badge})`
+                : k === 'pending'
+                ? `Pendientes (${badge})`
+                : k === 'cancelled'
+                ? `Cancelados (${badge})`
+                : `Terminados (${badge})`}
+            </button>
+          );
+        },
+      )}
     </div>
   );
 }

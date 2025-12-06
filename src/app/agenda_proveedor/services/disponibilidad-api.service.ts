@@ -1,7 +1,7 @@
 // src/app/agenda_proveedor/services/disponibilidad-api.service.ts
 
-const API_BASE_URL = 'http://localhost:5000/api/los_vengadores/calendario-disponibilidad';
-
+//const API_BASE_URL = 'http://localhost:5000/api/los_vengadores/calendario-disponibilidad';
+const API_BASE_URL = 'https://back-segundosprint-1.onrender.com/api/los_vengadores/calendario-disponibilidad';
 export interface HorarioAPI {
   horaInicio: string;
   horaFin: string;
