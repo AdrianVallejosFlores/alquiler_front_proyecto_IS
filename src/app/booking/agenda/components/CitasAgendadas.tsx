@@ -1,104 +1,97 @@
-"use client";
+'use client';
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AppointmentModal from "./appointment-modal";
+import { useClientSession } from "@/lib/auth/useSession";
 
 interface Cita {
   _id: string;
   fecha: string;
-  horario: {
-    inicio: string;
-    fin: string;
-  };
+  horario: { inicio: string; fin: string };
   estado: string;
-  servicioId: {
-    _id: string;
-    nombre: string;
-    duracion?: number;
-  } | null;
-  proveedorId: {
-    _id: string;
-    nombre: string;
-  } | null;
+  servicioId: { _id: string; nombre: string; duracion?: number } | null;
+  proveedorId: { _id: string; nombre: string } | null;
   ubicacion?: any;
   clienteId?: string;
 }
 
 const CitasAgendadas = () => {
   const router = useRouter();
-  const [citas, setCitas] = useState<Cita[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  // cliente fijo en tu código original
-  const clienteId = "6927e784567c50dddae45310";
+  // Hooks siempre al inicio
+  const [citas, setCitas] = useState<Cita[]>([]);
+  const [loadingCitas, setLoadingCitas] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedCita, setSelectedCita] = useState<Cita | null>(null);
+
+  // Sesión
+  const { user, token, loading } = useClientSession();
+
+  // Depuración
+  useEffect(() => {
+    console.log("🔹 Sesión cargando:", loading);
+    console.log("🔹 Usuario:", user);
+    console.log("🔹 Token:", token);
+  }, [user, token, loading]);
+
+  const clienteId = user?._id ?? ""; // usar optional chaining
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
+  // Fetch citas
   const fetchCitas = async () => {
-    setLoading(true);
+    if (!clienteId || !token) return; // prevenir llamadas antes de tener sesión
+
+    setLoadingCitas(true);
     setError(null);
+
     try {
-      const res = await fetch(`${API_BASE}/api/devcode/citas/cliente/${clienteId}`);
+      const res = await fetch(`${API_BASE}/api/devcode/citas/cliente/${clienteId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
       if (!res.ok) throw new Error("Error al obtener citas");
 
       const json = await res.json();
-
       if (!json.success) throw new Error(json.error || "Error al obtener citas");
 
-      setCitas(json.data); // ✅ aquí citas es un array
+      console.log("🔹 Citas obtenidas:", json.data);
+      setCitas(json.data);
     } catch (err: any) {
       setError(err.message || "Error desconocido");
     } finally {
-      setLoading(false);
+      setLoadingCitas(false);
     }
   };
 
-
   useEffect(() => {
     fetchCitas();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Estado para editar
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedCita, setSelectedCita] = useState<Cita | null>(null);
+  }, [clienteId, token]);
 
   const handleEditar = (cita: Cita) => {
     setSelectedCita(cita);
     setModalOpen(true);
   };
 
-  // Mapea la cita al formato que espera appointment-modal (InitialAppointment)
   const mapToInitial = (cita: Cita | null) => {
     if (!cita) return null;
     return {
       id: cita._id,
       fecha: cita.fecha,
-      horario: {
-        inicio: cita.horario?.inicio ?? "",
-        fin: cita.horario?.fin ?? "",
-      },
+      horario: { inicio: cita.horario.inicio, fin: cita.horario.fin },
       ubicacion: cita.ubicacion ?? null,
-      patientName: cita.proveedorId?.nombre ?? "",
+      patientName: cita.proveedorId?.nombre ?? "Proveedor",
     };
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-gray-600">
-        Cargando tus citas...
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-red-600">
-        {error}
-      </div>
-    );
-  }
+  // ====================================================
+  // Render
+  // ====================================================
+  if (loading) return <div>Cargando sesión...</div>;
+  if (!user) return <div>No estás autenticado.</div>;
+  if (loadingCitas) return <div>Cargando tus citas...</div>;
+  if (error) return <div className="text-red-600">{error}</div>;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 text-gray-900 py-8">
@@ -130,16 +123,21 @@ const CitasAgendadas = () => {
               <h3 className="text-lg font-semibold">
                 {cita.servicioId?.nombre || "Servicio no especificado"}
               </h3>
+
               <p className="text-gray-600 text-sm">
                 {cita.proveedorId?.nombre || "Proveedor no disponible"}
               </p>
+
               <p className="text-gray-700 text-sm">Fecha: {cita.fecha}</p>
+
               <p className="text-gray-700 text-sm">
                 Hora: {cita.horario.inicio} - {cita.horario.fin}
               </p>
+
               <p className="text-gray-600 text-xs capitalize">
                 Estado: {cita.estado}
               </p>
+
               <div className="mt-4 flex justify-end">
                 <button
                   onClick={() => handleEditar(cita)}
@@ -164,13 +162,9 @@ const CitasAgendadas = () => {
             }
           }}
           patientName={selectedCita?.proveedorId?.nombre ?? "Proveedor"}
-
-          // ⬇️ HARD CODE AQUÍ
-          providerId="6927e823567c50dddae45313"
-
+          providerId={selectedCita?.proveedorId?._id ?? ""}
           servicioId={selectedCita?.servicioId?._id ?? ""}
           clienteId={selectedCita?.clienteId ?? clienteId}
-
           initialAppointment={mapToInitial(selectedCita)}
           isEditing={true}
           appointmentId={selectedCita?._id}
