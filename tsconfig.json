@@ -21,8 +21,7 @@
       {
         "name": "next"
       }
-    ],
-    "baseUrl": ".", // Añadido: Define la base para las rutas relativas.
+    ],// Añadido: Define la base para las rutas relativas.
     "paths": {
       // Existente
       "@/*": [
