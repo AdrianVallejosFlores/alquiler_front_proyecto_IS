@@ -9,6 +9,7 @@ import { getStoredUser } from '@/lib/auth/session';
 type Props = {
   offer: Offer;
   onOpen: (offer: Offer) => void;
+  onOpenPromotions: (offer: Offer) => void;
 };
 
 const clamp = (text: string | undefined | null, max = 100) => {
@@ -16,7 +17,7 @@ const clamp = (text: string | undefined | null, max = 100) => {
   return t.length > max ? t.slice(0, max - 1) + '…' : t;
 };
 
-export default function OfferCard({ offer, onOpen }: Props) {
+export default function OfferCard({ offer, onOpen, onOpenPromotions }: Props) {
   const isInactive = offer.status === 'inactive';
   
   // 1. Usamos el contexto para saber si tiene saldo
@@ -90,6 +91,7 @@ export default function OfferCard({ offer, onOpen }: Props) {
         </p>
 
         <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', color: '#616E8A' }}>
+          
           <span>
             <strong style={{ color: '#1366fd' }}>Categoría: </strong>
             {offer.category}
@@ -101,47 +103,46 @@ export default function OfferCard({ offer, onOpen }: Props) {
           {renderSensitiveInfo('Email', offer.contact?.email)}
         </div>
       </div>
+           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+           <button
+           type="button"
+          onClick={() => onOpenPromotions(offer)}
+    className="btn-outline"
+    style={{
+      cursor: 'pointer',
+      padding: '8px 12px',
+      borderRadius: 8,
+      border: '1px solid #DBDEE5',
+      background: '#F0F2F5',
+      color: '#0c4fe9',
+      fontWeight: 600,
+      whiteSpace: 'nowrap',
+    }}
+    aria-label={`Ver promociones de ${offer.title}`}
+  >
+    Ver Promociones
+  </button>
 
-      <div style={{ display: 'flex', alignItems: 'center' }}>
-        {hasBalance ? (
-          // CASO 1: TIENE SALDO -> Botón Normal
-          <button
-            type="button"
-            onClick={() => onOpen(offer)}
-            className="btn-outline"
-            style={{
-              cursor: 'pointer',
-              padding: '8px 12px',
-              borderRadius: 8,
-              border: '1px solid #DBDEE5',
-              background: '#F0F2F5',
-              color: '#0c4fe9',
-              fontWeight: 600,
-            }}
-          >
-            Ver oferta
-          </button>
-        ) : (
-          // CASO 2: NO TIENE SALDO -> Botón de Recarga
-          <button
-            type="button"
-            onClick={handleNoBalanceClick}
-            style={{
-              cursor: 'pointer',
-              padding: '8px 12px',
-              borderRadius: 8,
-              border: '1px solid #fee2e2',
-              background: '#fef2f2',
-              color: '#dc2626',
-              fontWeight: 600,
-              fontSize: '13px'
-            }}
-            title="Necesitas saldo positivo para ver los detalles"
-          >
-            {isLoading ? 'Verificando...' : 'Saldo Insuficiente'}
-          </button>
-        )}
-      </div>
+  <button
+    type="button"
+    onClick={() => onOpen(offer)}
+    className="btn-outline"
+    style={{
+      cursor: 'pointer',
+      padding: '8px 12px',
+      borderRadius: 8,
+      border: '1px solid #DBDEE5',
+      background: '#F0F2F5',
+      color: '#0c4fe9',
+      fontWeight: 600,
+      whiteSpace: 'nowrap',
+    }}
+    aria-label={`Ver oferta ${offer.title}`}
+  >
+    Ver oferta
+  </button>
+
+ </div>
     </div>
   );
 }
