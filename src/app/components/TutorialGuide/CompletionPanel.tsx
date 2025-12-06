@@ -1,6 +1,6 @@
-'use client';
+'use client'; 
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 
 interface CompletionPanelProps {
   onRestart: () => void;
@@ -8,13 +8,69 @@ interface CompletionPanelProps {
 }
 
 const CompletionPanel: React.FC<CompletionPanelProps> = ({ onRestart, onClose }) => {
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  // Focus trap - mantener Tab dentro del panel
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+
+      if (!panelRef.current) return;
+
+      // Obtener todos los elementos focusables dentro del panel
+      const focusableElements = panelRef.current.querySelectorAll(
+        'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      const focusableArray = Array.from(focusableElements) as HTMLElement[];
+
+      if (focusableArray.length === 0) return;
+
+      const firstElement = focusableArray[0];
+      const lastElement = focusableArray[focusableArray.length - 1];
+      const activeElement = document.activeElement as HTMLElement;
+
+      if (e.shiftKey) {
+        // Shift + Tab
+        if (activeElement === firstElement) {
+          e.preventDefault();
+          lastElement.focus();
+        }
+      } else {
+        // Tab
+        if (activeElement === lastElement) {
+          e.preventDefault();
+          firstElement.focus();
+        }
+      }
+    };
+
+    const currentPanel = panelRef.current;
+    if (currentPanel) {
+      currentPanel.addEventListener('keydown', handleKeyDown);
+      // Asegurar que el contenedor pueda recibir foco y posicionar el foco dentro
+      currentPanel.setAttribute('tabindex', '-1');
+      currentPanel.focus();
+      const firstButton = currentPanel.querySelector('button');
+      if (firstButton) {
+        setTimeout(() => (firstButton as HTMLButtonElement).focus(), 0);
+      }
+    }
+
+    return () => {
+      if (currentPanel) {
+        currentPanel.removeEventListener('keydown', handleKeyDown);
+      }
+    };
+  }, []);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div ref={panelRef} className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300 scale-100">
+        
         {/* Header */}
         <div className="bg-linear-to-r from-green-500 to-emerald-600 p-6 rounded-t-2xl text-center">
           <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-4xl">🎉</span>
+            <span className="text-4xl"></span>
           </div>
           <h2 className="text-2xl font-bold text-white mb-2">¡Tutorial Completado!</h2>
           <p className="text-green-100">Ya conoces las funciones principales de SERVINEO</p>
@@ -45,10 +101,15 @@ const CompletionPanel: React.FC<CompletionPanelProps> = ({ onRestart, onClose })
               onClick={onRestart}
               className="w-full bg-linear-to-r from-[#52abff] to-[#11255a] text-white py-3 px-4 rounded-lg font-semibold hover:from-[#3a9cff] hover:to-[#0e1f4d] transition-all duration-200 transform hover:scale-105"
             >
-              🔄 Ver de Nuevo
+               Ver de Nuevo
             </button>
+
+            {/* 🔥 Botón corregido */}
             <button
-              onClick={onClose}
+              onClick={() => {
+                onClose(); 
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
               className="w-full border border-gray-300 text-gray-600 py-3 px-4 rounded-lg font-medium hover:bg-gray-50 transition-all duration-200"
             >
               Volver al Inicio

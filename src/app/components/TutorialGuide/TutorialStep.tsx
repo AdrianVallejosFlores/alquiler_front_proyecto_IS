@@ -22,6 +22,7 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
 }) => {
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const stepRef = useRef<HTMLDivElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const updatePosition = () => {
@@ -85,17 +86,73 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
     }
   }, [step.targetElement]);
 
+  // Focus trap - mantener Tab dentro del tooltip
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+
+      if (!tooltipRef.current) return;
+
+      // Obtener todos los elementos focusables dentro del tooltip
+      const focusableElements = tooltipRef.current.querySelectorAll(
+        'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      const focusableArray = Array.from(focusableElements) as HTMLElement[];
+
+      if (focusableArray.length === 0) return;
+
+      const firstElement = focusableArray[0];
+      const lastElement = focusableArray[focusableArray.length - 1];
+      const activeElement = document.activeElement as HTMLElement;
+
+      if (e.shiftKey) {
+        // Shift + Tab - moverse hacia atras
+        if (activeElement === firstElement) {
+          e.preventDefault();
+          lastElement.focus();
+        }
+      } else {
+        // Tab - moverse hacia adelante
+        if (activeElement === lastElement) {
+          e.preventDefault();
+          firstElement.focus();
+        }
+      }
+    };
+
+    // Solo agregar listener cuando el tooltip este montado
+    const currentTooltip = tooltipRef.current;
+    if (currentTooltip) {
+      currentTooltip.addEventListener('keydown', handleKeyDown);
+      // Asegurar que el contenedor pueda recibir foco y enfocarlo primero
+      currentTooltip.setAttribute('tabindex', '-1');
+      currentTooltip.focus();
+      // Luego enfocar el primer botón disponible dentro del tooltip
+      const firstButton = currentTooltip.querySelector('button');
+      if (firstButton) {
+        setTimeout(() => (firstButton as HTMLElement).focus(), 0);
+      }
+    }
+
+    return () => {
+      if (currentTooltip) {
+        currentTooltip.removeEventListener('keydown', handleKeyDown);
+      }
+    };
+  }, [currentStep]);
+
   return (
     <>
       {/* Tooltip del paso */}
       <div
-        ref={stepRef}
+        ref={tooltipRef}
         className="fixed z-60 bg-white rounded-xl shadow-2xl border border-blue-100 max-w-sm w-full transform transition-all duration-300"
         style={{
           top: `${position.top}px`,
           left: `${position.left}px`
         }}
       >
+        <div ref={stepRef}>
         {/* Header */}
         <div className="bg-linear-to-r from-[#11255a] to-[#52abff] p-4 rounded-t-xl">
           <div className="flex items-center justify-between">
@@ -132,7 +189,7 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
               onClick={onNext}
               className="px-4 py-2 bg-linear-to-r from-[#52abff] to-[#11255a] text-white rounded-lg font-medium hover:from-[#3a9cff] hover:to-[#0e1f4d] transition-all duration-200 transform hover:scale-105"
             >
-              {currentStep === totalSteps - 1 ? 'Finalizar 🎉' : 'Siguiente →'}
+              {currentStep === totalSteps - 1 ? 'Finalizar ' : 'Siguiente →'}
             </button>
           </div>
           
@@ -142,6 +199,7 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
           >
             Saltar
           </button>
+        </div>
         </div>
       </div>
     </>
