@@ -2,9 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { CalendarDays, Clock, User, MapPin, FileText } from "lucide-react";
-import Sidebar from "../agenda/components/Sidebar";
+import Sidebar from "../booking/agenda/components/Sidebar";
 import EditAppointmentModal from "../worker/citas/components/CancelReprogramModal";
-import ModalConfirmacion from "../agenda/components/ModalConfirmacion";
+import ModalConfirmacion from "../booking/agenda/components/ModalConfirmacion";
 
 interface Cita {
   _id: string;

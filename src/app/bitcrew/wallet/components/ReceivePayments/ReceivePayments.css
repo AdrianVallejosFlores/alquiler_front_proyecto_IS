@@ -1,0 +1,118 @@
+.receive-payment-container {
+  background: white;
+  min-height: 400px;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  max-width: 450px;
+  margin: 0 auto;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+/* Header */
+.header-nav {
+  display: flex;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+.header-nav h2 {
+  flex: 1;
+  text-align: center;
+  margin: 0;
+  font-size: 1.25rem;
+  color: #2d3748;
+}
+.back-link, .close-button {
+  background: none;
+  border: none;
+  color: #718096;
+  cursor: pointer;
+  font-weight: 500;
+  padding: 0;
+}
+
+.close-button {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  font-size: 1rem;
+}
+
+/* Inputs */
+.form-content label {
+  display: block;
+  color: #4a5568;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.input-group {
+  display: flex;
+  align-items: center;
+  border: 2px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 0.5rem 1rem;
+  margin-bottom: 1.5rem;
+  transition: border-color 0.2s;
+}
+.input-group:focus-within {
+  border-color: #3182ce;
+}
+
+.currency-symbol {
+  font-size: 1.5rem;
+  color: #718096;
+  font-weight: 600;
+  margin-right: 0.5rem;
+}
+
+.input-group input {
+  border: none;
+  font-size: 1.5rem;
+  width: 100%;
+  font-weight: 600;
+  color: #1a202c;
+  outline: none;
+}
+
+/* Botones */
+.primary-button {
+  width: 100%;
+  background-color: #3182ce;
+  color: white;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  font-weight: 700;
+  font-size: 1rem;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.primary-button:hover {
+  background-color: #2b6cb0;
+}
+.primary-button:disabled {
+  background-color: #cbd5e0;
+  cursor: not-allowed;
+}
+
+.secondary-button {
+  width: 100%;
+  background: white;
+  color: #3182ce;
+  border: 2px solid #3182ce;
+  padding: 0.75rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  margin-top: 1rem;
+  cursor: pointer;
+}
+
+.error-msg {
+  color: #e53e3e;
+  background-color: #fff5f5;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}

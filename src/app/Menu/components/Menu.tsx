@@ -11,6 +11,7 @@ import PaginaMetodosAutenticacion from "../../metodosAutenticacion/metodosAuten/
 import { MessageSeguridad } from "./messageSeguridad";
 import { MensajeCerrarSesion } from "./mensajeCerrarSesion";
 import SesionesDispositivos from "./sesiones-dispositivos"; // <-- NUEVO: import
+import { fetchTrabajosProveedor } from "@/app/epic_VisualizadorDeTrabajosAgendadosVistaProveedor/services/api";
 
 export default function SimpleProfileMenu() {
   const [showCerrarSesionMessage, setShowCerrarSesionMessage] = useState(false);
@@ -23,54 +24,55 @@ export default function SimpleProfileMenu() {
   const [showSubMenu, setShowSubMenu] = useState(false);
   const [showSesionesDispositivos, setShowSesionesDispositivos] = useState(false);
 
+  const [loadingWallet, setLoadingWallet] = useState(false);
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+  const getToken = () => {
+    return (
+      localStorage.getItem("authToken") ||
+      sessionStorage.getItem("authToken") ||
+      null
+    );
+  };
+
   const [user, setUser] = useState<{
     id: string;
     nombre: string;
     correo: string;
     fotoPerfil: string;
     telefono: string;
+    fixerId?: string;
   } | null>(null);
 
   const router = useRouter();
 
-  // 🔴 Cerrar sesión: limpia storage y muestra mensaje de salida
-  // (mantengo tu comportamiento original: limpia y activa el modal)
   const handleLogout = () => {
     localStorage.removeItem("authToken");
     sessionStorage.removeItem("authToken");
     localStorage.removeItem("userData");
     sessionStorage.removeItem("userData");
-
     setShowMensajeCerrarSesion(true);
   };
 
-  // ✅ Handlers que usará MensajeCerrarSesion (onContinue / onCancel)
   const handleConfirmLogout = () => {
-    // Realizar logout inmediato (igual que la lógica del useEffect original)
     const eventLogout = new CustomEvent("logout-exitoso");
     window.dispatchEvent(eventLogout);
-
     setShowMensajeCerrarSesion(false);
     router.push("/");
   };
 
   const handleCancelLogout = () => {
-    // Solo cerrar el modal (el useEffect tiene cleanup si había timer)
     setShowMensajeCerrarSesion(false);
   };
 
-  // ⏳ Cuando se muestra el mensaje de cierre, esperamos 2s, emitimos evento y redirigimos
-  // (mantengo este efecto porque estaba en tu código original)
   useEffect(() => {
     if (showMensajeCerrarSesion) {
       const timer = setTimeout(() => {
         const eventLogout = new CustomEvent("logout-exitoso");
         window.dispatchEvent(eventLogout);
-
         setShowMensajeCerrarSesion(false);
         router.push("/");
       }, 2000);
-
       return () => clearTimeout(timer);
     }
   }, [showMensajeCerrarSesion, router]);
@@ -82,7 +84,7 @@ export default function SimpleProfileMenu() {
   const handleCambiarTelefonoClick = () => setShowCambiarTelefono(true);
   const handleCerrarCambiarTelefono = () => setShowCambiarTelefono(false);
 
-  const toggleSubMenu = () => setShowSubMenu(prev => !prev);
+  const toggleSubMenu = () => setShowSubMenu((prev) => !prev);
 
   const handleCambiarContrasenaClick = () => setShowCambiarContrasena(true);
   const handleCerrarCambiarContrasena = () => setShowCambiarContrasena(false);
@@ -93,14 +95,72 @@ export default function SimpleProfileMenu() {
   const handleMetodosAutenticacionClick = () => setShowMetodosAutenticacion(true);
   const handleCerrarMetodosAutenticacion = () => setShowMetodosAutenticacion(false);
 
-  // --- NUEVO: abrir Sesiones y dispositivos
   const handleSesionesDispositivosClick = () => {
     setShowSesionesDispositivos(true);
   };
 
+  const handleWalletAccess = async () => {
+    if (loadingWallet) return;
+
+    const fixerId = user?.fixerId;
+
+    if (!fixerId) {
+      console.warn(
+        "Fixer ID no disponible en el estado. Intentando recargar..."
+      );
+      const stored =
+        sessionStorage.getItem("userData") || localStorage.getItem("userData");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        const idRescate = parsed.fixerId || parsed.id || parsed._id;
+        if (idRescate) {
+          router.push(`/bitcrew/wallet?fixer_id=${idRescate}`);
+          return;
+        }
+      }
+      console.warn("No se pudo recuperar Fixer ID. Redirigiendo a login.");
+      router.push("/login");
+      return;
+    }
+
+    setLoadingWallet(true);
+
+    try {
+      const token = getToken();
+      if (!token) {
+        router.push("/login");
+        return;
+      }
+
+      const response = await fetch(
+        `${API_URL}/api/bitcrew/wallet/fixer/${fixerId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        router.push(`/bitcrew/wallet?fixer_id=${fixerId}`);
+      } else {
+        console.error("Error al obtener billetera:", data.message);
+      }
+    } catch (error) {
+      console.error("Error de conexión:", error);
+    } finally {
+      setLoadingWallet(false);
+    }
+  };
+
   useEffect(() => {
-    // Obtener usuario desde sessionStorage
-    const storedUser = sessionStorage.getItem("userData")|| localStorage.getItem("userData");
+    // Leer de ambos storages
+    const storedUser =
+      sessionStorage.getItem("userData") || localStorage.getItem("userData");
     if (!storedUser) return;
 
     try {
@@ -114,16 +174,16 @@ export default function SimpleProfileMenu() {
           "Usuario",
         correo: parsed.correo || parsed.email || "correo@desconocido.com",
         fotoPerfil: `${parsed.fotoPerfil}` || "/default-avatar.png",
-        telefono: parsed.telefono || ""
+        telefono: parsed.telefono || "",
+        fixerId: parsed.fixerId || parsed.id || parsed._id,
       });
     } catch (error) {
-      console.error("Error al leer userData del sessionStorage:", error);
+      console.error("Error al leer userData del storage:", error);
     }
   }, []);
 
   return (
     <div className="relative w-full min-w-[220px] sm:min-w-[260px] lg:min-w-[300px] max-w-sm bg-white rounded-3xl shadow-lg border border-gray-200 p-5 sm:p-6 lg:p-6">
-
       {/* Datos del usuario */}
       <div className="flex items-center mb-4">
         <Image
@@ -163,6 +223,51 @@ export default function SimpleProfileMenu() {
         Gestionar Citas
       </button>
 
+      <button
+        onClick={handleWalletAccess}
+        disabled={loadingWallet}
+        className="text-base sm:text-base font-semibold text-gray-800 hover:bg-gray-100 rounded-2xl px-4 py-3 w-full text-left transition duration-150 disabled:opacity-50"
+      >
+        {loadingWallet ? "Cargando Billetera..." : "Mi Billetera"}
+      </button>
+
+      <button
+        onClick={() => {
+          // Buscamos en ambos storages
+          const storedUser =
+            sessionStorage.getItem("userData") ||
+            localStorage.getItem("userData");
+          if (!storedUser) {
+            console.error("No hay datos de usuario en storage");
+            return;
+          }
+
+          try {
+            const parsed = JSON.parse(storedUser);
+
+            const fixerId = parsed.fixerId || parsed.id || parsed._id;
+
+            if (fixerId) {
+              router.push(`/fixers/${fixerId}#seccion-trabajos`);
+            } else {
+              console.error("No se encontró fixerId en userData");
+            }
+          } catch {
+            console.error("Error leyendo userData");
+          }
+        }}
+        className="text-base sm:text-base font-semibold text-gray-800 hover:bg-gray-100 rounded-2xl px-4 py-3 w-full text-left transition duration-150"
+      >
+        Trabajos Agendados
+      </button>
+
+      <button
+        onClick={() => router.push("/agenda_proveedor")}
+        className="text-base sm:text-base font-semibold text-gray-800 hover:bg-gray-100 rounded-2xl px-4 py-3 w-full text-left transition duration-150"
+      >
+        Agendar tu Servicio
+      </button>
+
       {/* Botón Configuración */}
       <button
         onClick={toggleSubMenu}
@@ -173,9 +278,10 @@ export default function SimpleProfileMenu() {
 
       {/* Submenú */}
       {showSubMenu && (
-        <div className="flex flex-col space-y-3 pl-4 mt-3 border-l-2 border-gray-200
-                        max-h-[60vh] sm:max-h-[50vh] md:max-h-[40vh] overflow-y-auto">
-          {/* Cambiar contraseña */}
+        <div
+          className="flex flex-col space-y-3 pl-4 mt-3 border-l-2 border-gray-200
+                        max-h-[60vh] sm:max-h-[50vh] md:max-h-[40vh] overflow-y-auto"
+        >
           <button
             onClick={handleCambiarContrasenaClick}
             className="text-base sm:text-base font-semibold text-gray-800 hover:bg-gray-100 rounded-2xl px-4 py-3 text-left"
@@ -183,7 +289,6 @@ export default function SimpleProfileMenu() {
             Cambiar contraseña
           </button>
 
-          {/* Cambiar teléfono */}
           <button
             onClick={handleCambiarTelefonoClick}
             className="text-base sm:text-base font-semibold text-gray-800 hover:bg-gray-100 rounded-2xl px-4 py-3 text-left"
@@ -191,7 +296,6 @@ export default function SimpleProfileMenu() {
             Cambiar teléfono
           </button>
 
-          {/* Actualizar ubicación */}
           <button
             onClick={handleActualizarUbicacionClick}
             className="text-base sm:text-base font-semibold text-gray-800 hover:bg-gray-100 rounded-2xl px-4 py-3 text-left"
@@ -199,7 +303,6 @@ export default function SimpleProfileMenu() {
             Actualizar ubicación
           </button>
 
-          {/* Métodos de autenticación */}
           <button
             onClick={handleMetodosAutenticacionClick}
             className="text-base sm:text-base font-semibold text-gray-800 hover:bg-gray-100 rounded-2xl px-4 py-3 text-left"
@@ -207,7 +310,6 @@ export default function SimpleProfileMenu() {
             Métodos de autenticación
           </button>
 
-          {/* Seguridad */}
           <button
             onClick={() => setShowMessageSeguridad(true)}
             className="text-base sm:text-base font-semibold text-gray-800 hover:bg-gray-100 rounded-2xl px-4 py-3 text-left"
@@ -215,7 +317,6 @@ export default function SimpleProfileMenu() {
             Seguridad
           </button>
 
-          {/* --- NUEVO: Sesiones y dispositivos --- */}
           <button
             onClick={handleSesionesDispositivosClick}
             className="text-base sm:text-base font-semibold text-gray-800 hover:bg-gray-100 rounded-2xl px-4 py-3 text-left"
@@ -223,7 +324,6 @@ export default function SimpleProfileMenu() {
             Sesiones y dispositivos
           </button>
 
-          {/* Cerrar sesiones */}
           <button
             onClick={handleCerrarSesionesClick}
             className="text-base sm:text-base font-semibold text-gray-800 hover:bg-gray-100 rounded-2xl px-4 py-3 text-left mt-2"
@@ -259,16 +359,13 @@ export default function SimpleProfileMenu() {
       )}
 
       {showActualizarUbicacion && (
-        <ActualizarUbicacion
-          onClose={handleCerrarActualizarUbicacion}
-        />
+        <ActualizarUbicacion onClose={handleCerrarActualizarUbicacion} />
       )}
 
       {showMessageSeguridad && (
         <MessageSeguridad onClose={() => setShowMessageSeguridad(false)} />
       )}
 
-      {/* ------------- CORRECCIÓN: pasar las props que espera MensajeCerrarSesion ------------- */}
       {showMensajeCerrarSesion && (
         <MensajeCerrarSesion
           onContinue={handleConfirmLogout}
@@ -310,7 +407,7 @@ export default function SimpleProfileMenu() {
         </div>
       )}
 
-      {/* --- NUEVO: overlay para Sesiones y dispositivos --- */}
+      {/* Overlay Sesiones y dispositivos */}
       {showSesionesDispositivos && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
           <div className="relative w-full max-w-6xl max-h-[95vh] overflow-y-auto rounded-[40px]">
@@ -319,7 +416,20 @@ export default function SimpleProfileMenu() {
               onClick={() => setShowSesionesDispositivos(false)}
               className="absolute right-6 top-6 z-10 bg-white rounded-full w-9 h-9 flex items-center justify-center text-gray-700 shadow-md hover:bg-gray-100"
             >
-            
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
             </button>
 
             {/* Contenido de sesiones y dispositivos */}

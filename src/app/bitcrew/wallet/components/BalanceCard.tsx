@@ -3,12 +3,8 @@ import { BalanceCardProps } from "../types";
 import { EyeIcon, EyeSlashIcon, RefreshIcon } from "./WalletIcons";
 
 export default function BalanceCard({ saldo, moneda, showSaldo, onToggleShowSaldo, onRefresh, loading, walletId }: BalanceCardProps) {
-
-  // 👉 leer saldo desde localStorage, si no existe → 100
-  const saldoLocalRaw = typeof window !== "undefined" ? localStorage.getItem("wallet_saldo_prueba") : null;
-  const saldoReal = saldoLocalRaw !== null ? Number(saldoLocalRaw) : 100;
-
-  const saldoFormateado = saldoReal.toLocaleString("es-BO", {
+  
+  const saldoFormateado = (saldo || 0).toLocaleString("es-BO", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
@@ -26,12 +22,15 @@ export default function BalanceCard({ saldo, moneda, showSaldo, onToggleShowSald
         </button>
       </div>
 
+      {/* Texto "Saldo Total" (ya cambiado) */}
       <p className="font-medium text-blue-100">Saldo Total</p>
       
+      {/* Tamaño "text-5xl" y "Bs." (ya cambiado) */}
       <div className="mt-2 text-5xl font-bold">
         {showSaldo ? <span>Bs. {saldoFormateado}</span> : <span>Bs. ****,**</span>}
       </div>
 
+      {/* MODIFICACIÓN FINAL: Reemplazamos "4829" con la variable */}
       <div className="mt-4 flex items-center space-x-2 text-sm">
         <span className="font-mono text-blue-100">**** {lastFour}</span>
         <span className="bg-green-500/30 text-green-100 text-xs font-semibold px-2 py-0.5 rounded-full">

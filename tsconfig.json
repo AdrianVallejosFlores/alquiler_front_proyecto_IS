@@ -22,9 +22,15 @@
         "name": "next"
       }
     ],
+    "baseUrl": ".", // Añadido: Define la base para las rutas relativas.
     "paths": {
+      // Existente
       "@/*": [
         "./src/*"
+      ],
+      // Nuevo: Mapea @config/ a la carpeta real ./config/
+      "@config/*": [
+        "./config/*"
       ]
     }
   },
