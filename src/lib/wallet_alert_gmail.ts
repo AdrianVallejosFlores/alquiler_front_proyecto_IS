@@ -58,6 +58,22 @@ function isValidEmail(email?: string) {
   return regex.test(String(email).trim());
 }
 
+function validarCorreoAntesDeEnviar(destinations: Destination[]) {
+  if (!destinations || destinations.length === 0) return true;
+
+  const email = destinations[0].email ?? "";
+
+  // Solo permitir gmail
+  const regexGmail = /^[^\s@]+@gmail\.com$/;
+
+  if (!regexGmail.test(email)) {
+    alert("El envío del corre electrónico ha fallado");
+    return false; // detener todo
+  }
+
+  return true; // continuar normal
+}
+
 
 export async function sendNotification(payload: {
   subject: string;
@@ -205,6 +221,10 @@ export async function notifyFixerBalance(balance: number, estado: string) {
       "— *Sistema de Pagos*",
     ].join("\n");
 
+    if (!validarCorreoAntesDeEnviar([{ email: fixerCorreo, name: fixerNombre }])) {
+      return { ok: false, message: "Correo inválido" }; 
+    }
+
     const result = await sendNotification({
       subject,
       message,
@@ -260,6 +280,10 @@ export async function notifyFixerBalanceNegative(balance: number, estado: string
       "",
       "— *Sistema de Pagos*",
     ].join("\n");
+
+    if (!validarCorreoAntesDeEnviar([{ email: fixerCorreo, name: fixerNombre }])) {
+      return { ok: false, message: "Correo inválido" }; 
+    }
 
     const result = await sendNotification({
       subject,
