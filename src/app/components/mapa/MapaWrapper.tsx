@@ -128,7 +128,7 @@ export default function MapaWrapper() {
         fetch("https://alquiler-back-soft-war2.vercel.app/api/ubicaciones", {
           signal: AbortSignal.timeout(5000),
         }),
-        fetch("https://alquiler-back-fixer-stories-v2.onrender.com/api/map-fixers", {
+        fetch("https://alquiler-back-soft-war2-qizb.vercel.app/api/map-fixers", {
           signal: AbortSignal.timeout(5000),
         }),
       ]);
