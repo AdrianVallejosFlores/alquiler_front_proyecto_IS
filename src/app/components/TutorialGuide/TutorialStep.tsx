@@ -34,18 +34,12 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
 
 
 
-
-
-
-
-  // AGREGADOS POR HENRY 
-
   const getTutorialElement = (target: string) => {
-  const isMobile = window.innerWidth < 640;
-  return document.querySelector(
-    `[data-tutorial="${target}"][data-tutorial-breakpoint="${isMobile ? 'mobile' : 'desktop'}"]`
-  ) || document.querySelector(`[data-tutorial="${target}"]`);
-};
+    const isMobile = window.innerWidth < 640;
+    return document.querySelector(
+      `[data-tutorial="${target}"][data-tutorial-breakpoint="${isMobile ? 'mobile' : 'desktop'}"]`
+    ) || document.querySelector(`[data-tutorial="${target}"]`);
+  };
 
   useEffect(() => {
     const updatePosition = () => {
@@ -113,25 +107,6 @@ const TutorialStep: React.FC<TutorialStepProps> = ({
       };
     }
   }, [step.targetElement]);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

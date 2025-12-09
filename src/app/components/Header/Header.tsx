@@ -115,7 +115,7 @@ export default function Header() {
                 placeholder="Buscar"
                 onKeyDown={handleSearch}
                 data-tutorial="search-bar"
-                data-tutorial-breakpoint="desktop"   //AGREGADO RECIENTEMENTE PARA IDENTIFICAR QUE HEADER MOSTRAR============================================
+                data-tutorial-breakpoint="desktop"   //AGREGADO RECIENTEMENTE PARA IDENTIFICAR QUE HEADER MOSTRAR
                 className="w-full px-4 py-2 pl-10 border border-[#D8ECFF] rounded-md focus:outline-none focus:ring-2 focus:ring-[#2a87ff] bg-white text-[#11255A]"
               />
               <svg
@@ -149,6 +149,7 @@ export default function Header() {
                 <Link href={fixerEntryHref}>
                   <button 
                     data-tutorial="become-fixer" // ✅ NUEVO: Para paso 5 del tutorial
+                     data-tutorial-breakpoint="desktop"
                     className="px-4 py-2 font-semibold text-white bg-[#2a87ff] rounded-md hover:bg-[#1a347a] transition-colors"
                   >
                     {fixerEntryLabel}
@@ -177,6 +178,7 @@ export default function Header() {
                 <Link href={fixerCtaHref}>
                   <button 
                     data-tutorial="become-fixer" // ✅ NUEVO: Para paso 5 del tutorial
+                    data-tutorial-breakpoint="desktop"
                     className="px-4 py-2 font-semibold text-white bg-[#2a87ff] rounded-md hover:bg-[#1a347a] transition-colors"
                   >
                     {fixerCtaLabel}
@@ -228,7 +230,7 @@ export default function Header() {
                 placeholder="Buscar"
                 onKeyDown={handleSearch}
                 data-tutorial="search-bar"
-                data-tutorial-breakpoint="mobile"   //AGREGADO RECIENTEMENTE PARA IDENTIFICAR QUE HEADER MOSTRAR============================================
+                data-tutorial-breakpoint="mobile"
                 className="w-full px-3 py-1.5 pl-9 border border-[#D8ECFF] rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-[#2a87ff] bg-white text-[#11255A]"
               />
               <svg
@@ -294,6 +296,7 @@ export default function Header() {
                 <Link href={fixerCtaHref} className="flex-1">
                   <button 
                     data-tutorial="become-fixer" // ✅ NUEVO: Para paso 5 del tutorial
+                    data-tutorial-breakpoint="mobile"
                     className="w-full px-2 py-1 text-xs font-semibold text-white bg-[#2a87ff] rounded-md hover:bg-[#1a347a]"
                   >
                     {fixerCtaLabel}
